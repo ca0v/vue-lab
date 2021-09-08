@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Vue 3 Basics</title>
+    <script src="https://unpkg.com/vue@next"></script>
+    <style>
+        .box {
+            height: 20px;
+            background-color: red;
+            margin: 2pt;
+            display: block;
+        }
+
+        [v-cloak] {
+            display: none
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" v-cloak>
+        <input v-model="greeting" />
+        <input v-model="showBox1" type="checkbox" />
+        <input v-model="showBox2" type="checkbox" />
+        <input v-model="showBox3" type="checkbox" />
+        <hr />
+        <div v-if="showBox1" class="box">1</div>
+        <div v-show="showBox2" class="box">2</div>
+        <div v-show="showBox3" class="box">3</div>
+        <div v-if="(greeting == '1+2=4' && (showBox1 || showBox2 || !showBox3))" class="box">
+            Daniel's secret message
+        </div>
+    </div>
+    <script>
+        let app = Vue.createApp({
+            data: function () {
+                return {
+                    greeting: "your test awaits you",
+                    showBox1: false,
+                    showBox2: true,
+                    showBox3: false,
+                }
+            }
+        })
+        app.mount("#app")
+    </script>
+</body>
+
+</html>
