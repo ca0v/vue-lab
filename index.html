@@ -1,46 +1,64 @@
 <!DOCTYPE html>
 <html>
-
-<head>
+  <head>
     <title>Vue 3 Basics</title>
     <script src="https://unpkg.com/vue@next"></script>
     <style>
-        .box {
-            height: 20px;
-            background-color: red;
-            margin: 2pt;
-            display: block;
-        }
-
-        [v-cloak] {
-            display: none
-        }
+      input {
+        margin: 10px;
+        display: block;
+      }
+      [v-cloak] {
+        display: none;
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
     <div id="app" v-cloak>
-        <input @keyup.space="greet(greeting)"  @keyup.enter="greet(`hello ${greeting}`)" v-model="greeting" />
-        <button @click="toggleBox">Toggle Box</button>
-        <div v-if="showBox" class="box">1</div>
+      <login-form></login-form>
     </div>
     <script>
-        let app = Vue.createApp({
-            data: function () {
-                return {
-                    greeting: "your test awaits you",
-                    showBox: false,
-                }
-            },
-            methods: {
-                toggleBox() { this.showBox = !this.showBox },
-                greet(input1) { 
-                    console.log(input1);
-                },
-            }
-        })
-        app.mount("#app")
-    </script>
-</body>
+      const app = Vue.createApp({
+        data: function () {
+          return {
+            greeting: "your test awaits you",
+            showBox: false,
+          };
+        },
+        methods: {
+          toggleBox() {
+            this.showBox = !this.showBox;
+          },
+          greet(input1) {
+            console.log(input1);
+          },
+        },
+      });
 
+      app.component("login-form", {
+        template: `
+          <form @submit.prevent="handleSubmit">
+            <h1>{{ title }}</h1>
+            <label>Email<input type="email" v-model="email"/></label>
+            <label>Password<input type="password" v-model="password"/></label>
+            <button>Log in</button>
+          </form>`,
+        data() {
+          return {
+            title: "Login Form",
+            email: "your@email.com",
+            password: "[pwd]",
+          };
+        },
+        methods: {
+          handleSubmit() {
+            console.log(this.email, this.password);
+          },
+        },
+      });
+
+      app.mount("#app");
+    </script>
+  </body>
 </html>
