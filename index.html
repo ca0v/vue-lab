@@ -20,27 +20,23 @@
 
 <body>
     <div id="app" v-cloak>
-        <input v-model="greeting" />
-        <input v-model="showBox1" type="checkbox" />
-        <input v-model="showBox2" type="checkbox" />
-        <input v-model="showBox3" type="checkbox" />
-        <hr />
-        <div v-if="showBox1" class="box">1</div>
-        <div v-show="showBox2" class="box">2</div>
-        <div v-show="showBox3" class="box">3</div>
-        <div v-if="(greeting == '1+2=4' && (showBox1 || showBox2 || !showBox3))" class="box">
-            Daniel's secret message
-        </div>
+        <input @keyup.space="greet(greeting)"  @keyup.enter="greet(`hello ${greeting}`)" v-model="greeting" />
+        <button @click="toggleBox">Toggle Box</button>
+        <div v-if="showBox" class="box">1</div>
     </div>
     <script>
         let app = Vue.createApp({
             data: function () {
                 return {
                     greeting: "your test awaits you",
-                    showBox1: false,
-                    showBox2: true,
-                    showBox3: false,
+                    showBox: false,
                 }
+            },
+            methods: {
+                toggleBox() { this.showBox = !this.showBox },
+                greet(input1) { 
+                    console.log(input1);
+                },
             }
         })
         app.mount("#app")
