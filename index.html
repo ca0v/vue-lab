@@ -46,8 +46,8 @@
         template: `
           <form @submit.prevent="handleSubmit">
             <h1>{{ title }}</h1>
-            <custom-input type="email" label="Email" value="email" />
-            <custom-input type="password" label="Password" value="password" />
+            <custom-input type="email" label="Email" :value="email" />
+            <custom-input type="password" label="Password" :value="password" />
             <button>Log in</button>
           </form>`,
         components: ["custom-input"],
