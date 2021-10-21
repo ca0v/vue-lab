@@ -3,74 +3,18 @@
   <head>
     <title>Vue 3 Basics</title>
     <script src="https://unpkg.com/vue@next"></script>
-    <script src="index.js"></script>
-    <style>
-      #logger {
-        overflow: hidden;
-        height: 5em;
-      }
-      input {
-        margin: 10px;
-        display: block;
-      }
-      [v-cloak] {
-        display: none;
-      }
-    </style>
+    <link href="./index.css" rel="stylesheet" />
   </head>
 
   <body>
-    <div id="app" v-cloak>
-      <login-form></login-form>
-    </div>
-    <div id="logger">Logs go here</div>
-    <script>
-      const app = Vue.createApp({
-        data: function () {
-          return {
-            greeting: "your test awaits you",
-            showBox: false,
-          };
-        },
-        methods: {
-          toggleBox() {
-            this.showBox = !this.showBox;
-          },
-          greet(input1) {
-            log(input1);
-          },
-        },
-      });
-
-      app.component("login-form", {
-        template: `
-          <form @submit.prevent="handleSubmit">
-            <h1>{{ title }}</h1>
-            <custom-input type="email" label="Email" :value="email" />
-            <custom-input type="password" label="Password" :value="password" />
-            <button>Log in</button>
-          </form>`,
-        components: ["custom-input"],
-        data() {
-          return {
-            title: "Login Form",
-            email: "your@email.com",
-            password: "[pwd]",
-          };
-        },
-        methods: {
-          handleSubmit() {
-            log(this.email, this.password);
-          },
-        },
-      });
-
-      app.component("custom-input", {
-        template: `<label>{{label}}<input :type="type" :value="value"/></label>`,
-        props: ["label", "value", "type"],
-      });
-
-      app.mount("#app");
+    <div id="app" v-cloak></div>
+    <div id="logger"></div>
+    <script type="module">
+      import { log, run } from "./index.js";
+      const app = run();
+      const vm = app.mount("#app");
+      log("playing");
+      vm.play({ piece: "X", row: 1, col: 1 });
     </script>
   </body>
 </html>

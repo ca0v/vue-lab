@@ -1,0 +1,30 @@
+#logger {
+  overflow: hidden;
+  height: 5em;
+}
+input {
+  margin: 10px;
+  display: block;
+}
+[v-cloak] {
+  display: none;
+}
+
+.tic-tac-toe {
+  display: inline-block;
+  margin: 2pt;
+  padding: 4pt;
+  border: 4pt solid blue;
+}
+
+.ttt-cell {
+  display: inline-block;
+  background: black;
+  border: 1px solid white;
+  color: white;
+  width: 6em;
+  height: 6em;
+  text-align: center;
+  vertical-align: middle;
+  cursor: crosshair;
+}
