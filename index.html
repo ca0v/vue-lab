@@ -10,10 +10,9 @@
     <div id="app" v-cloak></div>
     <div id="logger"></div>
     <script type="module">
-      import { log, run } from "./index.js";
+      import { run } from "./index.js";
       const app = run();
       const vm = app.mount("#app");
-      log("playing");
       vm.play({ piece: "X", row: 1, col: 1 });
     </script>
   </body>

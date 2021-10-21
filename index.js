@@ -1,17 +1,11 @@
-function range(n) {
-  return new Array(n).fill(0);
-}
-
-export function log(...args) {
-  const logger = document.getElementById("logger");
-  const logItem = document.createElement("p");
-  logger.insertBefore(logItem, logger.firstChild);
-  logItem.innerText = args.join("+");
-}
+import { log } from "./fun/log.js";
+import { range } from "./fun/range.js";
 
 export function run() {
   const app = Vue.createApp({
-    template: `<div>This is the app</div><tic-tac-toe v-on:toggleCell=toggleCell v-bind:state=gameState winner="?"></tic-tac-toe>`,
+    template: `<div>This is the app</div>
+    <tic-tac-toe v-on:toggleCell=toggleCell v-bind:state=gameState winner="?">
+    </tic-tac-toe>`,
     methods: {
       play(move) {
         let { row, col, piece } = move;
@@ -25,29 +19,36 @@ export function run() {
     data() {
       return {
         gameState: [
-          ["?", "?", "?"],
-          ["?", "?", "?"],
-          ["?", "?", "?"],
+          ["7", "8", "9"],
+          ["4", "5", "6"],
+          ["1", "2", "3"],
         ],
       };
     },
   });
 
-  const template = range(9)
-    .map((_, i) => {
-      const row = Math.floor(i / 3);
-      const col = i % 3;
-      let result = `<ttt-cell v-on:toggled=toggleCell(${row},${col}) v-bind:state=state[${row}][${col}]></ttt-cell>`;
-      if (0 === col) result = `<div>${result}`;
-      if (2 === col) result = `${result}</div>`;
-      return result;
-    })
+  // I am having trouble expressing a N x N grid
+  // perhaps I should use a css grid
+  const template = range(3)
+    .map((_) => range(3))
+    .map((row, rowIndex) =>
+      row
+        .map(
+          (col, colIndex) =>
+            `<ttt-cell v-on:toggled=toggleCell(${rowIndex},${colIndex}) v-bind:state=state[${rowIndex}][${colIndex}]></ttt-cell>`
+        )
+        .join("")
+    )
+    .map((rowTemplate) => `<div>${rowTemplate}</div>`)
     .join("");
 
   app.component("tic-tac-toe", {
     template: `<p>{{winner}}</p>
-    <div class="tic-tac-toe">${template}</div>`,
+    <div class="tic-tac-toe">
+    ${template}
+    </div>`,
     props: ["winner", "state"],
+    emits: ["toggleCell"],
     methods: {
       toggleCell(row, col) {
         this.$emit("toggleCell", { row, col });
