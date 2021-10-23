@@ -18,7 +18,7 @@ function createTemplate(size = 3) {
       col
         .map(
           (cell, y) =>
-            `<ttt-cell ref="cell_${x}_${y}" v-on:toggled=toggleCell(${x},${y}) v-bind:state=state[${x}][${y}]></ttt-cell>`
+            `<ttt-cell ref="cell_${x}_${y}" v-on:toggled=playCell v-bind:state=state[${x}][${y}]></ttt-cell>`
         )
         .join("")
     )
@@ -50,14 +50,14 @@ export function run({ gridSize }) {
 
   const app = Vue.createApp({
     template: `<div>This is the app</div>
-    <tic-tac-toe v-on:toggleCell=toggleCell v-bind:state=gameState winner="?">
+    <tic-tac-toe v-on:playCell=playCell v-bind:state=gameState winner="?">
     </tic-tac-toe>`,
     methods: {
       play({ row, col, piece }) {
         this.gameState[col][row].value = piece;
       },
-      toggleCell({ row, col }) {
-        this.gameState[row][col].value = nextPlayer().piece;
+      playCell(cell) {
+        cell.state.value = nextPlayer().piece;
       },
     },
     data() {
@@ -73,10 +73,10 @@ export function run({ gridSize }) {
     ${createTemplate(gridSize)}
     </div>`,
     props: ["winner", "state"],
-    emits: ["toggleCell"],
+    emits: ["playCell"],
     methods: {
-      toggleCell(row, col) {
-        this.$emit("toggleCell", { row, col });
+      playCell(cell) {
+        this.$emit("playCell", cell);
       },
       playActiveCell() {
         findActiveCell(this.state).value = nextPlayer().piece;
@@ -162,8 +162,7 @@ export function run({ gridSize }) {
     props: ["state"],
     methods: {
       toggle() {
-        log("ttt-cell:toggle");
-        this.$emit("toggled");
+        this.$emit("toggled", this);
       },
       focus() {
         this.state.focus = true;
