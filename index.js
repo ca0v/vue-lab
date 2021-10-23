@@ -17,8 +17,8 @@ function createTemplate(size = 3) {
     .map((col, x) =>
       col
         .map(
-          (cell, y) =>
-            `<ttt-cell ref="cell_${x}_${y}" v-on:toggled=playCell v-bind:state=state[${x}][${y}]></ttt-cell>`
+          (_, y) =>
+            `<ttt-cell v-on:toggled=playCell v-on:focused=focused v-bind:state=state[${x}][${y}]></ttt-cell>`
         )
         .join("")
     )
@@ -78,12 +78,18 @@ export function run({ gridSize }) {
       playCell(cell) {
         this.$emit("playCell", cell);
       },
+      focusCell(colIndex, rowIndex) {
+        this.state.forEach((col) => col.forEach((row) => (row.focus = false)));
+        this.state[colIndex][rowIndex].focus = true;
+      },
+      focused(cell) {
+        this.state.forEach((col) => col.forEach((row) => (row.focus = false)));
+        cell.state.focus = true;
+      },
       playActiveCell() {
         findActiveCell(this.state).value = nextPlayer().piece;
       },
       keypress(event) {
-        const refs = this.$refs;
-
         switch (event.code) {
           case "Space":
           case "NumpadEnter":
@@ -112,7 +118,7 @@ export function run({ gridSize }) {
               const cell = event.keyCode - 49;
               const x = cell % gridSize;
               const y = Math.floor(cell / gridSize);
-              this.$refs[`cell_${x}_${y}`].$el.focus();
+              this.focusCell(y, x);
             }
             break;
           case "KeyA":
@@ -141,7 +147,7 @@ export function run({ gridSize }) {
                     colIndex = (colIndex + gridSize + 1) % gridSize;
                     break;
                 }
-                focusCell(colIndex, rowIndex);
+                this.focusCell(colIndex, rowIndex);
               }
             }
             break;
@@ -149,16 +155,12 @@ export function run({ gridSize }) {
             log("grid", event.code);
             break;
         }
-
-        function focusCell(colIndex, rowIndex) {
-          refs[`cell_${colIndex}_${rowIndex}`].$el.focus();
-        }
       },
     },
   });
 
   app.component("ttt-cell", {
-    template: `<span tabIndex="0" class="ttt-cell" @focus="focus" @focusout="unfocus" @click="toggle">{{state.value}}</span>`,
+    template: `<span tabIndex="0" class="ttt-cell" @focus="focus" @click="toggle">{{state.value}}{{state.focus ? "*" : ''}}</span>`,
     props: ["state"],
     methods: {
       toggle() {
@@ -166,10 +168,7 @@ export function run({ gridSize }) {
       },
       focus() {
         this.state.focus = true;
-        this.$el.focus();
-      },
-      unfocus() {
-        this.state.focus = false;
+        this.$emit("focused", this);
       },
     },
   });
