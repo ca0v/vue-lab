@@ -19,7 +19,7 @@ input {
 
 .ttt-cell {
   display: inline-block;
-  background: black;
+  background: rgb(20, 20, 20);
   border: 1px solid white;
   color: white;
   width: 6em;
@@ -27,4 +27,8 @@ input {
   text-align: center;
   vertical-align: middle;
   cursor: crosshair;
+}
+
+.ttt-cell:focus {
+  background: rgb(80, 80, 80);
 }
