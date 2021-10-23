@@ -11,10 +11,8 @@
     <div id="logger"></div>
     <script type="module">
       import { run } from "./index.js";
-      const app = run();
+      const app = run({ gridSize: 7 });
       const vm = app.mount("#app");
-      vm.play({ piece: "X", row: 1, col: 1 });
-      vm.play({ piece: "O", row: 0, col: 0 });
     </script>
   </body>
 </html>

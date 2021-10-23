@@ -1,4 +1,4 @@
-import { range } from "./fun/range.js";
+import { range } from "./range.js";
 
 export function createGameBoard(size = 3) {
   const cells = range(size).map((_, colIndex) =>
@@ -6,7 +6,7 @@ export function createGameBoard(size = 3) {
       name: `${1 + colIndex * size + rowIndex}`,
       colIndex,
       rowIndex,
-      value: "?",
+      value: " ",
       focus: false,
     }))
   );

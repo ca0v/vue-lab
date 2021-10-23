@@ -3,12 +3,31 @@
  * the composition pattern, which uses startup(), might simplify
  * and promote de-composition.
  */
-import { createGameBoard } from "./createGameBoard.js";
+import { createGameBoard } from "./fun/createGameBoard.js";
 import { log } from "./fun/log.js";
 import { range } from "./fun/range.js";
 
-function toggle(cell) {
-  cell.value = cell.value === "X" ? "O" : "X";
+// I am having trouble expressing a N x N grid
+// perhaps I should use a css grid
+// can I remove the 'ref' and set focus=true instead?
+// the ttt-cell must watch and focus itself
+function createTemplate(size = 3) {
+  return range(size)
+    .map((_) => range(size))
+    .map((col, x) =>
+      col
+        .map(
+          (cell, y) =>
+            `<ttt-cell ref="cell_${x}_${y}" v-on:toggled=toggleCell(${x},${y}) v-bind:state=state[${x}][${y}]></ttt-cell>`
+        )
+        .join("")
+    )
+    .map((rowTemplate) => `<div>${rowTemplate}</div>`)
+    .join("");
+}
+
+function clearCell(cell) {
+  cell.value = " ";
 }
 
 function findActiveCell(state) {
@@ -16,26 +35,29 @@ function findActiveCell(state) {
   return activeColumn?.find((row) => row.focus);
 }
 
-const gridSize = 7;
+export function run({ gridSize }) {
+  const players = [{ piece: "X" }, { piece: "O" }];
+  let currentPlayerIndex = -1;
 
-export function run() {
+  function currentPlayer() {
+    return players[currentPlayerIndex];
+  }
+
+  function nextPlayer() {
+    currentPlayerIndex = (1 + currentPlayerIndex) % players.length;
+    return currentPlayer();
+  }
+
   const app = Vue.createApp({
     template: `<div>This is the app</div>
     <tic-tac-toe v-on:toggleCell=toggleCell v-bind:state=gameState winner="?">
     </tic-tac-toe>`,
-    startup() {
-      log("startup1");
-    },
     methods: {
-      startup() {
-        log("startup2");
-      },
-      play(move) {
-        let { row, col, piece } = move;
+      play({ row, col, piece }) {
         this.gameState[col][row].value = piece;
       },
       toggleCell({ row, col }) {
-        toggle(this.gameState[row][col]);
+        this.gameState[row][col].value = nextPlayer().piece;
       },
     },
     data() {
@@ -45,37 +67,19 @@ export function run() {
     },
   });
 
-  // I am having trouble expressing a N x N grid
-  // perhaps I should use a css grid
-  const createTemplate = (size = 3) =>
-    range(size)
-      .map((_) => range(size))
-      .map((col, x) =>
-        col
-          .map(
-            (cell, y) =>
-              `<ttt-cell ref="cell_${x}_${y}" v-on:toggled=toggleCell(${x},${y}) v-bind:state=state[${x}][${y}]></ttt-cell>`
-          )
-          .join("")
-      )
-      .map((rowTemplate) => `<div>${rowTemplate}</div>`)
-      .join("");
-
   app.component("tic-tac-toe", {
     template: `<p>{{winner}}</p>
     <div class="tic-tac-toe" @keypress="keypress">
     ${createTemplate(gridSize)}
     </div>`,
-    props: ["winner", "state", "gridSize"],
+    props: ["winner", "state"],
     emits: ["toggleCell"],
     methods: {
       toggleCell(row, col) {
         this.$emit("toggleCell", { row, col });
-        log("toggleCell", JSON.stringify(this.state));
       },
-      toggleActiveCell() {
-        const activeCell = findActiveCell(this.state);
-        activeCell && toggle(activeCell);
+      playActiveCell() {
+        findActiveCell(this.state).value = nextPlayer().piece;
       },
       keypress(event) {
         const refs = this.$refs;
@@ -84,7 +88,7 @@ export function run() {
           case "Space":
           case "NumpadEnter":
           case "Enter":
-            this.toggleActiveCell();
+            this.playActiveCell();
             break;
           case "Digit1":
           case "Digit2":
@@ -163,6 +167,7 @@ export function run() {
       },
       focus() {
         this.state.focus = true;
+        this.$el.focus();
       },
       unfocus() {
         this.state.focus = false;
