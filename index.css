@@ -26,8 +26,8 @@ body {
 .tic-tac-toe {
   display: inline-block;
   margin: 2em;
-  padding: 4em;
-  border: 1em solid rgb(20, 20, 20);
+  padding: 2em;
+  border: 0.75em solid rgb(20, 20, 20);
   border-radius: 4em;
 }
 
@@ -42,7 +42,7 @@ body {
   text-align: center;
   vertical-align: middle;
   cursor: crosshair;
-  font-size: 2em;
+  font-size: 1em;
   margin: 1em;
 }
 

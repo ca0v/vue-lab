@@ -19,5 +19,8 @@
   "homepage": "https://github.com/ca0v/vue-lab#readme",
   "devDependencies": {
     "@vue/cli": "^4.5.14"
+  },
+  "dependencies": {
+    "vite": "^2.6.10"
   }
 }
