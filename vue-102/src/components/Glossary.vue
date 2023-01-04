@@ -1,5 +1,12 @@
+<!-- notice how slick the svg integration looks -->
+<!-- also notice this useful setting in the svg, fill="currentColor" -->
+
 <script setup lang="ts">
+
+// sub-component to render each topic
 import Card from "./Card.vue";
+
+// slick svg integration!
 import DocumentationIcon from "./icons/IconDocumentation.vue";
 </script>
 
@@ -10,7 +17,7 @@ import DocumentationIcon from "./icons/IconDocumentation.vue";
     </template>
     <template #heading>Documentation</template>
 
-    Vue’s
+    Vue's
     <a href="https://vuejs.org/" target="_blank" rel="noopener"
       >official documentation</a
     >

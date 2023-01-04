@@ -1,7 +1,16 @@
+<!-- This is the root view and it contains both the component and the template-->
+
+
+<!--
+  This is the component portion of the root view.
+-->
 <script setup lang="ts">
 import { RouterLink, RouterView } from "vue-router";
 </script>
 
+<!--
+  This is the template portion of the root view.
+-->
 <template>
   <header>
     <img

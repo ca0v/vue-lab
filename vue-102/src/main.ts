@@ -10,13 +10,17 @@
 import { createApp } from "vue";
 import { createPinia } from "pinia";
 
+// this is the root view (component + template)
 import App from "./App.vue";
+
+// this defines the routes, navigate to app components starting here
 import router from "./router";
 
 import "./assets/main.css";
 
 const app = createApp(App);
 
+// "The Vue Store that you will enjoy using"
 app.use(createPinia());
 app.use(router);
 
