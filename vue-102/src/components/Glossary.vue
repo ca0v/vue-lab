@@ -31,6 +31,10 @@ import SupportIcon from "./icons/IconSupport.vue";
     <p>The <code>mount()</code> return value is a DOM element, which seems natural, since we are outside the framework (or inside the mount container).</p>
     <p>The mount container is also the root component and also be the root view.  Either the innerHTML or the &lt;template&gt; defines the template.</p>
     <p>Recall that view = component + template.</p>
+    <p>Application = Root Component + Root Template = Root View</p>
+    <p>The greater application, let's call it a workspace, can have multiple applications.  For Vue, the workspace is mount container.</p>
+    <p>Mount Container can contain multiple apps</p>
+    <p>Presumably an App should have a single purpose</p>
 </Card>
 
   <Card>
