@@ -8,8 +8,7 @@ import SupportIcon from "./icons/IconSupport.vue";
 </script>
 
 <template>
-
-<Card>
+  <Card>
     <template #icon>
       <DocumentationIcon />
     </template>
@@ -27,22 +26,35 @@ import SupportIcon from "./icons/IconSupport.vue";
       <DocumentationIcon />
     </template>
     <template #heading>Application</template>
-    <p>The application is the root component and is mounted from outside the framework with <code>app.mount('#app')</code></p>
-    <br/>
-    <p>The <code>mount()</code> return value is a DOM element, which seems natural, since we are outside the framework (or inside the mount container).</p>
-    <br/>
-    <p>The mount container is also the root component and also be the root view.  Either the innerHTML or the &lt;template&gt; defines the template.</p>
-    <br/>
+    <p>
+      The application is the root component and is mounted from outside the
+      framework with <code>app.mount('#app')</code>
+    </p>
+    <br />
+    <p>
+      The <code>mount()</code> return value is a DOM element, which seems
+      natural, since we are outside the framework (or inside the mount
+      container).
+    </p>
+    <br />
+    <p>
+      The mount container is also the root component and also be the root view.
+      Either the innerHTML or the &lt;template&gt; defines the template.
+    </p>
+    <br />
     <p>Recall that view = component + template.</p>
-    <br/>
+    <br />
     <p>Application = Root Component + Root Template = Root View</p>
-    <br/>
-    <p>The greater application, let's call it a workspace, can have multiple applications.  For Vue, the workspace is mount container.</p>
-    <br/>
+    <br />
+    <p>
+      The greater application, let's call it a workspace, can have multiple
+      applications. For Vue, the workspace is mount container.
+    </p>
+    <br />
     <p>Mount Container can contain multiple apps</p>
-    <br/>
+    <br />
     <p>Presumably an App should have a single purpose</p>
-</Card>
+  </Card>
 
   <Card>
     <template #icon>
@@ -64,11 +76,12 @@ import SupportIcon from "./icons/IconSupport.vue";
         >
       </li>
       <li>
-        <a href="https://v3.vuejs.org/guide/composition-api-introduction.html"
+        <a
+          href="https://v3.vuejs.org/guide/composition-api-introduction.html"
           target="_blank"
           >Composition API</a
         >
-      </li>      
+      </li>
     </ul>
 
     <p>
@@ -76,11 +89,12 @@ import SupportIcon from "./icons/IconSupport.vue";
       recommended to use the Composition API when creating new components.
     </p>
 
-    <p>Scripts are decorated with a "setup" attribute <code>&lt;script setup&gt;</code> tag.
-      The <code>onMounted() method is one of the lifecycle hooks</code>
+    <p>
+      Scripts are decorated with a "setup" attribute
+      <code>&lt;script setup&gt;</code> tag. The
+      <code>onMounted() method is one of the lifecycle hooks</code>
     </p>
     <p>The template is defined within the <code>&lt;template&gt;</code> tag</p>
-
   </Card>
 
   <Card>
@@ -89,22 +103,36 @@ import SupportIcon from "./icons/IconSupport.vue";
     </template>
     <template #heading>Templates</template>
     <p>Templates are the HTML markup that is rendered by the browser.</p>
-    <br/>
+    <br />
     <p>Templates are defined within the <code>&lt;template&gt;</code> tag</p>
-    <br/>
-    <p>Templates use double-curly brackets (mustache) within the body of an element but for attributes you must use <code>v-bind:<i>attr</i></code></p>
-    <br/>
+    <br />
+    <p>
+      Templates use double-curly brackets (mustache) within the body of an
+      element but for attributes you must use <code>v-bind:<i>attr</i></code>
+    </p>
+    <br />
     <p>Both are used to define a data-binding</p>
-    <br/>
-    <p>You don't need to type <code>v-bind</code> as the shorthand is simply <code>:<i>attr</i></code></p>
-    <br/>
-    <p>Similarly, <code>v-on:click</code> can be written as <code>@click</code></p>
-    <br/>
+    <br />
+    <p>
+      You don't need to type <code>v-bind</code> as the shorthand is simply
+      <code>:<i>attr</i></code>
+    </p>
+    <br />
+    <p>
+      Similarly, <code>v-on:click</code> can be written as <code>@click</code>
+    </p>
+    <br />
     <p>If it gets ugly, use a computed property (reactive)</p>
-    <br/>
-    <p>There are modifiers as well (submit.prevent) and presumable <i>once</i></p>
-    <br/>
-    <p>v-model simplifies form @input value binding syntax.  <code>&lt;input v-model="text"&gt;</code> keep the <code>text</code> property in-sync with the input.</p>
+    <br />
+    <p>
+      There are modifiers as well (submit.prevent) and presumable <i>once</i>
+    </p>
+    <br />
+    <p>
+      v-model simplifies form @input value binding syntax.
+      <code>&lt;input v-model="text"&gt;</code> keep the
+      <code>text</code> property in-sync with the input.
+    </p>
   </Card>
 
   <Card>
@@ -112,17 +140,36 @@ import SupportIcon from "./icons/IconSupport.vue";
       <DocumentationIcon />
     </template>
     <template #heading>Reactive</template>
-    <p>The <code>reactive({a:1})</code> does not work on primitives.  For that use <code>ref(1)</code>.  This is what makes Vue a reactive framework.</p>
+    <p>
+      The <code>reactive({a:1})</code> does not work on primitives. For that use
+      <code>ref(1)</code>. This is what makes Vue a reactive framework.
+    </p>
   </Card>
-
 
   <Card>
     <template #icon>
       <DocumentationIcon />
     </template>
     <template #heading>Computed Properties</template>
-    <p>Computed properties cache there value so they don't fire unnecessarily.</p>
+    <p>
+      Computed properties cache there value so they don't fire unnecessarily.
+    </p>
     <p>You can define a setter to make a computed property writable</p>
   </Card>
-  
+
+  <Card>
+    <template #icon>
+      <DocumentationIcon />
+    </template>
+    <template #heading>Watchers</template>
+    <p>Watchers</p>
+  </Card>
+
+  <Card>
+    <template #icon>
+      <DocumentationIcon />
+    </template>
+    <template #heading>Template Refs</template>
+    <p>Template Refs</p>
+  </Card>
 </template>
