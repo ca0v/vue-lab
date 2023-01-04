@@ -1,4 +1,4 @@
-@import './base.css';
+@import "./base.css";
 
 #app {
   max-width: 1280px;
@@ -6,6 +6,12 @@
   padding: 2rem;
 
   font-weight: normal;
+}
+
+code {
+  color: hsl(153, 48%, 49%);
+  background-color: hsl(210, 29%, 29%);
+  padding: 0.2rem 0.4rem;
 }
 
 a,

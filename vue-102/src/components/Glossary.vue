@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import Card from "./Card.vue";
 import DocumentationIcon from "./icons/IconDocumentation.vue";
-import ToolingIcon from "./icons/IconTooling.vue";
-import EcosystemIcon from "./icons/IconEcosystem.vue";
-import CommunityIcon from "./icons/IconCommunity.vue";
-import SupportIcon from "./icons/IconSupport.vue";
 </script>
 
 <template>
@@ -32,9 +28,7 @@ import SupportIcon from "./icons/IconSupport.vue";
     </p>
     <br />
     <p>
-      The <code>mount()</code> return value is a DOM element, which seems
-      natural, since we are outside the framework (or inside the mount
-      container).
+      The <code>mount()</code> return value is the "root component instance".
     </p>
     <br />
     <p>
@@ -92,7 +86,7 @@ import SupportIcon from "./icons/IconSupport.vue";
     <p>
       Scripts are decorated with a "setup" attribute
       <code>&lt;script setup&gt;</code> tag. The
-      <code>onMounted() method is one of the lifecycle hooks</code>
+      <code>onMounted()</code> method is one of the lifecycle hooks
     </p>
     <p>The template is defined within the <code>&lt;template&gt;</code> tag</p>
   </Card>
