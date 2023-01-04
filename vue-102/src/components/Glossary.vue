@@ -89,12 +89,38 @@ import SupportIcon from "./icons/IconSupport.vue";
     </template>
     <template #heading>Templates</template>
     <p>Templates are the HTML markup that is rendered by the browser.</p>
+    <br/>
     <p>Templates are defined within the <code>&lt;template&gt;</code> tag</p>
+    <br/>
     <p>Templates use double-curly brackets (mustache) within the body of an element but for attributes you must use <code>v-bind:<i>attr</i></code></p>
+    <br/>
     <p>Both are used to define a data-binding</p>
+    <br/>
     <p>You don't need to type <code>v-bind</code> as the shorthand is simply <code>:<i>attr</i></code></p>
+    <br/>
     <p>Similarly, <code>v-on:click</code> can be written as <code>@click</code></p>
+    <br/>
     <p>If it gets ugly, use a computed property (reactive)</p>
+    <br/>
+    <p>There are modifiers as well (submit.prevent) and presumable <i>once</i></p>
   </Card>
 
+  <Card>
+    <template #icon>
+      <DocumentationIcon />
+    </template>
+    <template #heading>Reactive</template>
+    <p>The <code>reactive({a:1})</code> does not work on primitives.  For that use <code>ref(1)</code>.  This is what makes Vue a reactive framework.</p>
+  </Card>
+
+
+  <Card>
+    <template #icon>
+      <DocumentationIcon />
+    </template>
+    <template #heading>Computed Properties</template>
+    <p>Computed properties cache there value so they don't fire unnecessarily.</p>
+    <p>You can define a setter to make a computed property writable</p>
+  </Card>
+  
 </template>
