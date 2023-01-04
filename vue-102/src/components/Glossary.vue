@@ -28,12 +28,19 @@ import SupportIcon from "./icons/IconSupport.vue";
     </template>
     <template #heading>Application</template>
     <p>The application is the root component and is mounted from outside the framework with <code>app.mount('#app')</code></p>
+    <br/>
     <p>The <code>mount()</code> return value is a DOM element, which seems natural, since we are outside the framework (or inside the mount container).</p>
+    <br/>
     <p>The mount container is also the root component and also be the root view.  Either the innerHTML or the &lt;template&gt; defines the template.</p>
+    <br/>
     <p>Recall that view = component + template.</p>
+    <br/>
     <p>Application = Root Component + Root Template = Root View</p>
+    <br/>
     <p>The greater application, let's call it a workspace, can have multiple applications.  For Vue, the workspace is mount container.</p>
+    <br/>
     <p>Mount Container can contain multiple apps</p>
+    <br/>
     <p>Presumably an App should have a single purpose</p>
 </Card>
 
@@ -75,4 +82,17 @@ import SupportIcon from "./icons/IconSupport.vue";
     <p>The template is defined within the <code>&lt;template&gt;</code> tag</p>
 
   </Card>
+
+  <Card>
+    <template #icon>
+      <DocumentationIcon />
+    </template>
+    <template #heading>Templates</template>
+    <p>Templates are the HTML markup that is rendered by the browser.</p>
+    <p>Templates are defined within the <code>&lt;template&gt;</code> tag</p>
+    <p>Templates use double-curly brackets (mustache) within the body of an element but for attributes you must use <code>v-bind:<i>attr</i></code></p>
+    <p>Both are used to define a data-binding</p>
+    <p>You don't need to type <code>v-bind</code> as the shorthand is simply <code>:<i>attr</i></code></p>
+  </Card>
+
 </template>
