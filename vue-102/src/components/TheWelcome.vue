@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import WelcomeItem from "./WelcomeItem.vue";
+import Card from "./Card.vue";
 import DocumentationIcon from "./icons/IconDocumentation.vue";
 import ToolingIcon from "./icons/IconTooling.vue";
 import EcosystemIcon from "./icons/IconEcosystem.vue";
@@ -8,7 +8,7 @@ import SupportIcon from "./icons/IconSupport.vue";
 </script>
 
 <template>
-  <WelcomeItem>
+  <Card>
     <template #icon>
       <DocumentationIcon />
     </template>
@@ -19,9 +19,9 @@ import SupportIcon from "./icons/IconSupport.vue";
       >official documentation</a
     >
     provides you with all information you need to get started.
-  </WelcomeItem>
+  </Card>
 
-  <WelcomeItem>
+  <Card>
     <template #icon>
       <ToolingIcon />
     </template>
@@ -53,9 +53,9 @@ import SupportIcon from "./icons/IconSupport.vue";
     <br />
 
     More instructions are available in <code>README.md</code>.
-  </WelcomeItem>
+  </Card>
 
-  <WelcomeItem>
+  <Card>
     <template #icon>
       <EcosystemIcon />
     </template>
@@ -79,9 +79,9 @@ import SupportIcon from "./icons/IconSupport.vue";
       >Awesome Vue</a
     >
     a visit.
-  </WelcomeItem>
+  </Card>
 
-  <WelcomeItem>
+  <Card>
     <template #icon>
       <CommunityIcon />
     </template>
@@ -104,9 +104,9 @@ import SupportIcon from "./icons/IconSupport.vue";
       >@vuejs</a
     >
     twitter account for latest news in the Vue world.
-  </WelcomeItem>
+  </Card>
 
-  <WelcomeItem>
+  <Card>
     <template #icon>
       <SupportIcon />
     </template>
@@ -117,5 +117,5 @@ import SupportIcon from "./icons/IconSupport.vue";
     <a href="https://vuejs.org/sponsor/" target="_blank" rel="noopener"
       >becoming a sponsor</a
     >.
-  </WelcomeItem>
+  </Card>
 </template>
