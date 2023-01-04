@@ -93,6 +93,8 @@ import SupportIcon from "./icons/IconSupport.vue";
     <p>Templates use double-curly brackets (mustache) within the body of an element but for attributes you must use <code>v-bind:<i>attr</i></code></p>
     <p>Both are used to define a data-binding</p>
     <p>You don't need to type <code>v-bind</code> as the shorthand is simply <code>:<i>attr</i></code></p>
+    <p>Similarly, <code>v-on:click</code> can be written as <code>@click</code></p>
+    <p>If it gets ugly, use a computed property (reactive)</p>
   </Card>
 
 </template>
