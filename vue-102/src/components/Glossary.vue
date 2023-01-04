@@ -103,6 +103,8 @@ import SupportIcon from "./icons/IconSupport.vue";
     <p>If it gets ugly, use a computed property (reactive)</p>
     <br/>
     <p>There are modifiers as well (submit.prevent) and presumable <i>once</i></p>
+    <br/>
+    <p>v-model simplifies form @input value binding syntax.  <code>&lt;input v-model="text"&gt;</code> keep the <code>text</code> property in-sync with the input.</p>
   </Card>
 
   <Card>
