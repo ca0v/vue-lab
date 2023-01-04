@@ -26,6 +26,17 @@ import SupportIcon from "./icons/IconSupport.vue";
     <template #icon>
       <DocumentationIcon />
     </template>
+    <template #heading>Application</template>
+    <p>The application is the root component and is mounted from outside the framework with <code>app.mount('#app')</code></p>
+    <p>The <code>mount()</code> return value is a DOM element, which seems natural, since we are outside the framework (or inside the mount container).</p>
+    <p>The mount container is also the root component and also be the root view.  Either the innerHTML or the &lt;template&gt; defines the template.</p>
+    <p>Recall that view = component + template.</p>
+</Card>
+
+  <Card>
+    <template #icon>
+      <DocumentationIcon />
+    </template>
     <template #heading>Components</template>
     A single-file component contains everything related to a component:
     <ul>
