@@ -8,7 +8,8 @@ import SupportIcon from "./icons/IconSupport.vue";
 </script>
 
 <template>
-  <Card>
+
+<Card>
     <template #icon>
       <DocumentationIcon />
     </template>
@@ -23,99 +24,40 @@ import SupportIcon from "./icons/IconSupport.vue";
 
   <Card>
     <template #icon>
-      <ToolingIcon />
+      <DocumentationIcon />
     </template>
-    <template #heading>Tooling</template>
+    <template #heading>Components</template>
+    A single-file component contains everything related to a component:
+    <ul>
+      <li>HTML template</li>
+      <li>JavaScript logic</li>
+      <li>Styles</li>
+    </ul>
 
-    This project is served and bundled with
-    <a
-      href="https://vitejs.dev/guide/features.html"
-      target="_blank"
-      rel="noopener"
-      >Vite</a
-    >. The recommended IDE setup is
-    <a href="https://code.visualstudio.com/" target="_blank" rel="noopener"
-      >VSCode</a
-    >
-    +
-    <a
-      href="https://github.com/johnsoncodehk/volar"
-      target="_blank"
-      rel="noopener"
-      >Volar</a
-    >. If you need to test your components and web pages, check out
-    <a href="https://www.cypress.io/" target="_blank" rel="noopener">Cypress</a>
-    and
-    <a href="https://on.cypress.io/component" target="_blank"
-      >Cypress Component Testing</a
-    >.
+    There are two API's that can be used when creating a component:
+    <ul>
+      <li>
+        <a href="https://vuejs.org/v2/guide/components.html" target="_blank"
+          >Options API</a
+        >
+      </li>
+      <li>
+        <a href="https://v3.vuejs.org/guide/composition-api-introduction.html"
+          target="_blank"
+          >Composition API</a
+        >
+      </li>      
+    </ul>
 
-    <br />
+    <p>
+      The Composition API is a new API that was introduced in Vue 3. It is
+      recommended to use the Composition API when creating new components.
+    </p>
 
-    More instructions are available in <code>README.md</code>.
-  </Card>
+    <p>Scripts are decorated with a "setup" attribute <code>&lt;script setup&gt;</code> tag.
+      The <code>onMounted() method is one of the lifecycle hooks</code>
+    </p>
+    <p>The template is defined within the <code>&lt;template&gt;</code> tag</p>
 
-  <Card>
-    <template #icon>
-      <EcosystemIcon />
-    </template>
-    <template #heading>Ecosystem</template>
-
-    Get official tools and libraries for your project:
-    <a href="https://pinia.vuejs.org/" target="_blank" rel="noopener">Pinia</a>,
-    <a href="https://router.vuejs.org/" target="_blank" rel="noopener"
-      >Vue Router</a
-    >,
-    <a href="https://test-utils.vuejs.org/" target="_blank" rel="noopener"
-      >Vue Test Utils</a
-    >, and
-    <a href="https://github.com/vuejs/devtools" target="_blank" rel="noopener"
-      >Vue Dev Tools</a
-    >. If you need more resources, we suggest paying
-    <a
-      href="https://github.com/vuejs/awesome-vue"
-      target="_blank"
-      rel="noopener"
-      >Awesome Vue</a
-    >
-    a visit.
-  </Card>
-
-  <Card>
-    <template #icon>
-      <CommunityIcon />
-    </template>
-    <template #heading>Community</template>
-
-    Got stuck? Ask your question on
-    <a href="https://chat.vuejs.org" target="_blank" rel="noopener">Vue Land</a
-    >, our official Discord server, or
-    <a
-      href="https://stackoverflow.com/questions/tagged/vue.js"
-      target="_blank"
-      rel="noopener"
-      >StackOverflow</a
-    >. You should also subscribe to
-    <a href="https://news.vuejs.org" target="_blank" rel="noopener"
-      >our mailing list</a
-    >
-    and follow the official
-    <a href="https://twitter.com/vuejs" target="_blank" rel="noopener"
-      >@vuejs</a
-    >
-    twitter account for latest news in the Vue world.
-  </Card>
-
-  <Card>
-    <template #icon>
-      <SupportIcon />
-    </template>
-    <template #heading>Support Vue</template>
-
-    As an independent project, Vue relies on community backing for its
-    sustainability. You can help us by
-    <a href="https://vuejs.org/sponsor/" target="_blank" rel="noopener"
-      >becoming a sponsor</a
-    >.
   </Card>
 </template>
