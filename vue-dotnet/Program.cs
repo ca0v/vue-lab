@@ -15,7 +15,11 @@ builder.Services.AddSwaggerGen();
 // also support Razor Pages
 builder.Services.AddRazorPages();
 
+
 var app = builder.Build();
+
+// also support static content, this is where Vue pages will go
+app.UseStaticFiles();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
