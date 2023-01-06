@@ -43,7 +43,7 @@ fetcher.configure({
 
 const fetcherApi = {
   getMyDatabase: fetcher.path("/api/MyDatabase").method("get").create(),
-  getMyDatbaseById: fetcher.path("/api/MyDatabase/{id}").method("get").create(),
+  getMyDatabaseById: fetcher.path("/api/MyDatabase/{id}").method("get").create(),
 }
 
 const fetcherApiWrapper = {
