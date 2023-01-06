@@ -2,7 +2,7 @@
 @model vue_dotnet.Pages.MyDatabase.CreateModel
 
 @{
-ViewData["Title"] = "Create";
+    ViewData["Title"] = "Create";
 }
 
 <h1>Create</h1>
@@ -14,6 +14,11 @@ ViewData["Title"] = "Create";
         <form method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
+                <label asp-for="MyTable.Name" class="control-label"></label>
+                <input asp-for="MyTable.Name" class="form-control" />
+                <span asp-validation-for="MyTable.Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
         </form>
@@ -23,3 +28,7 @@ ViewData["Title"] = "Create";
 <div>
     <a asp-page="Index">Back to List</a>
 </div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

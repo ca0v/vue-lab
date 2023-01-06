@@ -2,15 +2,21 @@
 @model vue_dotnet.Pages.MyDatabase.DetailsModel
 
 @{
-ViewData["Title"] = "Details";
+    ViewData["Title"] = "Details";
 }
 
 <h1>Details</h1>
 
 <div>
-    <h4>MyTable @Model.MyTable.Id</h4>
+    <h4>MyTable</h4>
     <hr />
     <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.MyTable.Name)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.MyTable.Name)
+        </dd>
     </dl>
 </div>
 <div>
