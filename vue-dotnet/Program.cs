@@ -28,7 +28,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// use Razor Pages
+// to enable endpoint registration for Razor Pages
 app.UseRouting();
 
 app.UseHttpsRedirection();

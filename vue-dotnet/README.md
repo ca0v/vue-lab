@@ -6,3 +6,4 @@ The service is both an API and app and it generates razor pages as well as serve
 
 [Razor View](http://localhost:5085/MyDatabase)
 [Swagger](http://localhost:5085/swagger/index.html)
+[Static Files](http://localhost:5085/index.html)
