@@ -20,7 +20,7 @@ The service is both an API and app and it generates razor pages as well as serve
 
 #### If sqlite database already has tables
 
-    >dotnet ef dbcontext scaffold "Data Source=./MyDatabase.sqlite" Microsoft.EntityFrameworkCore.Sqlite -o MyDbContext -c MyDbTableContext
+    >dotnet ef dbcontext scaffold "Data Source=./MyDatabase.sqlite" Microsoft.EntityFrameworkCore.Sqlite -o MyDbContext -c MyTable
 
 ### npm scripts (run `npm init -y` if necessary)
 
@@ -34,6 +34,11 @@ The service is both an API and app and it generates razor pages as well as serve
     >npm run update-controller
     >npm run update-page
     >dotnet watch
+
+#### Once the dbcontext has been modified by the developer
+
+    > npm run update-migrations -- "MigrationName"
+    > npm run update-database
 
 ### Optional way to Create Table
 

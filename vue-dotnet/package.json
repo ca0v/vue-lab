@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "update-vue": "cd vue-for-webapi && npm run build",
+    "update-migrations": "dotnet ef migrations add",
     "update-database": "dotnet ef database update",
     "update-controller": "dotnet aspnet-codegenerator controller -name MyDatabaseController -dc vue_dotnet.MyDbContext.MyTableContext -m vue_dotnet.MyDbContext.MyTable -async -api -outDir Controllers -f -sqlite",
     "update-page": "dotnet aspnet-codegenerator razorpage -m vue_dotnet.MyDbContext.MyTable -dc vue_dotnet.MyDbContext.MyTableContext -udl -outDir Pages/MyDatabase --referenceScriptLibraries -sqlite",
