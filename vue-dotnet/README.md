@@ -27,7 +27,7 @@ The service is both an API and app and it generates razor pages as well as serve
     "update-database": "dotnet ef database update",
     "update-controller": "dotnet aspnet-codegenerator controller -name MyDatabaseController -dc vue_dotnet.MyDbContext.MyTableContext -m vue_dotnet.MyDbContext.MyTable -async -api -outDir Controllers -f -sqlite",
     "update-page": "dotnet aspnet-codegenerator razorpage -m vue_dotnet.MyDbContext.MyTable -dc vue_dotnet.MyDbContext.MyTableContext -udl -outDir Pages/MyDatabase --referenceScriptLibraries -sqlite",
-    "update-proxy": "npx openapi-typescript http://localhost:5202/swagger/v1/swagger.json --output ./src/ApiProxy.ts --path-params-as-types"
+    "update-proxy": "npx openapi-typescript http://localhost:5202/swagger/v1/swagger.json --output ./vue-for-webapi/src/ApiProxy.ts --path-params-as-types"
 
 #### Once the dbcontext has been generated
 
