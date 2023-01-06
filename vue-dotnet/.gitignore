@@ -1,5 +1,3 @@
 obj
 bin
 wwwroot/assets
-vue-for-webapi/**/*
-!vue-for-webapi/vite.config.ts
