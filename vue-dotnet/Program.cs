@@ -41,20 +41,35 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
+// useCors must be called after UseRouting and before UseEndpoints
+// why? Tell me copilot:
+// https://docs.microsoft.com/en-us/aspnet/core/security/cors?view=aspnetcore-5.0#enable-cors-with-endpoint-routing
+// which simply states it as a fact:
+// "With endpoint routing, the CORS middleware must be configured to execute between the calls to UseRouting and UseEndpoints."
+// Let's see, routing is obviously before endpoints
+// and if cors is after routing, it cannot get called
+// if CORS were before routing the headers may get overwritten
+
+{
+    // read "AllowedOrigins" from appsettings.json
+    var origins = builder.Configuration.GetValue<string>("AllowedOrigins")?.Split(';');
+    if (origins == null)
+    {
+        throw new Exception("Cors whitelist not found in appsettings.json");
+    }
+    app.UseCors(policy =>
+        policy.WithOrigins(origins)
+            .AllowCredentials()
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .WithExposedHeaders("*")
+        );
+}
+
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapRazorPages(); // critical to get Pages to show
 });
-
-// read "AllowedOrigins" from appsettings.json
-var origins = builder.Configuration.GetValue<string>("AllowedOrigins")?.Split(';');
-if (origins == null)
-{
-    throw new Exception("Cors whitelist not found in appsettings.json");
-}
-
-app.UseCors(policy => policy.WithOrigins(origins).AllowAnyMethod().AllowAnyHeader().WithExposedHeaders("*"));
-
 
 app.MapControllers();
 
