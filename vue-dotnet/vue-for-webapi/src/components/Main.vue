@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import {api1, api2} from "../services/fetch"
+import {api1 as api} from "../services/fetch"
 
 async function getData() {
-  const data = await api1.getMyDatabase();
+  const data = await api.getMyDatabase();
   return data;
 }
 

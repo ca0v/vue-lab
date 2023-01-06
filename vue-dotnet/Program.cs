@@ -8,6 +8,10 @@ builder.Services.AddDbContext<MyTableContext>(options =>
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+// support CORS
+builder.Services.AddCors();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -15,6 +19,8 @@ builder.Services.AddSwaggerGen();
 // also support Razor Pages
 builder.Services.AddRazorPages();
 
+// allow CORS on http://localhost:5173
+builder.Services.AddCors();
 
 var app = builder.Build();
 
@@ -39,6 +45,16 @@ app.UseEndpoints(endpoints =>
 {
     endpoints.MapRazorPages(); // critical to get Pages to show
 });
+
+// read "AllowedOrigins" from appsettings.json
+var origins = builder.Configuration.GetValue<string>("AllowedOrigins")?.Split(';');
+if (origins == null)
+{
+    throw new Exception("Cors whitelist not found in appsettings.json");
+}
+
+app.UseCors(policy => policy.WithOrigins(origins).AllowAnyMethod().AllowAnyHeader().WithExposedHeaders("*"));
+
 
 app.MapControllers();
 

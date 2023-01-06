@@ -1,7 +1,7 @@
 import type { paths } from "../ApiProxy"
 import { Fetcher } from "openapi-typescript-fetch"
 
-const BASEURL = "http://localhost:5085/"
+const BASEURL = "http://localhost:5085"
 
 interface API {
   getMyDatabase(): Promise<
@@ -17,8 +17,10 @@ class Api implements API {
     type ET = paths["/api/MyDatabase"]["get"]
     const endpoint: keyof paths = "/api/MyDatabase"
 
-    const response = await fetch(`${this.baseUrl}/${endpoint}`, {
+    const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method: "GET",
+      mode: "cors",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
