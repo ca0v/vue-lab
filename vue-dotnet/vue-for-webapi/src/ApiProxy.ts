@@ -95,6 +95,7 @@ export interface components {
     MyTable: {
       /** Format: int64 */
       id?: number;
+      name?: string | null;
     };
   };
   responses: never;
