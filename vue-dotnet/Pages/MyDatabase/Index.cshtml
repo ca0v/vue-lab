@@ -2,7 +2,7 @@
 @model vue_dotnet.Pages.MyDatabase.IndexModel
 
 @{
-    ViewData["Title"] = "Index";
+ViewData["Title"] = "Index";
 }
 
 <h1>Index</h1>
@@ -13,18 +13,22 @@
 <table class="table">
     <thead>
         <tr>
-            <th></th>
+            <th>Id</th>
+            <th>Options</th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model.MyTable) {
+        @foreach (var item in Model.MyTable) {
         <tr>
+            <td>
+                <b>@item.Id</b>
+            </td>
             <td>
                 <a asp-page="./Edit" asp-route-id="@item.Id">Edit</a> |
                 <a asp-page="./Details" asp-route-id="@item.Id">Details</a> |
                 <a asp-page="./Delete" asp-route-id="@item.Id">Delete</a>
             </td>
         </tr>
-}
+        }
     </tbody>
 </table>

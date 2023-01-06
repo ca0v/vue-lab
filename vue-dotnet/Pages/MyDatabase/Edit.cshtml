@@ -2,7 +2,7 @@
 @model vue_dotnet.Pages.MyDatabase.EditModel
 
 @{
-    ViewData["Title"] = "Edit";
+ViewData["Title"] = "Edit";
 }
 
 <h1>Edit</h1>
@@ -15,6 +15,7 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="MyTable.Id" />
             <div class="form-group">
+                <p>Editing @Model.MyTable?.Id</p>
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </form>
@@ -26,5 +27,5 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+@{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
