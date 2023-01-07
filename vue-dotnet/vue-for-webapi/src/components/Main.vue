@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { RouterLink, RouterView } from "vue-router";
 import { reactive } from "vue";
 import {api1 as api} from "../services/fetch"
-import type {components} from "../ApiProxy"
+import type {components} from "../apiProxy"
 
 async function getData() {
   const data = await api.getMyDatabase();
@@ -20,6 +21,8 @@ async function refreshData() {
  reactiveData.startupData.length = 0;
   reactiveData.startupData.push(...dataWithKeys)
 }
+
+refreshData();
 </script>
 
 <template>
@@ -28,10 +31,14 @@ async function refreshData() {
     <h2>No data</h2>
     <p>There is no data to show.</p>
   </div>
-  <button v-on:click="() => refreshData()">Load Data</button>
+  <button v-on:click="() => refreshData()">Refresh Data</button>
+
   <!-- show each data item in a grid -->
   <div v-for="item in data" :key="item.id">
-    <h2>{{item.id}}</h2>
-    <p>{{item.name}}</p>
+    <article>
+      <p>{{item.name}}</p>
+      <router-link :to="{name: 'Edit', params: {id: item.id}}">Edit {{ item.id }}</router-link>
+    </article>
   </div>
+
 </template>
