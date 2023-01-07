@@ -1,3 +1,4 @@
 obj
 bin
 wwwroot/assets
+*.sqlite-*
