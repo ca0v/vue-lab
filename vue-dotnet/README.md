@@ -42,9 +42,16 @@ The service is both an API and app and it generates razor pages as well as serve
 
 ### Optional way to Create Table
 
-    sqlite3 MyDatabase.sqlite  
+Create a single table, which is assumed above
+
+    >sqlite3 MyDatabase.sqlite  
     CREATE TABLE MyTable (id INTEGER PRIMARY KEY);
     .quit
+
+Import imdb
+
+    >pip install imdb-sqlite
+    >imdb-sqlite
 
 ## Vue
 
