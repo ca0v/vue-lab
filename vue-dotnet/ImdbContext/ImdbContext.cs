@@ -15,17 +15,17 @@ public partial class ImdbContext : DbContext
     {
     }
 
-    public virtual DbSet<Aka> Akas { get; set; }
+    public virtual DbSet<Akas> Akas { get; set; }
 
-    public virtual DbSet<Crew> Crews { get; set; }
+    public virtual DbSet<Crew> Crew { get; set; }
 
-    public virtual DbSet<Episode> Episodes { get; set; }
+    public virtual DbSet<Episodes> Episodes { get; set; }
 
-    public virtual DbSet<Person> People { get; set; }
+    public virtual DbSet<People> People { get; set; }
 
-    public virtual DbSet<Rating> Ratings { get; set; }
+    public virtual DbSet<Ratings> Ratings { get; set; }
 
-    public virtual DbSet<Title> Titles { get; set; }
+    public virtual DbSet<Titles> Titles { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
@@ -33,7 +33,7 @@ public partial class ImdbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Aka>(entity =>
+        modelBuilder.Entity<Akas>(entity =>
         {
             entity
                 .HasNoKey()
@@ -91,7 +91,7 @@ public partial class ImdbContext : DbContext
                 .HasColumnName("title_id");
         });
 
-        modelBuilder.Entity<Episode>(entity =>
+        modelBuilder.Entity<Episodes>(entity =>
         {
             entity
                 .HasNoKey()
@@ -111,8 +111,10 @@ public partial class ImdbContext : DbContext
                 .HasColumnName("show_title_id");
         });
 
-        modelBuilder.Entity<Person>(entity =>
+        modelBuilder.Entity<People>(entity =>
         {
+            entity.HasKey(e => e.PersonId);
+
             entity.ToTable("people");
 
             entity.HasIndex(e => e.Name, "ix_people_name");
@@ -127,7 +129,7 @@ public partial class ImdbContext : DbContext
                 .HasColumnName("name");
         });
 
-        modelBuilder.Entity<Rating>(entity =>
+        modelBuilder.Entity<Ratings>(entity =>
         {
             entity.HasKey(e => e.TitleId);
 
@@ -136,12 +138,14 @@ public partial class ImdbContext : DbContext
             entity.Property(e => e.TitleId)
                 .HasColumnType("VARCHAR")
                 .HasColumnName("title_id");
-            entity.Property(e => e.Rating1).HasColumnName("rating");
+            entity.Property(e => e.Rating).HasColumnName("rating");
             entity.Property(e => e.Votes).HasColumnName("votes");
         });
 
-        modelBuilder.Entity<Title>(entity =>
+        modelBuilder.Entity<Titles>(entity =>
         {
+            entity.HasKey(e => e.TitleId);
+
             entity.ToTable("titles");
 
             entity.HasIndex(e => e.OriginalTitle, "ix_titles_original_title");

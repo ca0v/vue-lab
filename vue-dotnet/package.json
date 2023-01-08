@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "imdb": "dotnet ef dbcontext scaffold 'Data Source=./imdb.db' Microsoft.EntityFrameworkCore.Sqlite -o ImdbContext",
+    "imdb": "dotnet ef dbcontext scaffold 'Data Source=./imdb.db' Microsoft.EntityFrameworkCore.Sqlite -o ImdbContext --no-pluralize -d",
     "update-vue": "cd vue-for-webapi && npm run build",
     "update-migrations": "dotnet ef migrations add",
     "update-database": "dotnet ef database update",

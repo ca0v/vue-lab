@@ -3,6 +3,7 @@
         "aspnet",
         "codegenerator",
         "dbcontext",
+        "imdb",
         "openapi",
         "razorpage",
         "webapi",
