@@ -44,6 +44,6 @@ refreshData();
   </div>
 
   <section>
-    <router-link :to="{name: 'Movies'}">Search For Movies</router-link>
+    <router-link :to="{name: 'MovieSearch'}">Search For Movies</router-link>
   </section>
 </template>

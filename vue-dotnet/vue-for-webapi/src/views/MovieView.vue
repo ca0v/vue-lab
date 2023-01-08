@@ -5,34 +5,30 @@ import {useRoute} from "vue-router"
 import type { components } from '@/apiProxy';
 import {api1 as api } from "../services/fetch"
 
-const data = reactive({data: [] as components["schemas"]["Title"][]})
+const data = reactive({data: null as components["schemas"]["Title"]|null})
 
 // read the data from the route
 console.log("useRoute", {...useRoute()});
 
-const searchText = ref("")
+const titleId = useRoute().params.id as string
 
 async function search() {
-    const query = searchText.value
-    console.log("search", query)
-    const response = await api.searchForMovie(query)
-    console.log("search", query, response)
+    console.log("search", titleId)
+    const response = await api.getMovie(titleId)
     data.data = response
 }
+search()
 </script>
 
 <template>
-    <h1>Search for a Movie</h1>
-    <input v-model="searchText" />
-    <button v-on:click="() => search()">Search</button>
-    <div v-if="data.data.length === 0">
-        <h2>No data</h2>
-        <p>There is no data to show.</p>
-    </div>
-    <div v-for="item in data.data" :key="item.titleId!">
-        <article>
-            <p>{{item.primaryTitle}}</p>
-            <route-link :to="{name: 'MovieDetails', params: {id: item.titleId}}">Details</route-link>
-        </article>
-    </div>
+    <section v-if=data.data>
+        <h1>Movie Information</h1>
+        <h2>{{ data.data.originalTitle }}</h2>
+        <div>{{ data.data.type }} Premiered {{ data.data.premiered }}</div>
+        <div>{{ data.data.ended }}</div>
+        <div>{{ data.data.runtimeMinutes }}</div>
+    </section>
+    <section v-else>
+        No information found.
+    </section>
 </template>

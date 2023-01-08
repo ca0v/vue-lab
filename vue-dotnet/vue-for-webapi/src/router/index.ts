@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router"
 import EditView from "../views/EditView.vue"
 import MovieView from "../views/MovieView.vue"
+import MovieSearchView from "../views/MovieSearchView.vue"
 import Main from "../components/Main.vue"
 
 const router = createRouter({
@@ -17,9 +18,14 @@ const router = createRouter({
       component: EditView,
     },
     {
-      path: "/movies",
-      name: "Movies",
+      path: "/movies/:id",
+      name: "MovieDetails",
       component: MovieView,
+    },
+    {
+      path: "/movies",
+      name: "MovieSearch",
+      component: MovieSearchView,
     },
   ],
 })
