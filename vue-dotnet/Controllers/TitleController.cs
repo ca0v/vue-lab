@@ -11,7 +11,7 @@ namespace vue_dotnet.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TitleController : ControllerBase
+    public partial class TitleController : ControllerBase
     {
         private readonly MovieContext _context;
 
@@ -28,7 +28,7 @@ namespace vue_dotnet.Controllers
             {
                 return NotFound();
             }
-            return await _context.Titles.Take(10).ToListAsync();
+            return await _context.Titles.OrderBy(t => t.OriginalTitle).Take(10).ToListAsync();
         }
 
         // GET: api/Title/5
@@ -132,6 +132,20 @@ namespace vue_dotnet.Controllers
         private bool TitleExists(string id)
         {
             return (_context.Titles?.Any(e => e.TitleId == id)).GetValueOrDefault();
+        }
+    }
+
+    public partial class TitleController
+    {
+        [HttpGet("search/{searchString}")]
+        public async Task<ActionResult<IEnumerable<Title>>> SearchTitles(string searchString)
+        {
+            // write to console
+            Console.WriteLine($"Search string: {searchString}");
+            return await _context.Titles
+            .Where(t => t.PrimaryTitle!.Contains(searchString))
+            .OrderBy(t => t.PrimaryTitle)
+            .Take(10).ToListAsync();
         }
     }
 }

@@ -4,6 +4,12 @@ import { Fetcher } from "openapi-typescript-fetch"
 const BASEURL = "http://localhost:5085"
 
 interface API {
+  searchForMovie(
+    query: string
+  ): Promise<
+    paths["/api/Title"]["get"]["responses"]["200"]["content"]["application/json"]
+  >
+
   getMyDatabase(): Promise<
     paths["/api/MyDatabase"]["get"]["responses"]["200"]["content"]["application/json"]
   >
@@ -22,6 +28,23 @@ class Api implements API {
     },
   }
   constructor(private readonly baseUrl: string) {}
+
+  async searchForMovie(query: string) {
+    type ET = paths["/api/Title/search/{searchString}"]["get"]
+    const endpoint: keyof paths = "/api/Title"
+
+    const response = await fetch(`${this.baseUrl}${endpoint}/search/${query}`, {
+      ...this.fetchOptions,
+    })
+
+    if (response.status == 200) {
+      const data: ET["responses"]["200"]["content"]["application/json"] =
+        await response.json()
+      return data
+    } else {
+      throw new Error(response.statusText)
+    }
+  }
 
   async getMyDatabase() {
     type ET = paths["/api/MyDatabase"]["get"]
@@ -74,6 +97,10 @@ fetcher.configure({
 })
 
 const fetcherApi = {
+  searchForMovie: fetcher
+    .path("/api/Title/search/{searchString}")
+    .method("get")
+    .create(),
   getMyDatabase: fetcher.path("/api/MyDatabase").method("get").create(),
   getMyDatabaseById: fetcher
     .path("/api/MyDatabase/{id}")
@@ -83,6 +110,13 @@ const fetcherApi = {
 }
 
 const fetcherApiWrapper: API = {
+  searchForMovie: async (query) => {
+    const res = await fetcherApi.searchForMovie({ searchString: query })
+    if (!res.ok) {
+      throw new Error(res.statusText)
+    }
+    return res.data
+  },
   getMyDatabase: async () => {
     const res = await fetcherApi.getMyDatabase({})
     if (!res.ok) {

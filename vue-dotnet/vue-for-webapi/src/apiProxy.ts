@@ -86,6 +86,287 @@ export interface paths {
       };
     };
   };
+  "/api/Person": {
+    get: {
+      responses: {
+        /** @description Success */
+        200: {
+          content: {
+            "text/plain": (components["schemas"]["Person"])[];
+            "application/json": (components["schemas"]["Person"])[];
+            "text/json": (components["schemas"]["Person"])[];
+          };
+        };
+      };
+    };
+    post: {
+      requestBody?: {
+        content: {
+          "application/json": components["schemas"]["Person"];
+          "text/json": components["schemas"]["Person"];
+          "application/*+json": components["schemas"]["Person"];
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: {
+          content: {
+            "text/plain": components["schemas"]["Person"];
+            "application/json": components["schemas"]["Person"];
+            "text/json": components["schemas"]["Person"];
+          };
+        };
+      };
+    };
+  };
+  "/api/Person/{id}": {
+    get: {
+      parameters: {
+        path: {
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: {
+          content: {
+            "text/plain": components["schemas"]["Person"];
+            "application/json": components["schemas"]["Person"];
+            "text/json": components["schemas"]["Person"];
+          };
+        };
+      };
+    };
+    put: {
+      parameters: {
+        path: {
+          id: string;
+        };
+      };
+      requestBody?: {
+        content: {
+          "application/json": components["schemas"]["Person"];
+          "text/json": components["schemas"]["Person"];
+          "application/*+json": components["schemas"]["Person"];
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: never;
+      };
+    };
+    delete: {
+      parameters: {
+        path: {
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: never;
+      };
+    };
+  };
+  "/api/Person/{id}/movies": {
+    get: {
+      parameters: {
+        path: {
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: {
+          content: {
+            "text/plain": (components["schemas"]["Title"])[];
+            "application/json": (components["schemas"]["Title"])[];
+            "text/json": (components["schemas"]["Title"])[];
+          };
+        };
+      };
+    };
+  };
+  "/api/Rating": {
+    get: {
+      responses: {
+        /** @description Success */
+        200: {
+          content: {
+            "text/plain": (components["schemas"]["Rating"])[];
+            "application/json": (components["schemas"]["Rating"])[];
+            "text/json": (components["schemas"]["Rating"])[];
+          };
+        };
+      };
+    };
+    post: {
+      requestBody?: {
+        content: {
+          "application/json": components["schemas"]["Rating"];
+          "text/json": components["schemas"]["Rating"];
+          "application/*+json": components["schemas"]["Rating"];
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: {
+          content: {
+            "text/plain": components["schemas"]["Rating"];
+            "application/json": components["schemas"]["Rating"];
+            "text/json": components["schemas"]["Rating"];
+          };
+        };
+      };
+    };
+  };
+  "/api/Rating/{id}": {
+    get: {
+      parameters: {
+        path: {
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: {
+          content: {
+            "text/plain": components["schemas"]["Rating"];
+            "application/json": components["schemas"]["Rating"];
+            "text/json": components["schemas"]["Rating"];
+          };
+        };
+      };
+    };
+    put: {
+      parameters: {
+        path: {
+          id: string;
+        };
+      };
+      requestBody?: {
+        content: {
+          "application/json": components["schemas"]["Rating"];
+          "text/json": components["schemas"]["Rating"];
+          "application/*+json": components["schemas"]["Rating"];
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: never;
+      };
+    };
+    delete: {
+      parameters: {
+        path: {
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: never;
+      };
+    };
+  };
+  "/api/Title": {
+    get: {
+      responses: {
+        /** @description Success */
+        200: {
+          content: {
+            "text/plain": (components["schemas"]["Title"])[];
+            "application/json": (components["schemas"]["Title"])[];
+            "text/json": (components["schemas"]["Title"])[];
+          };
+        };
+      };
+    };
+    post: {
+      requestBody?: {
+        content: {
+          "application/json": components["schemas"]["Title"];
+          "text/json": components["schemas"]["Title"];
+          "application/*+json": components["schemas"]["Title"];
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: {
+          content: {
+            "text/plain": components["schemas"]["Title"];
+            "application/json": components["schemas"]["Title"];
+            "text/json": components["schemas"]["Title"];
+          };
+        };
+      };
+    };
+  };
+  "/api/Title/{id}": {
+    get: {
+      parameters: {
+        path: {
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: {
+          content: {
+            "text/plain": components["schemas"]["Title"];
+            "application/json": components["schemas"]["Title"];
+            "text/json": components["schemas"]["Title"];
+          };
+        };
+      };
+    };
+    put: {
+      parameters: {
+        path: {
+          id: string;
+        };
+      };
+      requestBody?: {
+        content: {
+          "application/json": components["schemas"]["Title"];
+          "text/json": components["schemas"]["Title"];
+          "application/*+json": components["schemas"]["Title"];
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: never;
+      };
+    };
+    delete: {
+      parameters: {
+        path: {
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: never;
+      };
+    };
+  };
+  "/api/Title/search/{searchString}": {
+    get: {
+      parameters: {
+        path: {
+          searchString: string;
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: {
+          content: {
+            "text/plain": (components["schemas"]["Title"])[];
+            "application/json": (components["schemas"]["Title"])[];
+            "text/json": (components["schemas"]["Title"])[];
+          };
+        };
+      };
+    };
+  };
 }
 
 export type webhooks = Record<string, never>;
@@ -96,6 +377,36 @@ export interface components {
       /** Format: int64 */
       id?: number;
       name?: string | null;
+    };
+    Person: {
+      personId?: string | null;
+      name?: string | null;
+      /** Format: int64 */
+      born?: number | null;
+      /** Format: int64 */
+      died?: number | null;
+    };
+    Rating: {
+      titleId?: string | null;
+      /** Format: int64 */
+      rating1?: number | null;
+      /** Format: int64 */
+      votes?: number | null;
+    };
+    Title: {
+      titleId?: string | null;
+      type?: string | null;
+      primaryTitle?: string | null;
+      originalTitle?: string | null;
+      /** Format: int64 */
+      isAdult?: number | null;
+      /** Format: int64 */
+      premiered?: number | null;
+      /** Format: int64 */
+      ended?: number | null;
+      /** Format: int64 */
+      runtimeMinutes?: number | null;
+      genres?: string | null;
     };
   };
   responses: never;

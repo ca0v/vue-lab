@@ -28,7 +28,7 @@ namespace vue_dotnet.Controllers
             {
                 return NotFound();
             }
-            return await _context.People.Take(10).ToListAsync();
+            return await _context.People.OrderBy(p => p.Name).Take(10).ToListAsync();
         }
 
         // GET: api/Person/5

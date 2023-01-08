@@ -5,6 +5,7 @@ import {api1 as api} from "../services/fetch"
 import type {components} from "../apiProxy"
 
 async function getData() {
+  console.log("getData");
   const data = await api.getMyDatabase();
   return data;
 }
@@ -16,6 +17,7 @@ const data = reactiveData.startupData
 
 async function refreshData() {
   const data = await getData();
+  console.log("refreshData", data);
   // the proxy gen is not perfect, so we need to cast the data
  const dataWithKeys = data as components["schemas"]["MyTable"][] & {id: number};
  reactiveData.startupData.length = 0;
@@ -41,4 +43,7 @@ refreshData();
     </article>
   </div>
 
+  <section>
+    <router-link :to="{name: 'Movies'}">Search For Movies</router-link>
+  </section>
 </template>
