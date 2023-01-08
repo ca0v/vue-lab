@@ -7,7 +7,11 @@
     "imdb:dbcontext": "dotnet ef dbcontext scaffold 'Data Source=./movie.sqlite' Microsoft.EntityFrameworkCore.Sqlite -o ImdbContext -n Contexts --context-namespace Contexts -f",
     "imdb:controller:title": "dotnet aspnet-codegenerator controller -name TitleController -dc Contexts.MovieContext -m Contexts.Title -async -api -outDir Controllers -sqlite -f",
     "imdb:controller:rating": "dotnet aspnet-codegenerator controller -name RatingController -dc Contexts.MovieContext -m Contexts.Rating -async -api -outDir Controllers -sqlite -f",
-    "imdb:controller": "dotnet aspnet-codegenerator controller -name RatingController -dc vue_dotnet.ImdbContext.ImdbContext -m vue_dotnet.ImdbContext.Rating",
+    "imdb:controller:person": "dotnet aspnet-codegenerator controller -name PersonController -dc Contexts.MovieContext -m Contexts.Person -async -api -outDir Controllers -sqlite -f",
+    "imdb:controller:episode": "dotnet aspnet-codegenerator controller -name EpisodeController -dc Contexts.MovieContext -m Contexts.Episode -async -api -outDir Controllers -sqlite -f",
+    "imdb:controller:crew": "dotnet aspnet-codegenerator controller -name CrewController -dc Contexts.MovieContext -m Contexts.Crew -async -api -outDir Controllers -sqlite -f",
+    "imdb:controller:aka": "dotnet aspnet-codegenerator controller -name AkaController -dc Contexts.MovieContext -m Contexts.Aka -async -api -outDir Controllers -sqlite -f",
+    "imdb:controller": "npm-run-all -p imdb:controller:title imdb:controller:rating imdb:controller:person imdb:controller:episode imdb:controller:crew imdb:controller:aka",
     "update-vue": "cd vue-for-webapi && npm run build",
     "update-migrations": "dotnet ef migrations add",
     "update-database": "dotnet ef database update",
@@ -17,5 +21,8 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "npm-run-all": "^4.1.5"
+  }
 }
