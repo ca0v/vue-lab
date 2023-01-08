@@ -11,7 +11,7 @@ namespace vue_dotnet.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PersonController : ControllerBase
+    public partial class PersonController : ControllerBase
     {
         private readonly MovieContext _context;
 
@@ -24,21 +24,21 @@ namespace vue_dotnet.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Person>>> GetPeople()
         {
-          if (_context.People == null)
-          {
-              return NotFound();
-          }
-            return await _context.People.ToListAsync();
+            if (_context.People == null)
+            {
+                return NotFound();
+            }
+            return await _context.People.Take(10).ToListAsync();
         }
 
         // GET: api/Person/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Person>> GetPerson(string id)
         {
-          if (_context.People == null)
-          {
-              return NotFound();
-          }
+            if (_context.People == null)
+            {
+                return NotFound();
+            }
             var person = await _context.People.FindAsync(id);
 
             if (person == null)
@@ -85,10 +85,10 @@ namespace vue_dotnet.Controllers
         [HttpPost]
         public async Task<ActionResult<Person>> PostPerson(Person person)
         {
-          if (_context.People == null)
-          {
-              return Problem("Entity set 'MovieContext.People'  is null.");
-          }
+            if (_context.People == null)
+            {
+                return Problem("Entity set 'MovieContext.People'  is null.");
+            }
             _context.People.Add(person);
             try
             {
@@ -132,6 +132,32 @@ namespace vue_dotnet.Controllers
         private bool PersonExists(string id)
         {
             return (_context.People?.Any(e => e.PersonId == id)).GetValueOrDefault();
+        }
+    }
+}
+
+namespace vue_dotnet.Controllers
+{
+    public partial class PersonController
+    {
+
+        [HttpGet("{id}/movies")]
+        public async Task<ActionResult<IEnumerable<Title>>> GetMovies(string id)
+        {
+            var person = await _context.People.FindAsync(id);
+            if (person == null)
+            {
+                return NotFound();
+            }
+            var titleIds = await _context.Crews.Where(c => c.PersonId == id)
+            .Select(c => c.TitleId)
+            .ToListAsync();
+
+            var titles = await _context.Titles
+            .Where(t => titleIds.Contains(t.TitleId)).Select(t => t)
+            .ToListAsync();
+
+            return titles!;
         }
     }
 }

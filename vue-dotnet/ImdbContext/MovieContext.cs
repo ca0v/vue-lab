@@ -27,9 +27,6 @@ public partial class MovieContext : DbContext
 
     public virtual DbSet<Title> Titles { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlite("MovieDatabase");
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Aka>(entity =>

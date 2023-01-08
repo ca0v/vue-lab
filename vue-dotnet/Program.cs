@@ -2,10 +2,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using vue_dotnet.MyDbContext;
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddDbContext<MyTableContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("MyTableContext") ?? throw new InvalidOperationException("Connection string 'MyTableContext' not found.")));
 
-builder.Services.AddDbContext<Contexts.MovieContext>();
+builder.Services.AddDbContext<Contexts.MovieContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("MovieDatabase") ?? throw new InvalidOperationException("Connection string 'MyTableContext' not found."))
+);
 
 // Add services to the container.
 
