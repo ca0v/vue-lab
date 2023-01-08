@@ -24,21 +24,21 @@ namespace vue_dotnet.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Title>>> GetTitles()
         {
-          if (_context.Titles == null)
-          {
-              return NotFound();
-          }
-            return await _context.Titles.ToListAsync();
+            if (_context.Titles == null)
+            {
+                return NotFound();
+            }
+            return await _context.Titles.Take(10).ToListAsync();
         }
 
         // GET: api/Title/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Title>> GetTitle(string id)
         {
-          if (_context.Titles == null)
-          {
-              return NotFound();
-          }
+            if (_context.Titles == null)
+            {
+                return NotFound();
+            }
             var title = await _context.Titles.FindAsync(id);
 
             if (title == null)
@@ -85,10 +85,10 @@ namespace vue_dotnet.Controllers
         [HttpPost]
         public async Task<ActionResult<Title>> PostTitle(Title title)
         {
-          if (_context.Titles == null)
-          {
-              return Problem("Entity set 'MovieContext.Titles'  is null.");
-          }
+            if (_context.Titles == null)
+            {
+                return Problem("Entity set 'MovieContext.Titles'  is null.");
+            }
             _context.Titles.Add(title);
             try
             {
