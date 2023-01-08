@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace vue_dotnet.ImdbContext;
+namespace Contexts;
 
 public partial class Episode
 {

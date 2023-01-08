@@ -5,6 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<MyTableContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("MyTableContext") ?? throw new InvalidOperationException("Connection string 'MyTableContext' not found.")));
 
+builder.Services.AddDbContext<Contexts.MovieContext>();
+
 // Add services to the container.
 
 builder.Services.AddControllers();

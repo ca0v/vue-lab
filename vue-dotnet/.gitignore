@@ -3,4 +3,5 @@ bin
 wwwroot/assets
 *.sqlite-*
 downloads
-imdb.db
+*.db
+*.sqlite
