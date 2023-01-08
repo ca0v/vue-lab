@@ -58,8 +58,12 @@ Import imdb
 Vue will deploy into wwwroot
     npm install vue@3
 
+## Questions
+
+* Possible to generate Partial class for controllers to facilitate extension without modifying scaffolding?  Or use Inheritance?
+
 ## References
 
-[Razor View](http://localhost:5085/MyDatabase)
-[Swagger](http://localhost:5085/swagger/index.html)
-[Static Files](http://localhost:5085/index.html)
+* [Razor View](http://localhost:5085/MyDatabase)
+* [Swagger](http://localhost:5085/swagger/index.html)
+* [Static Files](http://localhost:5085/index.html)

@@ -6,6 +6,7 @@
   "scripts": {
     "imdb:dbcontext": "dotnet ef dbcontext scaffold 'Data Source=./movie.sqlite' Microsoft.EntityFrameworkCore.Sqlite -o ImdbContext -n Contexts --context-namespace Contexts -f",
     "imdb:controller:title": "dotnet aspnet-codegenerator controller -name TitleController -dc Contexts.MovieContext -m Contexts.Title -async -api -outDir Controllers -sqlite -f",
+    "imdb:controller:rating": "dotnet aspnet-codegenerator controller -name RatingController -dc Contexts.MovieContext -m Contexts.Rating -async -api -outDir Controllers -sqlite -f",
     "imdb:controller": "dotnet aspnet-codegenerator controller -name RatingController -dc vue_dotnet.ImdbContext.ImdbContext -m vue_dotnet.ImdbContext.Rating",
     "update-vue": "cd vue-for-webapi && npm run build",
     "update-migrations": "dotnet ef migrations add",
