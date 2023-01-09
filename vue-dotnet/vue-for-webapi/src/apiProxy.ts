@@ -5,6 +5,25 @@
 
 
 export interface paths {
+  "/api/Crew/{id}": {
+    get: {
+      parameters: {
+        path: {
+          id: string;
+        };
+      };
+      responses: {
+        /** @description Success */
+        200: {
+          content: {
+            "text/plain": (components["schemas"]["Crew"])[];
+            "application/json": (components["schemas"]["Crew"])[];
+            "text/json": (components["schemas"]["Crew"])[];
+          };
+        };
+      };
+    };
+  };
   "/api/MyDatabase": {
     get: {
       responses: {
@@ -373,6 +392,14 @@ export type webhooks = Record<string, never>;
 
 export interface components {
   schemas: {
+    Crew: {
+      titleId?: string | null;
+      personId?: string | null;
+      category?: string | null;
+      job?: string | null;
+      characters?: string | null;
+      person?: components["schemas"]["Person"];
+    };
     MyTable: {
       /** Format: int64 */
       id?: number;

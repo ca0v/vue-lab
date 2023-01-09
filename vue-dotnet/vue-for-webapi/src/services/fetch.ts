@@ -4,6 +4,7 @@ import { Fetcher } from "openapi-typescript-fetch"
 const BASEURL = "http://localhost:5085"
 
 interface API {
+  getCrew(titleId: string): Promise<Array<components["schemas"]["Crew"]>>
   getMovie(titleId: string): Promise<components["schemas"]["Title"]>
 
   searchForMovie(
@@ -30,6 +31,26 @@ class Api implements API {
     },
   }
   constructor(private readonly baseUrl: string) {}
+
+  async getCrew(titleId: string) {
+    type ET = paths["/api/Crew/{id}"]["get"]
+    const endpoint: keyof paths = "/api/Crew/{id}"
+
+    const response = await fetch(
+      `${this.baseUrl}${endpoint}`.replace("{id}", titleId),
+      {
+        ...this.fetchOptions,
+      }
+    )
+
+    if (response.status == 200) {
+      const data: ET["responses"]["200"]["content"]["application/json"] =
+        await response.json()
+      return data
+    } else {
+      throw response.statusText
+    }
+  }
 
   async getMovie(titleId: string) {
     type ET = paths["/api/Title/{id}"]["get"]
@@ -115,6 +136,7 @@ fetcher.configure({
 })
 
 const fetcherApi = {
+  getCrew: fetcher.path("/api/Crew/{id}").method("get").create(),
   getMovie: fetcher.path("/api/Title/{id}").method("get").create(),
   searchForMovie: fetcher
     .path("/api/Title/search/{searchString}")
@@ -129,6 +151,14 @@ const fetcherApi = {
 }
 
 const fetcherApiWrapper: API = {
+  getCrew: async (titleId) => {
+    const res = await fetcherApi.getCrew({ id: titleId })
+    if (!res.ok) {
+      throw new Error(res.statusText)
+    }
+    return res.data
+  },
+
   getMovie: async (titleId) => {
     const res = await fetcherApi.getMovie({ id: titleId })
     if (!res.ok) {

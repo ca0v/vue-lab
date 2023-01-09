@@ -15,3 +15,8 @@ public partial class Crew
 
     public string? Characters { get; set; }
 }
+
+public partial class Crew
+{
+    public virtual Person? Person { get; set; }
+}
