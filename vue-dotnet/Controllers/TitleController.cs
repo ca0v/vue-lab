@@ -142,10 +142,14 @@ namespace vue_dotnet.Controllers
         {
             // write to console
             Console.WriteLine($"Search string: {searchString}");
+
             return await _context.Titles
             .Where(t => t.PrimaryTitle!.Contains(searchString))
-            .OrderBy(t => t.PrimaryTitle)
-            .Take(10).ToListAsync();
+            // order by best match
+            .OrderByDescending(t => t.PrimaryTitle!.StartsWith(searchString))
+            .OrderBy(t => t.PrimaryTitle!.Length)
+            .OrderByDescending(t => t.Premiered)
+            .Take(100).ToListAsync();
         }
     }
 }

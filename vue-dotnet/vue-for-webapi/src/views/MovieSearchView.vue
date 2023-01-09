@@ -39,6 +39,7 @@ watchEffect(() => debouncedSearch(searchText.value))
     <div v-for="item in data.data" :key="item.titleId!">
         <article>
             <p>{{item.primaryTitle}}</p>
+            <p>{{item.premiered}}</p>
             <router-link :to="{name: 'MovieView', params: {id: item.titleId}}">Details</router-link>
         </article>
     </div>
