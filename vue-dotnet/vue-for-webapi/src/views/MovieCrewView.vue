@@ -28,7 +28,9 @@ search()
       <u>Characters</u>
       <u>Category</u>
       <template v-for="item in data.data" :key="item.personId!">
-        <b>{{ item.person?.name || "?" }}</b>
+        <router-link :to="{ name: 'PersonView', params: { id: item.personId } }">
+          <b>{{ item.person?.name || "?" }}</b>
+        </router-link>
         <p>{{ JSON.parse(item.characters!)?.join(",") }}</p>
         <p>{{ item.category }}</p>
       </template>

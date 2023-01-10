@@ -4,8 +4,10 @@ import { Fetcher } from "openapi-typescript-fetch"
 const BASEURL = "http://localhost:5085"
 
 interface API {
+  getPersonMovies(id: string): Promise<Array<components["schemas"]["Title"]>>
   getCrew(titleId: string): Promise<Array<components["schemas"]["Crew"]>>
   getMovie(titleId: string): Promise<components["schemas"]["Title"]>
+  getPerson(id: string): Promise<components["schemas"]["Person"]>
 
   searchForMovie(
     query: string
@@ -19,105 +21,6 @@ interface API {
   updateMyDatabase(
     item: components["schemas"]["MyTable"]
   ): Promise<components["schemas"]["MyTable"]>
-}
-
-class Api implements API {
-  private readonly fetchOptions = {
-    method: "GET",
-    mode: "cors" as RequestMode,
-    credentials: "include" as RequestCredentials,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  }
-  constructor(private readonly baseUrl: string) {}
-
-  async getCrew(titleId: string) {
-    type ET = paths["/api/Crew/{id}"]["get"]
-    const endpoint: keyof paths = "/api/Crew/{id}"
-
-    const response = await fetch(
-      `${this.baseUrl}${endpoint}`.replace("{id}", titleId),
-      {
-        ...this.fetchOptions,
-      }
-    )
-
-    if (response.status == 200) {
-      const data: ET["responses"]["200"]["content"]["application/json"] =
-        await response.json()
-      return data
-    } else {
-      throw response.statusText
-    }
-  }
-
-  async getMovie(titleId: string) {
-    type ET = paths["/api/Title/{id}"]["get"]
-    const endpoint: keyof paths = "/api/Title"
-
-    const response = await fetch(`${this.baseUrl}${endpoint}/${titleId}`, {
-      ...this.fetchOptions,
-    })
-
-    if (response.status == 200) {
-      const data: components["schemas"]["Title"] = await response.json()
-      return data
-    } else {
-      throw response.statusText
-    }
-  }
-
-  async searchForMovie(query: string) {
-    type ET = paths["/api/Title/search/{searchString}"]["get"]
-    const endpoint: keyof paths = "/api/Title"
-
-    const response = await fetch(`${this.baseUrl}${endpoint}/search/${query}`, {
-      ...this.fetchOptions,
-    })
-
-    if (response.status == 200) {
-      const data: ET["responses"]["200"]["content"]["application/json"] =
-        await response.json()
-      return data
-    } else {
-      throw new Error(response.statusText)
-    }
-  }
-
-  async getMyDatabase() {
-    type ET = paths["/api/MyDatabase"]["get"]
-    const endpoint: keyof paths = "/api/MyDatabase"
-
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      ...this.fetchOptions,
-    })
-
-    if (response.status == 200) {
-      const data: ET["responses"]["200"]["content"]["application/json"] =
-        await response.json()
-      return data
-    } else {
-      throw new Error(response.statusText)
-    }
-  }
-
-  async updateMyDatabase(item: components["schemas"]["MyTable"]) {
-    type ET = paths["/api/MyDatabase"]["post"]
-    const endpoint: keyof paths = "/api/MyDatabase"
-
-    const response = await fetch(`${this.baseUrl}${endpoint}`, {
-      ...this.fetchOptions,
-      method: "POST",
-      body: JSON.stringify(item),
-    })
-
-    if (response.status != 200) {
-      throw new Error(response.statusText)
-    }
-
-    return (await response.json()) as components["schemas"]["MyTable"]
-  }
 }
 
 const fetcher = Fetcher.for<paths>()
@@ -136,6 +39,11 @@ fetcher.configure({
 })
 
 const fetcherApi = {
+  getPersonMovies: fetcher
+    .path("/api/Person/{id}/movies")
+    .method("get")
+    .create(),
+  getPerson: fetcher.path("/api/Person/{id}").method("get").create(),
   getCrew: fetcher.path("/api/Crew/{id}").method("get").create(),
   getMovie: fetcher.path("/api/Title/{id}").method("get").create(),
   searchForMovie: fetcher
@@ -151,6 +59,21 @@ const fetcherApi = {
 }
 
 const fetcherApiWrapper: API = {
+  getPersonMovies: async (id) => {
+    const res = await fetcherApi.getPersonMovies({ id })
+    if (!res.ok) {
+      throw new Error(res.statusText)
+    }
+    return res.data
+  },
+  getPerson: async (id) => {
+    const res = await fetcherApi.getPerson({ id })
+    if (!res.ok) {
+      throw new Error(res.statusText)
+    }
+    return res.data
+  },
+
   getCrew: async (titleId) => {
     const res = await fetcherApi.getCrew({ id: titleId })
     if (!res.ok) {
@@ -189,6 +112,4 @@ const fetcherApiWrapper: API = {
     return res.data
   },
 }
-const api = new Api(BASEURL)
-
-export { api as api1, fetcherApiWrapper as api2 }
+export { fetcherApiWrapper as api1, fetcherApiWrapper as api2 }
