@@ -19,10 +19,9 @@ search()
 
 async function getMovies() {
   const response = await api.getPersonMovies(personId)
-  data.movies = response
+  data.movies = response.sort((a,b) => a.premiered! - b.premiered!).reverse()
 }
 getMovies()
-
 </script>
 
 <template>
@@ -30,19 +29,19 @@ getMovies()
     <h1>
       <i>{{ data.person.name }}</i>
     </h1>
-    <span>born {{ data.person.born }}</span>
-    <span>died {{ data.person.died }}</span>
+    <span v-if="data.person.born">born {{ data.person.born }}</span>
+    <span v-if="data.person.died">died {{ data.person.died }}</span>
   </section>
   <section v-else>No information found.</section>
   <section v-if="data.movies">
     <h2>Movies</h2>
-    <ul>
-      <li v-for="movie in data.movies" :key="movie.titleId!">
-        <router-link :to="`/movies/${movie.titleId}`">{{
-          movie.primaryTitle
-        }}</router-link>
-      </li>
-    </ul>
+    <div v-for="movie in data.movies" :key="movie.titleId!">
+      <router-link :to="`/movies/${movie.titleId}`">{{
+        movie.primaryTitle
+      }}</router-link>
+      <span>&nbsp;{{ movie.premiered }}</span>
+      <span>&nbsp;{{ movie.genres }}</span>
+    </div>
   </section>
   <section v-else>No movies found.</section>
 </template>
