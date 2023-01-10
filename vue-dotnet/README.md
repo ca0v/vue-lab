@@ -62,6 +62,13 @@ Vue will deploy into wwwroot
 
 * Possible to generate Partial class for controllers to facilitate extension without modifying scaffolding?  Or use Inheritance?
 
+## Missed Opportunities
+
+* Not using Akas or Ratings
+* Is there a way to get person photos?  Bio? Wikipedia API?
+* Is there a way to watch trailer? YouTube?
+* Is there a way to get a descriptive summary?
+
 ## References
 
 * [Razor View](http://localhost:5085/MyDatabase)
