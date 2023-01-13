@@ -3,12 +3,11 @@ const ws = require("ws")
 
 const wss = new ws.Server({ noServer: true })
 
+const listeners = {}
+
 function accept(req, res) {
-  // all incoming requests must be websockets
-  if (
-    !req.headers.upgrade ||
-    req.headers.upgrade.toLowerCase() != "websocket"
-  ) {
+  console.log("accept")
+  if (req.headers.upgrade?.toLowerCase() != "websocket") {
     res.end()
     return
   }
@@ -23,12 +22,27 @@ function accept(req, res) {
 }
 
 function onConnect(ws) {
+  console.log("onConnect")
+  // get the ip of the client
+  const ip = ws._socket.remoteAddress
+  console.log(ip)
+
   ws.on("message", function (message) {
     message = message.toString()
-    console.log({ ws })
-    ws.send(message)
 
-    setTimeout(() => ws.close(1000, "Bye!"), 5000)
+    const header = message.substring(0, 15)
+
+    if (listeners[header]) {
+      listeners[header].forEach((listener) => listener.send(message))
+    }
+
+    // add self to listeners if not already there
+    if (!listeners[header]) {
+      listeners[header] = []
+    }
+    if (!listeners[header].includes(ws)) {
+      listeners[header].push(ws)
+    }
   })
 }
 

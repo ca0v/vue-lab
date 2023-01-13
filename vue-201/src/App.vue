@@ -44,16 +44,15 @@ import { listen as listenToServer, send as sendToServer } from "./socket"
 import { reactive, ref } from "vue"
 
 const state = reactive({
-  messageText: "",
-  threeWords: "",
+  messageText: "It is not going to help",
+  threeWords: "Which WayIs Westward",
 })
 
 const wordDomElement = ref<HTMLInputElement | null>(null)
 
-function encrypt(keys: string[], message: string) {
-  const key = keys.join(" ")
+function encrypt(key: string, message: string) {
   // apply additive cipher
-  const encrypted = message
+  const encrypted = (key + message)
     .split("")
     .map((char, i) =>
       String.fromCharCode(char.charCodeAt(0) + key.charCodeAt(i % key.length))
@@ -63,38 +62,39 @@ function encrypt(keys: string[], message: string) {
 }
 
 // reverse the additive cipher
-function decrypt(keys: string[], message: string) {
-  const key = keys.join(" ")
+function decrypt(key: string, message: string) {
   const decrypted = message
     .split("")
     .map((char, i) =>
       String.fromCharCode(char.charCodeAt(0) - key.charCodeAt(i % key.length))
     )
     .join("")
-  return decrypted
+  const result = decrypted.substring(key.length)
+  console.log({ decrypted, result })
+  return result
 }
 
 listenToServer((message: string) => {
-  console.log("listenToServer")
-  const words = state.threeWords.split(" ")
-  console.log("listenToServer", decrypt(words, message))
+  console.log("rcvd", decrypt(state.threeWords, message))
 })
 
 const send = () => {
-  const words = state.threeWords.split(" ")
+  const words = state.threeWords.split(" ").map((v) => v.trim())
   if (words.length !== 3) {
     console.log("Please enter three words")
-    console.log("wordDomElement", wordDomElement.value ?? "none")
+    wordDomElement.value?.focus()
+    return
+  }
+  if (words.join().length < 15) {
+    console.log("Please enter longer words")
     wordDomElement.value?.focus()
     return
   }
 
-  const message = encrypt(words, state.messageText)
+  const message = encrypt(state.threeWords, state.messageText)
+  sendToServer(message)
 
-  console.log("sending", message)
-  console.log("sending", decrypt(words, message))
   // trigger change on messageText
   state.messageText = ""
-  sendToServer(message)
 }
 </script>
