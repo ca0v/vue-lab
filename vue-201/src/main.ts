@@ -17,7 +17,6 @@ function showConsoleInTextArea() {
 
 export function run() {
   showConsoleInTextArea()
-  console.log("run")
   const appDom = document.querySelector("#app")
   if (!appDom) throw new Error("app dom not found")
   appDom.classList.toggle("hidden")

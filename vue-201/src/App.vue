@@ -1,6 +1,6 @@
 <template>
   <main>
-    <form>
+    <form :class="!state.lastMessageReceived ? 'no-response-yet' : ''">
       <input
         ref="wordDomElement"
         type="text"
@@ -8,6 +8,12 @@
         placeholder="[Any three words]"
       />
       <textarea
+        class="history"
+        readonly
+        :value="state.lastMessageReceived"
+      ></textarea>
+      <textarea
+        class="message"
         v-model="state.messageText"
         placeholder="[ENTER YOU MESSAGE]"
       ></textarea>
@@ -27,11 +33,21 @@ main {
 
 form {
   width: 80vw;
+  height: calc(100vh - 20em);
+  display: grid;
+  grid-template-rows: 1fr 8fr 4fr;
 }
 
 form > textarea {
   resize: none;
-  height: calc(100vh - 20em);
+}
+
+form.no-response-yet > .history {
+  display: none;
+}
+
+form.no-response-yet > .message {
+  grid-row: span 2;
 }
 
 form > button {
@@ -41,11 +57,12 @@ form > button {
 
 <script setup lang="ts">
 import { listen as listenToServer, send as sendToServer } from "./socket"
-import { reactive, ref } from "vue"
+import { onBeforeMount, reactive, ref } from "vue"
 
 const state = reactive({
   messageText: "It is not going to help",
   threeWords: "Which WayIs Westward",
+  lastMessageReceived: "",
 })
 
 const wordDomElement = ref<HTMLInputElement | null>(null)
@@ -70,12 +87,13 @@ function decrypt(key: string, message: string) {
     )
     .join("")
   const result = decrypted.substring(key.length)
-  console.log({ decrypted, result })
   return result
 }
 
 listenToServer((message: string) => {
-  console.log("rcvd", decrypt(state.threeWords, message))
+  // persist the key
+  localStorage.setItem("threeWords", state.threeWords)
+  state.lastMessageReceived += decrypt(state.threeWords, message) + "\n"
 })
 
 const send = () => {
@@ -97,4 +115,11 @@ const send = () => {
   // trigger change on messageText
   state.messageText = ""
 }
+
+onBeforeMount(() => {
+  const threeWords = localStorage.getItem("threeWords")
+  if (threeWords) {
+    state.threeWords = threeWords
+  }
+})
 </script>

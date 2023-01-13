@@ -1,6 +1,6 @@
 body {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: 1fr auto;
 }
 
 .background-image {
@@ -16,7 +16,7 @@ body {
 }
 
 .banner {
-  font-size: 10vw;
+  font-size: clamp(12pt, 10vw, 80pt);
   text-align: center;
   width: 100%;
   opacity: 0.3;
@@ -34,5 +34,5 @@ body {
   height: 8em;
   padding: 1em;
   overflow: hidden;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
 }

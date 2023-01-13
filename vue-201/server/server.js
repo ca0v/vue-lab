@@ -4,6 +4,7 @@ const ws = require("ws")
 const wss = new ws.Server({ noServer: true })
 
 const listeners = {}
+const messageQueue = {}
 
 function accept(req, res) {
   console.log("accept")
@@ -28,21 +29,40 @@ function onConnect(ws) {
   console.log(ip)
 
   ws.on("message", function (message) {
+    console.log("message received")
     message = message.toString()
 
     const header = message.substring(0, 15)
 
-    if (listeners[header]) {
-      listeners[header].forEach((listener) => listener.send(message))
-    }
-
     // add self to listeners if not already there
-    if (!listeners[header]) {
-      listeners[header] = []
-    }
+    listeners[header] = listeners[header] || []
     if (!listeners[header].includes(ws)) {
       listeners[header].push(ws)
+      console.log("any messages queued for this header?")
+      if (messageQueue[header]) {
+        messageQueue[header].forEach((message) => ws.send(message))
+        messageQueue[header] = []
+        console.log("no other users will see these messages")
+      }
     }
+
+    const otherClients = listeners[header].filter((listener) => listener !== ws)
+    if (otherClients.length) {
+      console.log("clients are already here, send message to each of them")
+      otherClients.forEach((l) => l.send(message))
+    } else {
+      console.log("no one is listening, queue the message")
+      ;(messageQueue[header] = messageQueue[header] || []).push(message)
+    }
+  })
+
+  ws.on("close", () => {
+    // remove self from listeners
+    Object.keys(listeners).forEach((header) => {
+      listeners[header] = listeners[header].filter(
+        (listener) => listener !== ws
+      )
+    })
   })
 }
 

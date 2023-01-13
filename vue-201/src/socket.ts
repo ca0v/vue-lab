@@ -11,12 +11,12 @@ function connect() {
 
     socket.onmessage = (event) => {
       const message = event.data
-      console.log("onmessage", message)
       listeners.forEach((callback) => callback(message))
     }
 
     socket.onclose = () => {
       isOpen = false
+      console.log("socket is closed")
     }
 
     socket.onerror = (error) => {
@@ -27,11 +27,11 @@ function connect() {
   return socket
 }
 
-let socket = connect()
+let socket: WebSocket | null = null
 function send(message: string) {
-  if (!isOpen) {
-    console.log("socket is not open")
+  if (!isOpen || !socket) {
     socket = connect()
+    setTimeout(() => send(message), 100);
   }
   socket.send(message)
 }
