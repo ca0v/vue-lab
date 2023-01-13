@@ -4,10 +4,24 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/picocss/1.5.1/pico.min.css"
+      integrity="sha512-jMTLmkRL3H4pWNUHqgHzUN/Ms7ECWycdnpdnjtt2Zys+MYjThxImfmmOurQT4b0BozQtUzoVv1t5h5kG12azpg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="./index.css" />
     <title>Encryption Lab with Vue</title>
   </head>
   <body>
-    <div id="app"></div>
-    <script type="module"></script>
+    <div class="background-image"></div>
+    <h1 class="banner">Secure Chat</h1>
+    <div id="console"></div>
+    <div id="app" class="hidden">APP GOES HERE</div>
+    <script type="module">
+      import { run } from "/src/main.ts"
+      run()
+    </script>
   </body>
 </html>
