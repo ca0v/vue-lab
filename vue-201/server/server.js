@@ -1,4 +1,4 @@
-const http = require("http")
+const https = require("https")
 const ws = require("ws")
 
 const wss = new ws.Server({ noServer: true })
@@ -48,8 +48,10 @@ function onConnect(ws) {
 
     const otherClients = listeners[header].filter((listener) => listener !== ws)
     if (otherClients.length) {
-      console.log("clients are already here, send message to each of them")
-      otherClients.forEach((l) => l.send(message))
+      console.log(
+        `${otherClients.length} client(s) already here, sending message`
+      )
+      otherClients.forEach((l) => message && l.send(message))
     } else {
       console.log("no one is listening, queue the message")
       ;(messageQueue[header] = messageQueue[header] || []).push(message)
@@ -66,4 +68,4 @@ function onConnect(ws) {
   })
 }
 
-http.createServer(accept).listen(8080)
+https.createServer(accept).listen(8080)

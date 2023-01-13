@@ -1,39 +1,52 @@
-let isOpen = false
-
 const listeners = [] as Array<(message: string) => void>
 
-function connect() {
-  let socket = new WebSocket("ws://localhost:8080")
+type ConnectionStatus = {
+  socket: WebSocket
+  isOpen: "opened" | "opening" | "closed"
+}
 
-  socket.onopen = () => {
-    isOpen = true
+function connect(onConnect: () => void): ConnectionStatus {
+  let state: ConnectionStatus = {
+    socket: new WebSocket("ws://localhost:8080"),
+    isOpen: "closed",
+  }
+
+  state.socket.onopen = () => {
+    state.isOpen = "opened"
     console.log("socket is open")
 
-    socket.onmessage = (event) => {
+    state.socket.onmessage = (event) => {
       const message = event.data
       listeners.forEach((callback) => callback(message))
     }
 
-    socket.onclose = () => {
-      isOpen = false
+    state.socket.onclose = () => {
+      state.isOpen = "closed"
       console.log("socket is closed")
     }
 
-    socket.onerror = (error) => {
+    state.socket.onerror = (error) => {
       console.log("socket error", error)
     }
+
+    onConnect()
   }
 
-  return socket
+  return state
 }
 
-let socket: WebSocket | null = null
+let socket: ConnectionStatus | null = null
+
 function send(message: string) {
-  if (!isOpen || !socket) {
-    socket = connect()
-    setTimeout(() => send(message), 100);
+  if (!socket || socket.isOpen == "closed") {
+    socket = connect(() => send(message))
+    return
   }
-  socket.send(message)
+  if (socket.isOpen == "opening") {
+    console.log("still trying to connect")
+    return
+  }
+  socket.socket.send(message)
 }
 
 function listen(callback: (message: string) => void) {
