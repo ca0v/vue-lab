@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add Users</title>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.min.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- Add missing attributes to input, button, tr, and td elements -->
+    First name: <input v-model:value="firstName" type="text">
+    Last name:  <input v-model:value="lastName" type="text">
+    <button @click="addUser">Add user</button>
+
+    <table>
+      <caption>Users</caption>
+      <thead>
+        <tr>
+          <th>Index</th>
+          <th>First name</th>
+          <th>Last name</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="user, i in users">
+          <td>{{i+1}}</td>
+          <td>{{user.firstName}}</td>
+          <td>{{user.lastName}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <script>
+    var vm = new Vue({
+      el: '#app',
+      // Modify Vue object here
+      data: {
+        firstName: "",
+        lastName: "",
+        users: []
+      },
+      methods: {
+        addUser: function() {
+          this.users.push({firstName: this.firstName, lastName: this.lastName});
+          this.firstName = "";
+          this.lastName = "";
+        }
+      }
+    });
+
+    // Example case
+    if(vm.users) {
+      vm.users.push({firstName: "John", lastName: "Doe" }); 
+    }
+
+    document.getElementsByTagName("input")[0].value = "Ann";
+    document.getElementsByTagName("input")[0].dispatchEvent(new Event('input'));
+    document.getElementsByTagName("input")[1].value = "Franklin";
+    document.getElementsByTagName("input")[1].dispatchEvent(new Event('input'));
+    document.getElementsByTagName("button")[0].click();
+    
+    setTimeout(() => console.log(document.querySelector("tbody").innerHTML));
+</script>
+</body>
+</html>
