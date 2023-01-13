@@ -1,3 +1,16 @@
+function promptFor(name: string) {
+  let result = localStorage.getItem(name)
+  if (result) return result
+  result = prompt(name)
+  if (result) {
+    localStorage.setItem(name, result)
+    return result
+  }
+  throw `no ${name} provided`
+}
+
+const SERVER = promptFor("server") //"ws://localhost:8080"
+
 const listeners = [] as Array<(message: string) => void>
 
 type ConnectionStatus = {
@@ -7,7 +20,7 @@ type ConnectionStatus = {
 
 function connect(onConnect: () => void): ConnectionStatus {
   let state: ConnectionStatus = {
-    socket: new WebSocket("ws://localhost:8080"),
+    socket: new WebSocket(SERVER),
     isOpen: "closed",
   }
 
