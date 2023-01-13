@@ -58,6 +58,7 @@ form > button {
 <script setup lang="ts">
 import { listen as listenToServer, send as sendToServer } from "./socket"
 import { onBeforeMount, reactive, ref } from "vue"
+import { decrypt, encrypt } from "./crypt"
 
 const state = reactive({
   messageText: "It is not going to help",
@@ -66,29 +67,6 @@ const state = reactive({
 })
 
 const wordDomElement = ref<HTMLInputElement | null>(null)
-
-function encrypt(key: string, message: string) {
-  // apply additive cipher
-  const encrypted = (key + message)
-    .split("")
-    .map((char, i) =>
-      String.fromCharCode(char.charCodeAt(0) + key.charCodeAt(i % key.length))
-    )
-    .join("")
-  return encrypted
-}
-
-// reverse the additive cipher
-function decrypt(key: string, message: string) {
-  const decrypted = message
-    .split("")
-    .map((char, i) =>
-      String.fromCharCode(char.charCodeAt(0) - key.charCodeAt(i % key.length))
-    )
-    .join("")
-  const result = decrypted.substring(key.length)
-  return result
-}
 
 listenToServer((message: string) => {
   // persist the key
