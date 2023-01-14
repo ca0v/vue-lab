@@ -78,12 +78,13 @@ function xor_decrypt(key: string, data: number[]) {
 }
 
 function encrypt(key: string, message: string) {
-  return encode(key, encode("super-hokey", key) + message)
+  return encode(key, encode("super-hokey", key) + " " + message)
 }
 
 // reverse the additive cipher
 function decrypt(key: string, message: string) {
-  return decode(key, message).substring(key.length)
+  const decoded = decode(key, message)
+  return decoded.substring(decoded.indexOf(" ") + 1)
 }
 
 export { encrypt, decrypt }

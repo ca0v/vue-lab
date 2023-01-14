@@ -2,30 +2,28 @@ const express = require("express")
 const ws = require("ws")
 
 const app = express()
+
 app.use(express.static("."))
 
-const wss = new ws.Server({ noServer: true })
+const wsServer = new ws.Server({ noServer: true })
 
 const listeners = {}
 const messageQueue = {}
 
-function accept(req, res) {
-  console.log("accept")
-  if (req.headers.upgrade?.toLowerCase() != "websocket") {
-    res.end()
-    return
-  }
+wsServer.on("connection", (socket) => {
+  connector(socket)
+})
 
-  // can be Connection: keep-alive, Upgrade
-  if (!req.headers.connection.match(/\bupgrade\b/i)) {
-    res.end()
-    return
-  }
+const server = app.listen(3000)
+console.log(`Listening on port ${server.address().port}`)
 
-  wss.handleUpgrade(req, req.socket, Buffer.alloc(0), onConnect)
-}
+server.on("upgrade", (request, socket, head) => {
+  wsServer.handleUpgrade(request, socket, head, (socket) => {
+    wsServer.emit("connection", socket, request)
+  })
+})
 
-function onConnect(ws) {
+function connector(ws) {
   console.log("onConnect")
   // get the ip of the client
   const ip = ws._socket.remoteAddress
@@ -34,14 +32,13 @@ function onConnect(ws) {
   ws.on("message", function (message) {
     console.log("message received")
     message = message.toString()
-
     const header = message.substring(0, 15)
 
     // add self to listeners if not already there
     listeners[header] = listeners[header] || []
     if (!listeners[header].includes(ws)) {
       listeners[header].push(ws)
-      console.log("any messages queued for this header?")
+      console.log(`any messages queued for this ${header}?`)
       if (messageQueue[header]) {
         messageQueue[header].forEach((message) => ws.send(message))
         messageQueue[header] = []
@@ -70,6 +67,3 @@ function onConnect(ws) {
     })
   })
 }
-
-app.use(accept)
-app.listen(3000)
