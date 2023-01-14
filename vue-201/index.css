@@ -63,4 +63,8 @@ body {
   height: 2em;
   overflow: hidden;
   margin: 1em;
+  z-index: -1;
+  /* user cannot click */
+  pointer-events: none;
+  line-height: 2em;
 }
