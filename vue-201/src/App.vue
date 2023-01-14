@@ -38,14 +38,26 @@ main {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  height: 100vh;
+  overflow-y: auto;
 }
 
 form {
   display: grid;
-  grid-template-rows: calc(3em + 5vw) 3em auto 10em 5em 2em;
+  grid-template-rows: calc(3em + 5vw) 3em 2fr 1fr 3em 2em;
   width: 80vw;
-  height: calc(100vh - 1rem);
+  height: max(30em, 100vh);
   gap: 1em;
+}
+
+#console {
+  z-index: -1;
+  /* user cannot click */
+  pointer-events: none;
+  border: 1px solid var(--color-cipher);
+  height: 100%;
+  overflow: hidden;
+  font-size: x-small;
 }
 
 form > input {
@@ -80,6 +92,7 @@ form.no-response-yet > .message {
 
 form > button {
   background-color: var(--color-cipher);
+  height: 100% !important;
 }
 
 .response {
@@ -155,8 +168,8 @@ const send = () => {
     wordDomElement.value?.focus()
     return
   }
-  if (words.join().length < 15) {
-    console.log("Please enter longer words")
+  if (words.some((w) => w.length < 5)) {
+    console.log("Each word must have at least 5 characters")
     wordDomElement.value?.focus()
     return
   }
@@ -180,6 +193,20 @@ function renderOutboundMessage(message: string) {
   scrollToBottom()
 }
 
+function showConsoleInTextArea() {
+  const consoleTextArea = document.querySelector("#console")
+  if (!consoleTextArea) return
+  const consoleLog = console.log
+  console.log = function (...message: any[]) {
+    consoleLog(...message)
+    consoleTextArea.innerHTML =
+      message.join(",") + "<br/>" + consoleTextArea.innerHTML
+  }
+  consoleTextArea.addEventListener("click", () => {
+    consoleTextArea.innerHTML = ""
+  })
+}
+
 onBeforeMount(() => {
   const threeWords = localStorage.getItem("threeWords")
   if (threeWords) {
@@ -190,6 +217,7 @@ onBeforeMount(() => {
 onMounted(() => {
   wordDomElement.value?.focus()
   wordDomElement.value?.select()
+  showConsoleInTextArea()
   console.log("Welcome to Secure Chat. Please enter three words to start.")
 })
 </script>
