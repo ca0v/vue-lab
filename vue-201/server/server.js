@@ -1,3 +1,6 @@
+// read port from command line
+const port = process.argv[2] || 3000
+
 const express = require("express")
 const ws = require("ws")
 
@@ -14,8 +17,8 @@ wsServer.on("connection", (socket) => {
   connector(socket)
 })
 
-const server = app.listen(3000)
-console.log(`Listening on port ${server.address().port}`)
+const server = app.listen(port)
+console.log(`listening on port ${port}`)
 
 server.on("upgrade", (request, socket, head) => {
   wsServer.handleUpgrade(request, socket, head, (socket) => {
