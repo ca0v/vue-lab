@@ -15,14 +15,13 @@
         class="message"
         placeholder="[ENTER YOUR MESSAGE]"
         @keydown="sendOnShiftEnter"
+        @dblclick.prevent="() => send()"
       >
       </textarea>
       <button
-        tabindex="-1"
         :disabled="!state.messageText"
         type="submit"
         @click.prevent="send"
-        @touchend.prevent="send"
         title="Press Shift+Enter to send"
       >
         Send
