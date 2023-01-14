@@ -1,5 +1,8 @@
-const https = require("https")
+const express = require("express")
 const ws = require("ws")
+
+const app = express()
+app.use(express.static("."))
 
 const wss = new ws.Server({ noServer: true })
 
@@ -68,4 +71,5 @@ function onConnect(ws) {
   })
 }
 
-https.createServer(accept).listen(8080)
+app.use(accept)
+app.listen(3000)
