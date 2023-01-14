@@ -17,18 +17,11 @@
           placeholder="[ENTER YOUR MESSAGE]"
           @keydown="sendOnShiftEnter"
           @dblclick.prevent="() => send()"
+          title="Press Shift+Enter to send"
         >
         </textarea>
-        <div contentEditable="true" @click="send" class="glass-button-hack">S</div>
+        <div @click="send" class="glass-button-hack">↹</div>
       </div>
-      <button
-        :disabled="!state.messageText"
-        type="submit"
-        @click.prevent="send"
-        title="Press Shift+Enter to send"
-      >
-        Send
-      </button>
       <div id="console"></div>
     </form>
   </main>
@@ -44,12 +37,11 @@
   right: 0.5em;
   bottom: 0.5em;
   border-radius: 50%;
-  background-color: var(--color-cipher-lite);
+  background-color: var(--color-cipher);
   width: 2em;
   height: 2em;
-  border: 1px solid var(--color-cipher);
-  font-size: xx-small;
-  color: var(--color-cipher);
+  border: 3px solid var(--color-cipher-lite);
+  color: var(--color-cipher-lite);
   text-align: center;
   opacity: 0.5;
 }
@@ -66,7 +58,7 @@ main {
 
 form {
   display: grid;
-  grid-template-rows: calc(3em + 5vw) 3em 2fr 1fr 3em 2em;
+  grid-template-rows: calc(3em + 5vw) 3em 2fr 1fr 2em;
   width: 80vw;
   height: max(30em, 100vh);
   gap: 1em;
@@ -93,9 +85,12 @@ form .message {
   color: var(--color-font);
   background-color: var(--color-background);
   height: 100%;
+  opacity: 0.8;
 }
 
 form > .history {
+  display: flex;
+  flex-flow: column-reverse;
   overflow-y: auto;
   padding: 0.5em;
   border-left: 3px solid var(--color-cipher);
@@ -106,7 +101,7 @@ form.no-response-yet > .history {
   display: none;
 }
 
-form.no-response-yet .message {
+form.no-response-yet > .trick-1 {
   grid-row: span 2;
 }
 
@@ -126,20 +121,21 @@ form > button {
   max-width: 90%;
 }
 
-.in.response {
+.history > .in.response {
   margin-left: 0.5em;
   color: var(--color-cipher);
   background-color: var(--color-cipher-lite);
   border-top-left-radius: 0;
+  align-self: flex-start;
 }
 
-.out.response {
+.history > .out.response {
   font-size: smaller;
   margin-right: 0.5em;
   color: var(--color-cipher-lite);
   background-color: var(--color-cipher);
   border-bottom-right-radius: 0;
-  float: right;
+  align-self: flex-end;
 }
 </style>
 
@@ -198,18 +194,23 @@ const send = () => {
   sendToServer(message)
 
   // trigger change on messageText
-  renderOutboundMessage(state.messageText)
-  state.messageText = ""
+  if (state.messageText) {
+    renderOutboundMessage(state.messageText)
+    state.messageText = ""
+  }
   messageDomElement.value?.focus()
 }
 
 function renderInboundMessage(message: string) {
-  state.lastMessageReceived += `<div class="in response">${message}</div><br/>`
+  state.lastMessageReceived =
+    `<div class="in response">${message}</div><br/>` + state.lastMessageReceived
   scrollToBottom()
 }
 
 function renderOutboundMessage(message: string) {
-  state.lastMessageReceived += `<div class="out response">${state.messageText}</div><br/>`
+  state.lastMessageReceived =
+    `<div class="out response">${state.messageText}</div><br/>` +
+    state.lastMessageReceived
   scrollToBottom()
 }
 
