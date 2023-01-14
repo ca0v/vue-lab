@@ -16,14 +16,13 @@ function showConsoleInTextArea() {
 }
 
 export function run() {
-  showConsoleInTextArea()
   const appDom = document.querySelector("#app")
   if (!appDom) throw new Error("app dom not found")
   appDom.classList.toggle("hidden")
-
   const app = createApp(App)
-
   app.mount(appDom)
+
+  showConsoleInTextArea()
 
   return app
 }

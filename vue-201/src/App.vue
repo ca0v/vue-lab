@@ -1,6 +1,7 @@
 <template>
   <main>
     <form :class="!state.lastMessageReceived ? 'no-response-yet' : ''">
+      <h1 class="banner">Secure Chat</h1>
       <input
         ref="wordDomElement"
         type="text"
@@ -22,8 +23,8 @@
       >
         Send
       </button>
+      <div id="console"></div>
     </form>
-    <router-view></router-view>
   </main>
 </template>
 
@@ -37,11 +38,11 @@ main {
 }
 
 form {
-  width: 80vw;
-  height: calc(100vh - 10em);
   display: grid;
+  grid-template-rows: calc(3em + 5vw) 3em auto 10em 5em 2em;
+  width: 80vw;
+  height: calc(100vh - 1rem);
   gap: 1em;
-  grid-template-rows: 3em auto 10em 5em;
 }
 
 form > input {
