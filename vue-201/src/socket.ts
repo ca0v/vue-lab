@@ -9,7 +9,8 @@ function promptFor(name: string) {
   throw `no ${name} provided`
 }
 
-const SERVER = promptFor("server") //"ws://localhost:8080"
+let SERVER =
+  localStorage.getItem("server") || location.origin.replace("http", "ws")
 
 const listeners = [] as Array<(message: string) => void>
 
@@ -40,6 +41,7 @@ function connect(onConnect: () => void): ConnectionStatus {
 
     state.socket.onerror = (error) => {
       console.log("socket error", error)
+      SERVER = promptFor("server")
     }
 
     onConnect()
