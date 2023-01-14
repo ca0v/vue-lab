@@ -14,12 +14,15 @@
         v-model="state.messageText"
         class="message"
         placeholder="[ENTER YOUR MESSAGE]"
+        @keydown="sendOnShiftEnter"
       >
       </textarea>
       <button
+        tabindex="-1"
         :disabled="!state.messageText"
         type="submit"
         @click.prevent="send"
+        title="Press Shift+Enter to send"
       >
         Send
       </button>
@@ -30,7 +33,7 @@
 
 <style>
 main {
-  color: var(--color-cipher-lite);
+  color: var(--color-font);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -66,6 +69,11 @@ form.no-response-yet > .history {
   display: none;
 }
 
+form > .message {
+  color: var(--color-font);
+  background-color: var(--color-background);
+}
+
 form.no-response-yet > .message {
   grid-row: span 2;
 }
@@ -77,7 +85,7 @@ form > button {
 .response {
   display: inline-block;
   padding: 0.5em;
-  outline: 1px solid #fff5;
+  outline: 1px solid var(--color-cipher-lite);
   border-radius: 8px;
   margin-top: 0.5em;
   overflow: hidden;
@@ -104,7 +112,7 @@ form > button {
 
 <script setup lang="ts">
 import { listen as listenToServer, send as sendToServer } from "./socket"
-import { onBeforeMount, reactive, ref } from "vue"
+import { onBeforeMount, onMounted, reactive, ref } from "vue"
 import { decrypt, encrypt } from "./crypt"
 
 const state = reactive({
@@ -115,6 +123,14 @@ const state = reactive({
 
 const wordDomElement = ref<HTMLInputElement | null>(null)
 const messageDomElement = ref<HTMLTextAreaElement | null>(null)
+
+function sendOnShiftEnter(e: KeyboardEvent) {
+  if (e.key === "Enter" && e.shiftKey) {
+    send()
+    // disable further handling
+    e.preventDefault()
+  }
+}
 
 function scrollToBottom() {
   setTimeout(() => {
@@ -169,5 +185,11 @@ onBeforeMount(() => {
   if (threeWords) {
     state.threeWords = threeWords
   }
+})
+
+onMounted(() => {
+  wordDomElement.value?.focus()
+  wordDomElement.value?.select()
+  console.log("Welcome to Secure Chat. Please enter three words to start.")
 })
 </script>

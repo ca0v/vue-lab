@@ -1,22 +1,47 @@
 :root {
   --color-cipher: hsl(213, 62%, 18%);
   --color-cipher-lite: hsl(213, 62%, 78%);
+  --color-lite: hsl(213, 62%, 90%);
+  --color-dark: hsl(213, 62%, 10%);
 }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-font: var(--color-cipher-lite);
+    --color-background: var(--color-dark);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-font: var(--color-cipher);
+    --color-background: var(--color-lite);
+  }
+}
+
 body {
   display: grid;
   grid-template-rows: 1fr auto;
 }
 
-.background-image {
+.background {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   z-index: -1;
+}
+
+.background.overlay {
+  background-color: var(--color-background);
+  opacity: 0.5;
+}
+
+.background.image {
   background-image: url(https://venturebeat.com/wp-content/uploads/2017/10/bg-71.jpg);
   background-size: cover;
-  opacity: 0.5;
+  opacity: 0.8;
 }
 
 .banner {
