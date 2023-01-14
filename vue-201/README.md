@@ -15,4 +15,6 @@ This is the scaffolded project and I was going to customize it but I think I ful
 ## Adaptation Ideas
 
 * Using local storage, create a TODO app
-
+* Creating a "Secure" chat app that uses a simple xor encoder to jiggle the message a few bits.
+* This will be an express server that also serves WebSocket on the same port.
+* Use-case: as usual, none, maybe give my son a direct line to me
