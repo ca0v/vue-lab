@@ -22,6 +22,7 @@
         :disabled="!state.messageText"
         type="submit"
         @click.prevent="send"
+        @touchend.prevent="send"
         title="Press Shift+Enter to send"
       >
         Send
