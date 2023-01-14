@@ -3,6 +3,7 @@
   --color-cipher-lite: hsl(213, 62%, 78%);
   --color-lite: hsl(213, 62%, 90%);
   --color-dark: hsl(213, 62%, 10%);
+  box-sizing: border-box;
 }
 
 @media (prefers-color-scheme: dark) {

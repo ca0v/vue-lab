@@ -91,8 +91,9 @@ form .message {
 form > .history {
   display: flex;
   flex-flow: column-reverse;
-  overflow-y: auto;
   padding: 0.5em;
+  overflow-y: auto;
+  gap: 0.5em;
   border-left: 3px solid var(--color-cipher);
   transition-duration: 2000ms;
 }
@@ -115,7 +116,6 @@ form > button {
   padding: 0.5em;
   outline: 1px solid var(--color-cipher-lite);
   border-radius: 8px;
-  margin-top: 0.5em;
   overflow: hidden;
   word-wrap: break-word;
   max-width: 90%;
