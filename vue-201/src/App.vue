@@ -9,15 +9,18 @@
         placeholder="[Any three words]"
       />
       <div class="history" v-html="state.lastMessageReceived"></div>
-      <textarea
-        ref="messageDomElement"
-        v-model="state.messageText"
-        class="message"
-        placeholder="[ENTER YOUR MESSAGE]"
-        @keydown="sendOnShiftEnter"
-        @dblclick.prevent="() => send()"
-      >
-      </textarea>
+      <div class="trick-1">
+        <textarea
+          ref="messageDomElement"
+          v-model="state.messageText"
+          class="message"
+          placeholder="[ENTER YOUR MESSAGE]"
+          @keydown="sendOnShiftEnter"
+          @dblclick.prevent="() => send()"
+        >
+        </textarea>
+        <div contentEditable="true" @click="send" class="glass-button-hack">S</div>
+      </div>
       <button
         :disabled="!state.messageText"
         type="submit"
@@ -32,6 +35,25 @@
 </template>
 
 <style>
+.trick-1 {
+  position: relative;
+}
+
+.glass-button-hack {
+  position: absolute;
+  right: 0.5em;
+  bottom: 0.5em;
+  border-radius: 50%;
+  background-color: var(--color-cipher-lite);
+  width: 2em;
+  height: 2em;
+  border: 1px solid var(--color-cipher);
+  font-size: xx-small;
+  color: var(--color-cipher);
+  text-align: center;
+  opacity: 0.5;
+}
+
 main {
   color: var(--color-font);
   display: flex;
@@ -64,10 +86,13 @@ form > input {
   margin: 0;
 }
 
-form > textarea {
+form .message {
   resize: none;
   margin: 0;
   padding: 0.5em;
+  color: var(--color-font);
+  background-color: var(--color-background);
+  height: 100%;
 }
 
 form > .history {
@@ -81,12 +106,7 @@ form.no-response-yet > .history {
   display: none;
 }
 
-form > .message {
-  color: var(--color-font);
-  background-color: var(--color-background);
-}
-
-form.no-response-yet > .message {
+form.no-response-yet .message {
   grid-row: span 2;
 }
 
