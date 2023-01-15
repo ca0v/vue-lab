@@ -20,6 +20,10 @@
   }
 }
 
+:root {
+  color: var(--color-font);
+}
+
 body {
   display: grid;
   grid-template-rows: 1fr auto;
@@ -43,13 +47,39 @@ body {
   background-image: url(https://venturebeat.com/wp-content/uploads/2017/10/bg-71.jpg);
   background-size: cover;
   opacity: 0.8;
+  /* do not move image when scrolling */
+  background-attachment: fixed;
 }
 
 .banner {
-  font-size: clamp(12pt, 10vw, 80pt);
+  z-index: 1;
   text-align: center;
   width: 100%;
-  opacity: 0.3;
+  /* do not scroll out of view */
+  position: fixed;
+  margin-bottom: 0.25em;
+  color: var(--color-background);
+  /* outline text */
+  text-shadow: 
+  0.5px -0.5px 3px var(--color-font),
+  -0.5px 0.5px 3px var(--color-font),
+  1px 1px 1em var(--color-font);
+  background: linear-gradient(
+    to bottom,
+    var(--color-dark) 0%,
+    var(--color-background) 30%,
+    var(--color-cipher) 50%,
+    var(--color-background) 90%,
+    transparent 100%
+  );
+  text-transform: uppercase;
+  font-size: clamp(12pt, 10vw, 80pt);
+  font-family: 'Courier New', Courier, monospace;
+  letter-spacing: 1.5vw;
+}
+
+.banner-spacer {
+  font-size: calc(1em + clamp(12pt, 10vw, 80pt));
 }
 
 .hidden {

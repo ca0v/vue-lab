@@ -1,7 +1,6 @@
 <template>
   <main>
     <form :class="!state.lastMessageReceived ? 'no-response-yet' : ''">
-      <h1 class="banner">Secure Chat</h1>
       <input
         ref="wordDomElement"
         type="text"
@@ -49,19 +48,20 @@
 main {
   color: var(--color-font);
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  overflow-y: auto;
+  overflow: auto;
 }
 
 form {
   display: grid;
-  grid-template-rows: calc(3em + 5vw) 3em 2fr 1fr 2em;
-  width: 80vw;
-  height: max(30em, 100vh);
+  /* have items fill width */
+  grid-template-columns: 1fr;
+  grid-template-rows: 3em 2fr 1fr 2em;
+  justify-content: center;
   gap: 1em;
+  padding-left: 1em;
+  padding-right: 1em;
+  width: 100%;
+  height: max(20em, calc(100vh - 10em));
 }
 
 #console {
@@ -104,7 +104,7 @@ form.no-response-yet > .history {
 }
 
 form.no-response-yet > .trick-1 {
-  grid-row: 3;
+  grid-row: 2;
 }
 
 form > button {
@@ -116,7 +116,7 @@ form > button {
   display: inline-block;
   padding: 0.5em;
   outline: 1px solid var(--color-cipher-lite);
-  border-radius: 8px;
+  border-radius: 16px;
   word-wrap: break-word;
   max-width: 90%;
 }
