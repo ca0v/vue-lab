@@ -5,9 +5,10 @@ import vue from "@vitejs/plugin-vue"
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: "/chat/",
   plugins: [vue()],
   build: {
-    outDir: "./server/dist",
+    outDir: "./server/chat",
   },
   resolve: {
     alias: {

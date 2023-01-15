@@ -10,7 +10,7 @@ function promptFor(name: string) {
 }
 
 let SERVER =
-  localStorage.getItem("server") || location.origin.replace("http", "ws")
+  localStorage.getItem("server") || location.href.replace("http", "ws")
 
 const listeners = [] as Array<(message: string) => void>
 
