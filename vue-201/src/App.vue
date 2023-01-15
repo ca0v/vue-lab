@@ -86,6 +86,7 @@ form .message {
   background-color: var(--color-background);
   height: 100%;
   opacity: 0.8;
+  font-size: x-large;
 }
 
 form > .history {
@@ -103,7 +104,7 @@ form.no-response-yet > .history {
 }
 
 form.no-response-yet > .trick-1 {
-  grid-row: span 2;
+  grid-row: 3;
 }
 
 form > button {
