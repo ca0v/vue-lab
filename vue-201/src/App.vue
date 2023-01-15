@@ -3,9 +3,9 @@
     <form :class="!state.lastMessageReceived ? 'no-response-yet' : ''">
       <input
         ref="wordDomElement"
-        type="text"
+        type="password"
         v-model="state.threeWords"
-        placeholder="[Any three words]"
+        placeholder="[cipher key is three 5-letter words]"
       />
       <div class="history" v-html="state.lastMessageReceived"></div>
       <div class="trick-1">
@@ -76,6 +76,8 @@ form {
 
 form > input {
   margin: 0;
+  background-color: transparent;
+  color: var(--color-font);
 }
 
 form .message {
@@ -180,8 +182,8 @@ listenToServer((message: string) => {
 
 const send = () => {
   const words = state.threeWords.split(" ").map((v) => v.trim())
-  if (words.length !== 3) {
-    console.log("Please enter three words")
+  if (words.length < 3) {
+    console.log("Please enter at least three words")
     wordDomElement.value?.focus()
     return
   }
