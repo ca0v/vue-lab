@@ -116,7 +116,6 @@ form > button {
   padding: 0.5em;
   outline: 1px solid var(--color-cipher-lite);
   border-radius: 8px;
-  overflow: hidden;
   word-wrap: break-word;
   max-width: 90%;
 }
