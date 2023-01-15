@@ -87,6 +87,7 @@ form .message {
   height: 100%;
   opacity: 0.8;
   font-size: x-large;
+  font-family: "Drexs", Courier, monospace;
 }
 
 form > .history {

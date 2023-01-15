@@ -1,3 +1,8 @@
+@font-face {
+  font-family: "Drexs";
+  src: url("/public/Drexs-z8gB3.ttf");
+}
+
 :root {
   --color-cipher: hsl(213, 62%, 18%);
   --color-cipher-lite: hsl(213, 62%, 78%);
@@ -60,21 +65,19 @@ body {
   margin-bottom: 0.25em;
   color: var(--color-background);
   /* outline text */
-  text-shadow: 
-  0.5px -0.5px 3px var(--color-font),
-  -0.5px 0.5px 3px var(--color-font),
-  1px 1px 1em var(--color-font);
+  text-shadow: 0 0 5px white, 5px 0 5px black;
   background: linear-gradient(
     to bottom,
     var(--color-dark) 0%,
-    var(--color-background) 30%,
+    var(--color-background) 40%,
     var(--color-cipher) 50%,
+    var(--color-background) 60%,
     var(--color-background) 90%,
     transparent 100%
   );
   text-transform: uppercase;
   font-size: clamp(12pt, 10vw, 80pt);
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Drexs";
   letter-spacing: 1.5vw;
 }
 
