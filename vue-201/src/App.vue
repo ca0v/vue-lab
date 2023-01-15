@@ -14,9 +14,9 @@
           v-model="state.messageText"
           class="message"
           placeholder="[ENTER YOUR MESSAGE]"
-          @keydown="sendOnShiftEnter"
+          @keydown="sendOnEnter"
           @dblclick.prevent="() => send()"
-          title="Press Shift+Enter to send"
+          title="Press Shift+Enter to wrap"
         >
         </textarea>
         <div @click="send" class="glass-button-hack">↹</div>
@@ -154,8 +154,8 @@ const state = reactive({
 const wordDomElement = ref<HTMLInputElement | null>(null)
 const messageDomElement = ref<HTMLTextAreaElement | null>(null)
 
-function sendOnShiftEnter(e: KeyboardEvent) {
-  if (e.key === "Enter" && e.shiftKey) {
+function sendOnEnter(e: KeyboardEvent) {
+  if (e.key === "Enter" && !e.shiftKey) {
     send()
     // disable further handling
     e.preventDefault()
