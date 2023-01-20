@@ -36,9 +36,9 @@ This is a proof of concept for a freight rate editor. It is a simple web app tha
 * Is the data importable?
 * Is the data printable?
 * Is the data shareable?
-* Is the user authenticated?
-* Is the user authorized?
-* Is the user audited?
+* Is the user authenticated? ANS: Active Directory
+* Is the user authorized? ANS: Active Directory
+* Is the user audited? ANS: Active Directory
 
 
 ### Assumptions
@@ -55,5 +55,6 @@ When the user adds a new record, that date must be greater than the latest start
 ### 2023-01-20
 
 * 2:15pm-2:30pm - Setup project scaffolding and deploy to Digital Ocean as there will be a relational database aspect.
-
-2:45-3:00pm - Document requirements
+* 2:45-3:00pm - Document requirements
+* 3:00-3:15pm - Discuss requirements and future vision (UX layout)
+* 3:15-3:30pm - Generate mock UX layout
