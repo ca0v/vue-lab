@@ -1,20 +1,15 @@
-# use flask to server static files
+# use flask to server static files from the current directory
+# and serve the index.html file for all other requests
+import os
 from flask import Flask, send_from_directory
-
-app = Flask(__name__, static_url_path='')
+app = Flask(__name__, static_folder='../dist', static_url_path='')
 
 
 @app.route('/<path:path>')
-def send_js(path):
-    return send_from_directory('../dist/', path)
-
-# send index.html as a response
-
-
-@app.route('/')
-def index():
-    return send_from_directory('../dist', 'index.html')
+def static_proxy(path):
+    print('static_proxy')
+    return send_from_directory('.', path)
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
