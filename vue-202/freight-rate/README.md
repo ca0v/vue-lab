@@ -52,7 +52,6 @@ As I currently understand the requirements, there will be a grid that lists some
 
 When the user adds a new record, that date must be greater than the latest starting date.  The user will be able to enter two prices, one for LB and one for NY.  The user will not be able to edit the ending date.  The prior "current" record will have the ending date updated to one day before the new starting date.
 
-
 ## Work Log
 
 ### 2023-01-20
@@ -62,3 +61,5 @@ When the user adds a new record, that date must be greater than the latest start
 * 3:00-3:15pm - Discuss requirements and future vision (UX layout)
 * 3:15-3:30pm - Generate mock UX layout
 * 5:00pm-5:30pm - Generate mock UX for Freight Rates Editor
+* 5:30pm-6:00pm - Adds some basic form validation rules
+* 6:00pm-6:15pm - Mock "add" functionality

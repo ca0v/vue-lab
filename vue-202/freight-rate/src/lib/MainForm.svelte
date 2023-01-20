@@ -38,7 +38,6 @@
 
 <style>
   .flex {
-    width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -51,7 +50,7 @@
   nav {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(auto-fit, 10em);
+    grid-template-columns: repeat(auto-fit, clamp(8em, 20vw, 12em));
     gap: 1em;
     /* center items */
     justify-content: center;
@@ -60,7 +59,7 @@
   main {
     border: 1px solid var(--border-color);
     width: 100%;
-    height: 100vh;
+    height: auto;
     border-radius: var(--radius);
   }
 </style>

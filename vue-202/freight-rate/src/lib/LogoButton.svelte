@@ -22,9 +22,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    width: 8em;
-    height: 8em;
-    background-color: var(--primary-color);
+    max-width: 12em;
+    max-height: 8em;
     padding: 1em;
   }
 
