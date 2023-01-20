@@ -40,6 +40,10 @@ This is a proof of concept for a freight rate editor. It is a simple web app tha
 * Is the user authorized? ANS: Active Directory
 * Is the user audited? ANS: Active Directory, log updates and deletes.
 
+### Assumptions (NOT confirmed)
+
+* The price will be stored as a decimal number out to 2 decimal places.
+
 ### Assumptions (confirmed)
 
 They will be stored as UNC dates (numbers) and displayed with no time component.
@@ -57,4 +61,4 @@ When the user adds a new record, that date must be greater than the latest start
 * 2:45-3:00pm - Document requirements
 * 3:00-3:15pm - Discuss requirements and future vision (UX layout)
 * 3:15-3:30pm - Generate mock UX layout
-* 5:00pm-6:00pm - Generate mock UX for Freight Rates Editor
+* 5:00pm-5:30pm - Generate mock UX for Freight Rates Editor
