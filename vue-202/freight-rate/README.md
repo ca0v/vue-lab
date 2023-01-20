@@ -29,19 +29,18 @@ This is a proof of concept for a freight rate editor. It is a simple web app tha
 
 * What is the meaning of "current record"?  Is 2100 meant to be "until further notice"?
 * Does the user need to be able to edit the end date, or is that a calculated value?
-* Is the data sortable?
-* Is the data filterable?
-* Is the data searchable?
-* Is the data exportable?
-* Is the data importable?
-* Is the data printable?
-* Is the data shareable?
+* Is the data sortable? ANS: No, already sorted by date
+* Is the data filterable? ANS: No, already filtered by date (last 12 months)
+* Is the data searchable? ANS: No, just care about last 12 months
+* Is the data exportable? ANS: No
+* Is the data importable? ANS: No
+* Is the data printable? Answer not provided, reporting likely done elsewhere
+* Is the data shareable? Answer not provided but seems unlikely
 * Is the user authenticated? ANS: Active Directory
 * Is the user authorized? ANS: Active Directory
-* Is the user audited? ANS: Active Directory
+* Is the user audited? ANS: Active Directory, log updates and deletes.
 
-
-### Assumptions
+### Assumptions (confirmed)
 
 They will be stored as UNC dates (numbers) and displayed with no time component.
 
@@ -54,7 +53,8 @@ When the user adds a new record, that date must be greater than the latest start
 
 ### 2023-01-20
 
-* 2:15pm-2:30pm - Setup project scaffolding and deploy to Digital Ocean as there will be a relational database aspect.
+* 2:15pm-2:30pm - Setup scaffolding, deploy to Digital Ocean
 * 2:45-3:00pm - Document requirements
 * 3:00-3:15pm - Discuss requirements and future vision (UX layout)
 * 3:15-3:30pm - Generate mock UX layout
+* 5:00pm-6:00pm - Generate mock UX for Freight Rates Editor
