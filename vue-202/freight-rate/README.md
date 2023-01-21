@@ -60,7 +60,7 @@ When the user adds a new record, that date must be greater than the latest start
 
 ### 2023-01-20
 
-2.25 hours - Initial Setup and Partially Mocked UX
+2.75 hours - Initial Setup and Partially Mocked UX (responsive)
 
 * 2:15pm-2:30pm - Setup scaffolding, deploy to Digital Ocean
 * 2:45-3:00pm - Document requirements
@@ -68,11 +68,12 @@ When the user adds a new record, that date must be greater than the latest start
 * 3:15-3:30pm - Generate mock UX layout
 * 5:00pm-5:30pm - Generate mock UX for Freight Rates Editor
 * 5:30pm-6:00pm - Adds some basic form validation rules
-* 6:00pm-6:15pm - Mock "add" functionality
-* 7:45pm-8:00pm - Mock "delete" functionality (should historic data be deletable?)
-* Total hours: .25 + .25 + .25 + .25 + 0.5 + 0.5 + 0.25 = 2.25
-
-### 2023-01-20b
-
+* 6:00pm-6:15pm - Add "add" button for discussion
+* 7:45pm-8:00pm - Add "delete" button (should historic data be deletable?)
 * 8:30pm-8:45pm - Add "edit" and continue mocking "delete" functionality to confirm assumptions
 * 8:45pm-9:00pm - mobile betterment
+
+### 2023-01-21
+
+* 8:00am-9:00am - Adds missing mock features (Offload, avg, table -> grid to improve responsiveness)
+* 10:00am-11:00am - Mock edit/delete experience 
