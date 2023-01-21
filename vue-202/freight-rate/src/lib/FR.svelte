@@ -190,11 +190,6 @@
       </tbody>
     </table>
     <!-- button to add a new rate, date must not be earlier than latest start date -->
-    <nav>
-      <button on:click={() => toggleForm()}
-        >Add New Rate</button
-      >
-    </nav>
     <form class:visible={showForm} bind:this={inputForm}>
       <label for="start_date">Start Date</label>
       <input
@@ -215,10 +210,23 @@
         <button type="button" on:click={() => save()}>Save</button>
       </nav>
     </form>
+    <nav>
+      <button on:click={() => toggleForm()}>Add New Rate</button>
+    </nav>
   </div>
 </div>
 
 <style>
+  table {
+    font-size: smaller;
+  }
+
+  table > thead > tr > th {
+    border-bottom: 1px solid var(--border-color-lite);
+    font-size: smaller;
+    font-weight: bold;
+  }
+
   h2 {
     text-align: center;
   }
@@ -244,6 +252,8 @@
 
   .toolbar > button {
     background-color: transparent;
+    width: 2em;
+    height: 2em;
     margin: 0;
     padding: 0.1em 0.2em;
     font-size: smaller;

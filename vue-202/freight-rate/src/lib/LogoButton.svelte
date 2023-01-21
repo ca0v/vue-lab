@@ -35,6 +35,7 @@
     margin: 0.5em;
   }
 
+  button:focus > .logo,
   button:hover > .logo {
     background-color: var(--secondary-color);
     border-color: var(--primary-color);

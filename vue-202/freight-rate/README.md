@@ -75,3 +75,4 @@ When the user adds a new record, that date must be greater than the latest start
 ### 2023-01-20b
 
 * 8:30pm-8:45pm - Add "edit" and continue mocking "delete" functionality to confirm assumptions
+* 8:45pm-9:00pm - mobile betterment
