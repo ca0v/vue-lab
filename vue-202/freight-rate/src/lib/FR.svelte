@@ -307,11 +307,9 @@
         >
         <td class="toolbar">
           {#if true}
-            <button class="delete" on:click={() => deleteFreightRate(rate)}
-              >✗</button
-            >
+            <button class="delete" on:click={() => deleteFreightRate(rate)} />
           {/if}
-          <button class="edit" on:click={() => editFreightRate(rate)}>✎</button>
+          <button class="edit" on:click={() => editFreightRate(rate)} />
         </td>
       {/each}
     </div>
@@ -383,15 +381,23 @@
     height: 3em;
     margin: 0;
     padding: 0.1em 0.2em;
-    font-size: smaller;
+    color: var(--text-color);
   }
 
   button.delete {
-    border-color: var(--delete-color);
+    color: var(--delete-color);
+  }
+
+  button.delete::before {
+    content: "🗑";
+  }
+
+  button.edit::before {
+    content: "✎";
   }
 
   button.edit {
-    border-color: var(--border-color-lite);
+    color: var(--border-color-lite);
   }
 
   button.edit:hover {
@@ -417,11 +423,16 @@
     display: grid;
     grid-template-columns: repeat(6, 1fr) auto;
     grid-auto-rows: 3em;
+    font-size: larger;
   }
 
   .table > th {
     border-bottom: 1px solid var(--border-color-lite);
     font-weight: bold;
+  }
+
+  .table > .value {
+    white-space: nowrap;
   }
 
   .table > .date1.value {
@@ -430,6 +441,8 @@
 
   .table > .title {
     display: none;
+    /* no wrap */
+    white-space: nowrap;
   }
 
   .table .hilite {
@@ -437,10 +450,9 @@
     border: 1px solid red;
   }
 
-  @media (max-width: 767px) {
+  @media (max-width: 991px) {
     .table {
       grid-template-columns: repeat(2, 1fr);
-      font-size: larger;
     }
     .table > th {
       display: none;

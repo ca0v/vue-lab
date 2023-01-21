@@ -7,10 +7,23 @@
   --primary-color: hsl(188, 63%, 40%);
   --secondary-color: hsl(191, 40%, 52%);
   --white-text: white;
+  --black-text: black;
   --radius: 0.5em;
   --delete-color: hsl(10, 100%, 20%);
   --delete-color-intense: hsl(0, 100%, 50%);
   --border-color-intense: hsl(206, 100%, 50%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-color: var(--white-text);
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --text-color: var(--black-text);
+  }
 }
 
 body {

@@ -77,6 +77,7 @@ When the user adds a new record, that date must be greater than the latest start
 
 * 8:00am-9:00am - Adds missing mock features (Offload, avg, table -> grid to improve responsiveness)
 * 10:00am-11:00am - Mock edit/delete experience
+* 10:30pm-11:00pm - Mock edit/delete experience
 
 ### Future
 
