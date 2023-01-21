@@ -63,3 +63,4 @@ When the user adds a new record, that date must be greater than the latest start
 * 5:00pm-5:30pm - Generate mock UX for Freight Rates Editor
 * 5:30pm-6:00pm - Adds some basic form validation rules
 * 6:00pm-6:15pm - Mock "add" functionality
+* 7:45pm-8:00pm - Mock "delete" functionality

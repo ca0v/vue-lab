@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "serve": "python3 ./server/server.py live 3003",
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "devDependencies": {
