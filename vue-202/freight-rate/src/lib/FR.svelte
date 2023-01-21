@@ -90,13 +90,27 @@
 
   let showForm: boolean = false
 
-  function toggleForm() {
-    showForm = !showForm
+  function addNewFreight() {
+    showForm = true
   }
 
   function addDay(start_date: number, days = 1): number {
     // return the day before the start_date
     return start_date + days * ONE_DAY
+  }
+
+  function resetForm() {
+    // clear the form data
+    inputForm.reset()
+    inputForm["start_date"].min = ""
+    inputForm["start_date"].max = ""
+  }
+
+  function cancelSave() {
+    // clear the form data
+    resetForm()
+    // hide the form
+    showForm = false
   }
 
   function save() {
@@ -112,6 +126,7 @@
     const rawData = new FormData(inputForm).entries()
     // convert the data to json
     const data = Object.fromEntries(rawData) as {
+      primary_key: string
       start_date: string
       offload_rate: string
     }
@@ -120,31 +135,62 @@
       return { port, rate: parseFloat(data[port]) }
     })
 
-    // find the latest start date
-    const latestStartDate = sampleRateHistoryData[0].start_date
-    // if the new start date is earlier than the latest start date, throw an error
-    if (inputToZulu(data.start_date) < latestStartDate) {
-      alert("Start date must not be earlier than latest start date")
-      return
+    // find the mock data
+    const startDate = inputToZulu(data.start_date)
+    if (data.primary_key) {
+      // this is an update, find the proper rate
+      const id = inputToZulu(data.primary_key)
+      const rate = sampleRateHistoryData.find((rate) => rate.start_date === id)
+      if (!rate) throw new Error("rate not found")
+      // update the rate
+      rate.start_date = startDate
+      rate.offload_rate = parseFloat(data.offload_rate)
+      rate.port_rates = portRates
+
+      // update the end date of the previous rate
+      const index = sampleRateHistoryData.indexOf(rate) + 1
+      if (index < sampleRateHistoryData.length) {
+        sampleRateHistoryData[index].end_date = addDay(startDate, -1)
+      }
+    } else {
+      const newData = {
+        start_date: startDate,
+        end_date: inputToZulu(INFINITY_DATE),
+        port_rates: portRates,
+        offload_rate: parseFloat(data.offload_rate),
+      }
+      // this is an insert
+      // find the rate that will be in effect after this one expires and use the start date to update the new end date
+      // find the rate that was in effect before the new rate and update the end date
+      const priorRate = sampleRateHistoryData.find(
+        (rate) => rate.start_date <= startDate
+      )
+      if (priorRate) {
+        newData.end_date = addDay(nextRate.start_date, -1)
+        // if priorRate start date is the same then we have a problem, throw
+        if (priorRate.start_date === startDate) {
+          alert("duplicate start date")
+          return
+        }
+        // this is the last rate
+        priorRate.end_date = addDay(startDate, -1)
+        const priorRateIndex = sampleRateHistoryData.indexOf(priorRate)
+        // insert the new rate before the prior rate
+        sampleRateHistoryData.splice(priorRateIndex, 0, newData)
+      } else {
+        // add the new rate to the end of the list
+        sampleRateHistoryData.push(newData)
+      }
+      // hilite the new rate
+      hiliteRate(newData)
     }
-
-    // update the end date of the previous rate to the day before the new start date
-    sampleRateHistoryData[0].end_date = addDay(inputToZulu(data.start_date))
-
-    // add the new rate to the sample data
-    // convert the dates to zulu time
-    sampleRateHistoryData.unshift({
-      start_date: inputToZulu(data.start_date),
-      end_date: inputToZulu(INFINITY_DATE),
-      port_rates: portRates,
-      offload_rate: parseFloat(data.offload_rate),
-    })
 
     // trigger redraw
     sampleRateHistoryData = sampleRateHistoryData
 
     // clear the form data
-    inputForm.reset()
+    resetForm()
+    showForm = false
   }
 
   function blankIfInfinity(date: string) {
@@ -160,9 +206,39 @@
     return sum / rate.port_rates.length + rate.offload_rate
   }
 
+  function editFreightRate(rate: FreightRate) {
+    // since we are using sample data, we will just remove the rate from the sample data
+    const index = sampleRateHistoryData.indexOf(rate)
+    if (index < 0) throw new Error("rate not found")
+    // clear the inputForm and set the values
+    if (!inputForm) throw new Error("form is not defined")
+    resetForm()
+    inputForm["primary_key"].value = asDate(rate.start_date)
+    inputForm["start_date"].value = asDate(rate.start_date)
+    inputForm["end_date"].value = asDate(rate.end_date)
+    inputForm["offload_rate"].value = asDecimal(rate.offload_rate)
+    rate.port_rates.forEach((portRate) => {
+      inputForm[portRate.port].value = asDecimal(portRate.rate)
+    })
+    // the start_date range is between the previous rate and the next rate
+    if (index < sampleRateHistoryData.length - 1) {
+      const previousRate = sampleRateHistoryData[index + 1]
+      inputForm["start_date"].min = blankIfInfinity(
+        asDate(previousRate.start_date + ONE_DAY)
+      )
+    }
+    if (index > 0) {
+      const nextRate = sampleRateHistoryData[index - 1]
+      inputForm["start_date"].max = asDate(nextRate.start_date - ONE_DAY)
+    }
+    // show the form
+    showForm = true
+  }
+
   function deleteFreightRate(rate: FreightRate) {
     // since we are using sample data, we will just remove the rate from the sample data
     const index = sampleRateHistoryData.indexOf(rate)
+    if (index < 0) throw new Error("rate not found")
     if (index === 0) {
       // if this is the first rate, we need to update the end date of the next rate
       sampleRateHistoryData[1].end_date = inputToZulu(INFINITY_DATE)
@@ -172,6 +248,14 @@
     }
     // remove the rate from the sample data
     sampleRateHistoryData = sampleRateHistoryData.filter((r) => r !== rate)
+  }
+
+  let hiliteHack = 0
+
+  function hiliteRate(newData: FreightRate) {
+    // find the row that was just added
+    hiliteHack = newData.start_date
+    setTimeout(() => (hiliteHack = 0), 500)
   }
 </script>
 
@@ -197,7 +281,11 @@
       <!-- write a row for each freight rate -->
       {#each sampleRateHistoryData as rate}
         <td class="align-right date1 title">Start Date</td>
-        <td class="align-right date1 value">{asDate(rate.start_date)}</td>
+        <td
+          class="align-right date1 value"
+          class:hilite={rate.start_date == hiliteHack}
+          >{asDate(rate.start_date)}</td
+        >
         <td class="align-right date2 title">End Date</td>
         <td class="align-right date2 value"
           >{blankIfInfinity(asDate(rate.end_date))}</td
@@ -223,33 +311,43 @@
               >✗</button
             >
           {/if}
-          <button class="edit" on:click={() => alert("edit")}>✎</button>
+          <button class="edit" on:click={() => editFreightRate(rate)}>✎</button>
         </td>
       {/each}
     </div>
     <!-- button to add a new rate, date must not be earlier than latest start date -->
-    <form class:visible={showForm} bind:this={inputForm}>
-      <label for="start_date">Start Date</label>
-      <input
-        type="date"
-        required
-        name="start_date"
-        min={today()}
-        value={firstDayOfNextMonth()}
-      />
-      <label for="end_date">End Date</label>
-      <input type="date" name="end_date" readonly value={INFINITY_DATE} />
-      <!-- write a row for each port -->
-      {#each samplePorts as port}
-        <label for={port}>{port}</label>
-        <input type="number" name={port} min="0.01" step="0.01" required />
-      {/each}
-      <nav>
-        <button type="button" on:click={() => save()}>Save</button>
-      </nav>
-    </form>
+    <dialog open={showForm}>
+      <form
+        class:visible={true}
+        bind:this={inputForm}
+        on:submit|preventDefault={save}
+      >
+        <input type="hidden" name="primary_key" />
+        <label for="start_date">Start Date</label>
+        <input type="date" required name="start_date" value={today()} />
+        <label for="end_date">End Date</label>
+        <input type="date" name="end_date" readonly value={INFINITY_DATE} />
+        <!-- write a row for each port -->
+        {#each samplePorts as port}
+          <label for={port}>{port}</label>
+          <input type="number" name={port} min="0.01" step="0.01" required />
+        {/each}
+        <label for="offload_rate">Offload</label>
+        <input
+          type="number"
+          name="offload_rate"
+          min="0.01"
+          step="0.01"
+          required
+        />
+        <nav>
+          <button type="submit">Save</button>
+          <button type="button" on:click={() => cancelSave()}>Cancel</button>
+        </nav>
+      </form>
+    </dialog>
     <nav>
-      <button on:click={() => toggleForm()}>Add New Rate</button>
+      <button on:click={() => addNewFreight()}>Add New Rate</button>
     </nav>
   </div>
 </div>
@@ -308,7 +406,9 @@
     display: flex;
     flex-direction: row;
     justify-content: center;
+    gap: 1em;
   }
+
   nav > button {
     width: auto;
   }
@@ -330,6 +430,11 @@
 
   .table > .title {
     display: none;
+  }
+
+  .table .hilite {
+    background-color: blue;
+    border: 1px solid red;
   }
 
   @media (max-width: 500px) {
