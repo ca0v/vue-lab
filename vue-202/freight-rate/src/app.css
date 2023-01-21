@@ -1,12 +1,16 @@
 /* import css */
 @import "https://unpkg.com/@picocss/pico@latest/css/pico.min.css";
 
-* {
-  --border-color: hsl(206, 40%, 10%);
+:root {
+  --border-color-dark: hsl(206, 40%, 10%);
+  --border-color-lite: hsl(206, 40%, 60%);
   --primary-color: hsl(188, 63%, 40%);
   --secondary-color: hsl(191, 40%, 52%);
   --white-text: white;
   --radius: 0.5em;
+  --delete-color: hsl(10, 100%, 20%);
+  --delete-color-intense: hsl(0, 100%, 50%);
+  --border-color-intense: hsl(206, 100%, 50%);
 }
 
 body {

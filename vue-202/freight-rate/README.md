@@ -43,6 +43,10 @@ This is a proof of concept for a freight rate editor. It is a simple web app tha
 ### Assumptions (NOT confirmed)
 
 * The price will be stored as a decimal number out to 2 decimal places.
+* Let's discuss delete -- can anyone delete?  can historic data be deleted?
+* Let's discuss edit -- can anyone edit?  can historic data be edited?
+
+![My thought is we can delete anything that is not historical, for example, if the date is 1/20/2023 then only dates on or after can be deleted.](./assets/Screenshot%202023-01-20%20204844.png)
 
 ### Assumptions (confirmed)
 
@@ -56,6 +60,8 @@ When the user adds a new record, that date must be greater than the latest start
 
 ### 2023-01-20
 
+2.25 hours - Initial Setup and Partially Mocked UX
+
 * 2:15pm-2:30pm - Setup scaffolding, deploy to Digital Ocean
 * 2:45-3:00pm - Document requirements
 * 3:00-3:15pm - Discuss requirements and future vision (UX layout)
@@ -63,4 +69,9 @@ When the user adds a new record, that date must be greater than the latest start
 * 5:00pm-5:30pm - Generate mock UX for Freight Rates Editor
 * 5:30pm-6:00pm - Adds some basic form validation rules
 * 6:00pm-6:15pm - Mock "add" functionality
-* 7:45pm-8:00pm - Mock "delete" functionality
+* 7:45pm-8:00pm - Mock "delete" functionality (should historic data be deletable?)
+* Total hours: .25 + .25 + .25 + .25 + 0.5 + 0.5 + 0.25 = 2.25
+
+### 2023-01-20b
+
+* 8:30pm-9:00pm - Add "edit" and continue mocking "delete" functionality to confirm assumptions

@@ -35,7 +35,7 @@
     margin: 0.5em;
   }
 
-  button > .logo:hover {
+  button:hover > .logo {
     background-color: var(--secondary-color);
     border-color: var(--primary-color);
     font-weight: bolder;

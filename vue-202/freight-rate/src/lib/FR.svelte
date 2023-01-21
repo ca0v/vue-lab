@@ -10,6 +10,8 @@
     port_rates: Array<PortRate>
   }
 
+  const INFINITY_DATE = "2100-01-01"
+
   let inputForm: HTMLFormElement
 
   const samplePorts = ["LB", "NY"]
@@ -47,7 +49,7 @@
     const month = today.getMonth() + 1
     const day = 1
     let start_date = asZulu(year, month, day)
-    let end_date = asZulu(2100, 1, 1)
+    let end_date = inputToZulu(INFINITY_DATE)
     for (let i = 1; i <= 12; i++) {
       const port_rates = samplePorts.map(createSamplePortRate)
       sampleRateHistoryData.push({ start_date, end_date, port_rates })
@@ -124,7 +126,7 @@
     // convert the dates to zulu time
     sampleRateHistoryData.unshift({
       start_date: inputToZulu(data.start_date),
-      end_date: asZulu(2100, 1, 1),
+      end_date: inputToZulu(INFINITY_DATE),
       port_rates: portRates,
     })
 
@@ -133,6 +135,10 @@
 
     // clear the form data
     inputForm.reset()
+  }
+
+  function blankIfInfinity(date: string) {
+    return date === INFINITY_DATE ? "" : date
   }
 </script>
 
@@ -155,6 +161,7 @@
           {#each samplePorts as port}
             <th class="align-right">{port}</th>
           {/each}
+          <th />
         </tr>
       </thead>
       <tbody>
@@ -162,17 +169,32 @@
         {#each sampleRateHistoryData as rate}
           <tr>
             <td class="align-right">{asDate(rate.start_date)}</td>
-            <td class="align-right">{asDate(rate.end_date)}</td>
+            <td class="align-right">{blankIfInfinity(asDate(rate.end_date))}</td
+            >
             <!-- write a cell for each port rate -->
             {#each rate.port_rates as port}
               <td class="align-right">{asDecimal(port.rate)}</td>
             {/each}
+            {#if rate.end_date >= inputToZulu(today())}
+              <td class="toolbar">
+                <button class="delete" on:click={() => alert("delete")}
+                  >✗</button
+                >
+                <button class="edit" on:click={() => alert("edit")}>✎</button>
+              </td>
+            {:else}
+              <td />
+            {/if}
           </tr>
         {/each}
       </tbody>
     </table>
     <!-- button to add a new rate, date must not be earlier than latest start date -->
-    <button on:click={() => toggleForm()}>Add New Rate</button>
+    <nav>
+      <button on:click={() => toggleForm()}
+        >Add New Rate</button
+      >
+    </nav>
     <form class:visible={showForm} bind:this={inputForm}>
       <label for="start_date">Start Date</label>
       <input
@@ -183,13 +205,15 @@
         value={firstDayOfNextMonth()}
       />
       <label for="end_date">End Date</label>
-      <input type="date" name="end_date" readonly value="2100-01-01" />
+      <input type="date" name="end_date" readonly value={INFINITY_DATE} />
       <!-- write a row for each port -->
       {#each samplePorts as port}
         <label for={port}>{port}</label>
         <input type="number" name={port} min="0.01" step="0.01" required />
       {/each}
-      <button type="button" on:click={() => save()}>Save</button>
+      <nav>
+        <button type="button" on:click={() => save()}>Save</button>
+      </nav>
     </form>
   </div>
 </div>
@@ -205,9 +229,48 @@
 
   form {
     display: none;
+    padding: 1em;
   }
 
   form.visible {
     display: block;
+  }
+
+  .toolbar {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5em;
+  }
+
+  .toolbar > button {
+    background-color: transparent;
+    margin: 0;
+    padding: 0.1em 0.2em;
+    font-size: smaller;
+  }
+
+  button.delete {
+    border-color: var(--delete-color);
+  }
+
+  button.edit {
+    border-color: var(--border-color-lite);
+  }
+
+  button.edit:hover {
+    border-color: var(--border-color-intense);
+  }
+
+  button.delete:hover {
+    border-color: var(--delete-color-intense);
+  }
+
+  nav {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+  }
+  nav > button {
+    width: auto;
   }
 </style>

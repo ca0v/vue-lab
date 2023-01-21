@@ -57,7 +57,7 @@
   }
 
   main {
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-color-lite);    
     width: 100%;
     height: auto;
     border-radius: var(--radius);
