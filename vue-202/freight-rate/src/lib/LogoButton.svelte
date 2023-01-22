@@ -19,9 +19,10 @@
 
 <style>
   button {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    display: grid;
+    grid-template-rows: 1fr 2fr;
+    /* center */
+    justify-items: center;
     max-width: 12em;
     max-height: 8em;
     padding: 1em;
@@ -33,12 +34,13 @@
     line-height: 3em;
     font-size: 1em;
     margin: 0.5em;
+    border: 1px solid;
   }
 
   button:focus > .logo,
   button:hover > .logo {
     background-color: var(--secondary-color);
-    border-color: var(--primary-color);
+    border-color: var(--border-color-dark);
     font-weight: bolder;
   }
 </style>

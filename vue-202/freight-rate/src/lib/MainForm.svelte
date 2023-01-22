@@ -28,6 +28,7 @@
     />
     <LogoButton title="Shipping Zones" element_id="SZ" />
   </nav>
+  <br/>
   <main>
     <slot />
     {#if showFreightRatesPage}
@@ -57,7 +58,6 @@
   }
 
   main {
-    border: 1px solid var(--border-color-lite);    
     width: 100%;
     height: auto;
     border-radius: var(--radius);

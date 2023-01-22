@@ -1,10 +1,13 @@
 <script lang="ts">
+  import TrashIcon from "../trash_icon.svelte"
+  import PencilIcon from "../pencil_icon.svelte"
   type PortRate = {
     port: string
     rate: number
   }
 
   type FreightRate = {
+    _hiliteHack?: Set<HiliteFields>
     start_date: number
     end_date: number
     offload_rate: number
@@ -39,8 +42,13 @@
     return `${year}-${month.toString().padStart(2, "0")}-01`
   }
 
+  function round2(value: number): number {
+    // round a number to 2 decimal places
+    return Math.round(value * 100) / 100
+  }
+
   function createSamplePortRate(port: string) {
-    return { port, rate: 1000 + Math.random() * 100 }
+    return { port, rate: round2(1000 + Math.random() * 100) }
   }
 
   // inject sample data for the last 12 months
@@ -50,7 +58,7 @@
     const year = today.getFullYear()
     const month = today.getMonth() + 1
     const day = 1
-    const offload_rate = 1000 + Math.random() * 100
+    const offload_rate = round2(1000 + Math.random() * 100)
     let start_date = asZulu(year, month, day)
     let end_date = inputToZulu(INFINITY_DATE)
     for (let i = 1; i <= 12; i++) {
@@ -91,6 +99,8 @@
   let showForm: boolean = false
 
   function addNewFreight() {
+    // clear the form data
+    resetForm()
     showForm = true
   }
 
@@ -111,6 +121,14 @@
     resetForm()
     // hide the form
     showForm = false
+  }
+
+  // I am fully aware this should be done with a store, just poc-ing (and regretting it)
+  function setEndDate(rate: FreightRate, value: number) {
+    if (rate.end_date !== value) {
+      rate.end_date = value
+      hiliteRate(rate, "end_date")
+    }
   }
 
   function save() {
@@ -142,15 +160,29 @@
       const id = inputToZulu(data.primary_key)
       const rate = sampleRateHistoryData.find((rate) => rate.start_date === id)
       if (!rate) throw new Error("rate not found")
-      // update the rate
-      rate.start_date = startDate
-      rate.offload_rate = parseFloat(data.offload_rate)
-      rate.port_rates = portRates
+      if (rate.start_date !== startDate) {
+        rate.start_date = startDate
+        hiliteRate(rate, "start_date")
+      }
+      const offload_rate = parseFloat(data.offload_rate)
+      if (rate.offload_rate !== offload_rate) {
+        console.log(`offload_rate: ${rate.offload_rate} -> ${offload_rate}`)
+        rate.offload_rate = offload_rate
+        hiliteRate(rate, "offload_rate")
+      }
+
+      portRates.forEach((portRate, i) => {
+        if (!rate.port_rates) rate.port_rates = portRates
+        if (rate.port_rates[i].rate !== portRate.rate) {
+          rate.port_rates[i].rate = portRate.rate
+          hiliteRate(rate, <"port1_rate">`port${i + 1}_rate`)
+        }
+      })
 
       // update the end date of the previous rate
       const index = sampleRateHistoryData.indexOf(rate) + 1
       if (index < sampleRateHistoryData.length) {
-        sampleRateHistoryData[index].end_date = addDay(startDate, -1)
+        setEndDate(sampleRateHistoryData[index], addDay(startDate, -1))
       }
     } else {
       const newData = {
@@ -166,14 +198,16 @@
         (rate) => rate.start_date <= startDate
       )
       if (priorRate) {
-        newData.end_date = addDay(priorRate.start_date, -1)
         // if priorRate start date is the same then we have a problem, throw
         if (priorRate.start_date === startDate) {
           alert("duplicate start date")
           return
         }
+        newData.end_date = addDay(priorRate.start_date, -1)
+        hiliteRate(newData, "end_date")
         // this is the last rate
         priorRate.end_date = addDay(startDate, -1)
+        hiliteRate(priorRate, "end_date")
         const priorRateIndex = sampleRateHistoryData.indexOf(priorRate)
         // insert the new rate before the prior rate
         sampleRateHistoryData.splice(priorRateIndex, 0, newData)
@@ -182,7 +216,11 @@
         sampleRateHistoryData.push(newData)
       }
       // hilite the new rate
-      hiliteRate(newData)
+      hiliteRate(newData, "start_date")
+      hiliteRate(newData, "end_date")
+      hiliteRate(newData, "offload_rate")
+      hiliteRate(newData, "port1_rate")
+      hiliteRate(newData, "port2_rate")
     }
 
     // trigger redraw
@@ -250,12 +288,26 @@
     sampleRateHistoryData = sampleRateHistoryData.filter((r) => r !== rate)
   }
 
-  let hiliteHack = 0
+  type HiliteFields =
+    | "start_date"
+    | "end_date"
+    | "offload_rate"
+    | "port1_rate"
+    | "port2_rate"
 
-  function hiliteRate(newData: FreightRate) {
+  function isHiliteHack(newData: FreightRate, field: string) {
+    return newData._hiliteHack?.has(field as HiliteFields)
+  }
+
+  function hiliteRate(newData: FreightRate, field: HiliteFields) {
     // find the row that was just added
-    hiliteHack = newData.start_date
-    setTimeout(() => (hiliteHack = 0), 500)
+    newData._hiliteHack = newData._hiliteHack || new Set()
+    newData._hiliteHack.add(field)
+    console.log("hilite", asDate(newData.start_date), field)
+    setTimeout(() => {
+      newData._hiliteHack.delete(field)
+      sampleRateHistoryData = sampleRateHistoryData
+    }, 5000)
   }
 </script>
 
@@ -283,22 +335,28 @@
         <td class="align-right date1 title">Start Date</td>
         <td
           class="align-right date1 value"
-          class:hilite={rate.start_date == hiliteHack}
+          class:hilite={rate._hiliteHack?.has("start_date")}
           >{asDate(rate.start_date)}</td
         >
         <td class="align-right date2 title">End Date</td>
-        <td class="align-right date2 value"
+        <td
+          class="align-right date2 value"
+          class:hilite={rate._hiliteHack?.has("end_date")}
           >{blankIfInfinity(asDate(rate.end_date))}</td
         >
         <!-- write a cell for each port rate -->
         {#each rate.port_rates as port, i}
           <td class={`align-right port${i + 1} title`}>{port.port}</td>
-          <td class={`align-right port_rate${i + 1} value`}
+          <td
+            class={`align-right port_rate${i + 1} value`}
+            class:hilite={isHiliteHack(rate, `port${i + 1}_rate`)}
             >{asDecimal(port.rate)}</td
           >
         {/each}
         <td class="align-right offload title">Offload</td>
-        <td class="align-right offload_rate value"
+        <td
+          class="align-right offload_rate value"
+          class:hilite={isHiliteHack(rate, "offload_rate")}
           >{asDecimal(rate.offload_rate)}</td
         >
         <td class="align-right average title">Average</td>
@@ -307,9 +365,13 @@
         >
         <td class="toolbar">
           {#if true}
-            <button class="delete" on:click={() => deleteFreightRate(rate)} />
+            <button class="delete" on:click={() => deleteFreightRate(rate)}>
+              <TrashIcon />
+            </button>
           {/if}
-          <button class="edit" on:click={() => editFreightRate(rate)} />
+          <button class="edit" on:click={() => editFreightRate(rate)}>
+            <PencilIcon />
+          </button>
         </td>
       {/each}
     </div>
@@ -351,6 +413,9 @@
 </div>
 
 <style>
+  * {
+    transition-duration: 200ms;
+  }
   h2 {
     text-align: center;
   }
@@ -371,33 +436,21 @@
   .toolbar {
     display: flex;
     flex-direction: row;
+    margin: 0;
+    padding: 0;
+    /* align buttons to the right */
     justify-content: flex-end;
-    gap: 0.5em;
   }
 
   .toolbar > button {
+    box-sizing: border-box;
     background-color: transparent;
     width: 3em;
-    height: 3em;
+    height: 2.5em;
     margin: 0;
-    padding: 0.1em 0.2em;
+    padding: 0;
     color: var(--text-color);
-  }
-
-  button.delete {
-    color: var(--delete-color);
-  }
-
-  button.delete::before {
-    content: "🗑";
-  }
-
-  button.edit::before {
-    content: "✎";
-  }
-
-  button.edit {
-    color: var(--border-color-lite);
+    border: 1px solid transparent;
   }
 
   button.edit:hover {
@@ -405,7 +458,7 @@
   }
 
   button.delete:hover {
-    border-color: var(--delete-color-intense);
+    border-color: var(--border-color-intense);
   }
 
   nav {
@@ -424,6 +477,8 @@
     grid-template-columns: repeat(6, 1fr) auto;
     grid-auto-rows: 3em;
     font-size: larger;
+    /* center text vertically */
+    align-items: center;
   }
 
   .table > th {
@@ -445,9 +500,22 @@
     white-space: nowrap;
   }
 
+  /* animation on border color */
   .table .hilite {
-    background-color: blue;
-    border: 1px solid red;
+    animation: hilite 5s;
+    border-radius: var(--radius);
+  }
+
+  @keyframes hilite {
+    start {
+      background-color: transparent;
+    }
+    50% {
+      background-color: var(--color-delta);
+    }
+    end {
+      background-color: transparent;
+    }
   }
 
   @media (max-width: 991px) {

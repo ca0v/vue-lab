@@ -75,10 +75,13 @@ When the user adds a new record, that date must be greater than the latest start
 
 ### 2023-01-21
 
+3.0 hours - Mocked UX (responsive, edit/delete/add hilite changes)
+
 * 8:00am-9:00am - Adds missing mock features (Offload, avg, table -> grid to improve responsiveness)
 * 10:00am-11:00am - Mock edit/delete experience
-* 10:30pm-11:00pm - Mock edit/delete experience
+* 10:30pm-11:00pm - Mock edit/delete experience (continued)
+* 11:00pm-11:30pm - Added a hilite feature to show the changes (row editor may have been better)
 
-### Future
+### 2023-01-22
 
-Inline editing would have been better but trying some animation so indicate where the new data is went
+* 01:00am-01:30am - Using [heroicons](https://heroicons.com/) for trash/edit
