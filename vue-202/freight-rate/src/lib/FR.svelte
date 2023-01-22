@@ -166,7 +166,7 @@
         (rate) => rate.start_date <= startDate
       )
       if (priorRate) {
-        newData.end_date = addDay(nextRate.start_date, -1)
+        newData.end_date = addDay(priorRate.start_date, -1)
         // if priorRate start date is the same then we have a problem, throw
         if (priorRate.start_date === startDate) {
           alert("duplicate start date")
@@ -437,7 +437,7 @@
     border: 1px solid red;
   }
 
-  @media (max-width: 500px) {
+  @media (max-width: 767px) {
     .table {
       grid-template-columns: repeat(2, 1fr);
       font-size: larger;
