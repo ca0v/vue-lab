@@ -73,6 +73,7 @@
     inputForm.reset()
     inputForm["start_date"].min = ""
     inputForm["start_date"].max = ""
+    inputForm["primary_key"].value = ""
   }
 
   function cancelSave() {
@@ -121,6 +122,7 @@
       start_date: string
       offload_rate: string
     }
+
     // for each port, get the rate
     const portRates = samplePorts.map((port) => {
       return { port, rate: parseFloat(data[port]) }
@@ -136,7 +138,6 @@
       setStartDate(rate, startDate)
       const offload_rate = parseFloat(data.offload_rate)
       setValue(rate, offload_rate, "offload_rate")
-      setValue(rate, offload_rate, "offload_rate")
 
       portRates.forEach((portRate, i) => {
         if (!rate.port_rates) rate.port_rates = portRates
@@ -145,47 +146,16 @@
           hiliteRate(rate, <"port1_rate">`port${i + 1}_rate`)
         }
       })
-
-      // update the end date of the previous rate
-      const index = freightRateData.indexOf(rate) + 1
-      if (index < freightRateData.length) {
-        setEndDate(freightRateData[index], addDay(startDate, -1))
-      }
+      updateFreightRate(rate)
     } else {
-      const newData = {
+      const newData: FreightRate = {
         start_date: startDate,
         end_date: inputToZulu(INFINITY_DATE),
         port_rates: portRates,
         offload_rate: parseFloat(data.offload_rate),
       }
-      // this is an insert
-      // find the rate that will be in effect after this one expires and use the start date to update the new end date
-      // find the rate that was in effect before the new rate and update the end date
-      const priorRate = freightRateData.find(
-        (rate) => rate.start_date <= startDate
-      )
-      if (priorRate) {
-        // if priorRate start date is the same then we have a problem, throw
-        if (priorRate.start_date === startDate) {
-          alert("duplicate start date")
-          return
-        }
-        setEndDate(newData, priorRate.end_date)
-        // this is the last rate
-        setEndDate(priorRate, addDay(startDate, -1))
-        const priorRateIndex = freightRateData.indexOf(priorRate)
-        // insert the new rate before the prior rate
-        freightRateData.splice(priorRateIndex, 0, newData)
-      } else {
-        // add the new rate to the end of the list
-        freightRateData.push(newData)
-      }
-      // hilite the entire row
-      hiliteRate(newData, "start_date")
-      hiliteRate(newData, "end_date")
-      hiliteRate(newData, "offload_rate")
-      hiliteRate(newData, "port1_rate")
-      hiliteRate(newData, "port2_rate")
+
+      insertFreightRate(newData)
     }
 
     // trigger redraw
@@ -194,6 +164,52 @@
     // clear the form data
     resetForm()
     showForm = false
+  }
+
+  function updateFreightRate(data: FreightRate) {
+    // update the end date of the previous rate
+    const startDate = data.start_date
+    const index = freightRateData.indexOf(data) + 1
+    if (index < freightRateData.length) {
+      setEndDate(freightRateData[index], addDay(startDate, -1))
+    }
+  }
+
+  function insertFreightRate(data: FreightRate) {
+    // this is an insert
+    // find the rate that will be in effect after this one expires and use the start date to update the new end date
+    // find the rate that was in effect before the new rate and update the end date
+    const startDate = data.start_date
+    const priorRate = freightRateData.find(
+      (rate) => rate.start_date <= startDate
+    )
+    if (priorRate) {
+      // if priorRate start date is the same then we have a problem, throw
+      if (priorRate.start_date === startDate) {
+        alert("duplicate start date")
+        return
+      }
+      setEndDate(data, priorRate.end_date)
+      // this is the last rate
+      setEndDate(priorRate, addDay(startDate, -1))
+      const priorRateIndex = freightRateData.indexOf(priorRate)
+      // insert the new rate before the prior rate
+      freightRateData.splice(priorRateIndex, 0, data)
+    } else {
+      // add the new rate to the end of the list
+      // set the "end_date" to one day before the next start date
+      if (freightRateData.length) {
+        const nextRate = freightRateData[freightRateData.length - 1]
+        setEndDate(data, addDay(nextRate.start_date, -1))
+      }
+      freightRateData.push(data)
+    }
+    // hilite the entire row
+    hiliteRate(data, "start_date")
+    hiliteRate(data, "end_date")
+    hiliteRate(data, "offload_rate")
+    hiliteRate(data, "port1_rate")
+    hiliteRate(data, "port2_rate")
   }
 
   function blankIfInfinity(date: string) {
@@ -279,7 +295,9 @@
   }
 
   function getMoreData() {
-    freightRateData = [...freightRateData, ...more()]
+    freightRateData = [...freightRateData, ...more(freightRateData[freightRateData.length-1].start_date)].sort(
+      (a, b) => b.start_date - a.start_date
+    )
   }
 </script>
 
@@ -355,7 +373,7 @@
           </button>
         </div>
       {/each}
-      <button on:click={() => getMoreData()}>More</button>
+      <button on:click={() => getMoreData()}>More Rows</button>
     </div>
     <!-- button to add a new rate, date must not be earlier than latest start date -->
     <dialog open={showForm}>

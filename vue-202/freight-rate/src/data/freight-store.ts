@@ -4,9 +4,7 @@ import { injectSampleRates } from "../mock/freight-data"
 
 // a collection of freight rates is called a "freight store"
 
-let start_date = 0
-
-export function more() {
+export function more(start_date = 0) {
   if (!start_date) {
     // generate for today and go backward 12 months
     const today = new Date()
