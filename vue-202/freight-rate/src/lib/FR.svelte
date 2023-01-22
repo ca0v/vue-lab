@@ -3,10 +3,26 @@
   import PencilIcon from "../pencil_icon.svelte"
   import AddIcon from "../add_icon.svelte"
   import { onMount } from "svelte"
+  import type { FreightRate } from "../@types/FreightRate"
+  import {
+    addDay,
+    asDate,
+    asDecimal,
+    INFINITY_DATE,
+    inputToZulu,
+    ONE_DAY,
+    today,
+  } from "./fun"
+  import { injectSampleRates, samplePorts } from "../mock/freight-data"
+
+  let showForm: boolean = false
+  let inputForm: HTMLFormElement
+  let sampleRateHistoryData: Array<FreightRate> = []
 
   // when the component mounts...
   onMount(() => {
     document.addEventListener("keydown", handleKeyDown)
+    sampleRateHistoryData = injectSampleRates()
     return () => {
       document.removeEventListener("keydown", handleKeyDown)
     }
@@ -42,114 +58,12 @@
     event.preventDefault()
   }
 
-  type PortRate = {
-    port: string
-    rate: number
-  }
-
-  type FreightRate = {
-    _hiliteHack?: Set<HiliteFields>
-    start_date: number
-    end_date: number
-    offload_rate: number
-    port_rates: Array<PortRate>
-  }
-
-  const ONE_DAY = 24 * 60 * 60 * 1000
-  const INFINITY_DATE = "2100-12-31"
-
-  let inputForm: HTMLFormElement
-
-  const samplePorts = ["LB", "NY"]
-
-  let sampleRateHistoryData: Array<FreightRate> = []
-
-  function today() {
-    // return today's date as a string in yyyy-mm-dd format
-    const today = new Date()
-    const year = today.getFullYear()
-    const month = today.getMonth() + 1
-    const day = today.getDate()
-    return `${year}-${month.toString().padStart(2, "0")}-${day
-      .toString()
-      .padStart(2, "0")}`
-  }
-
-  function firstDayOfNextMonth() {
-    // return the first day of the next month as a string in yyyy-mm-dd format
-    const today = new Date()
-    const year = today.getFullYear()
-    const month = today.getMonth() + 2
-    return `${year}-${month.toString().padStart(2, "0")}-01`
-  }
-
-  function round2(value: number): number {
-    // round a number to 2 decimal places
-    return Math.round(value * 100) / 100
-  }
-
-  function createSamplePortRate(port: string) {
-    return { port, rate: round2(1000 + Math.random() * 100) }
-  }
-
-  // inject sample data for the last 12 months
-  function injectSampleRates() {
-    // generate for today and go backward 12 months
-    const today = new Date()
-    const year = today.getFullYear()
-    const month = today.getMonth() + 1
-    const day = 1
-    const offload_rate = round2(1000 + Math.random() * 100)
-    let start_date = asZulu(year, month, day)
-    let end_date = inputToZulu(INFINITY_DATE)
-    for (let i = 1; i <= 12; i++) {
-      const port_rates = samplePorts.map(createSamplePortRate)
-      sampleRateHistoryData.push({
-        start_date,
-        end_date,
-        port_rates,
-        offload_rate,
-      })
-      end_date = addDay(start_date, -1)
-      start_date = asZulu(year, month - i, day)
-    }
-  }
-  injectSampleRates()
-
-  function inputToZulu(date: string): number {
-    // convert a date string in yyyy-mm-dd format to zulu time
-    const [year, month, day] = date.split("-").map((s) => parseInt(s))
-    return asZulu(year, month, day)
-  }
-
-  function asZulu(year: number, month: number, day: number): number {
-    // return a date as a zulu time
-    return Date.UTC(year, month - 1, day)
-  }
-
-  function asDate(zulu: number): string {
-    // convert a zulu time to a date string in yyyy-mm-dd format
-    return new Date(zulu).toISOString().slice(0, 10)
-  }
-
-  function asDecimal(value: number): string {
-    // return a number as a string with 2 decimal places
-    return value.toFixed(2)
-  }
-
-  let showForm: boolean = false
-
   function addNewFreight() {
     // clear the form data
     resetForm()
     inputForm["start_date"].value = today()
     showForm = true
     setTimeout(() => inputForm["start_date"].focus(), 100)
-  }
-
-  function addDay(start_date: number, days = 1): number {
-    // return the day before the start_date
-    return start_date + days * ONE_DAY
   }
 
   function resetForm() {
