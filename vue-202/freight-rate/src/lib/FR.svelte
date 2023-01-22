@@ -203,7 +203,7 @@
           alert("duplicate start date")
           return
         }
-        newData.end_date = addDay(priorRate.start_date, -1)
+        newData.end_date = priorRate.end_date
         hiliteRate(newData, "end_date")
         // this is the last rate
         priorRate.end_date = addDay(startDate, -1)
@@ -232,7 +232,7 @@
   }
 
   function blankIfInfinity(date: string) {
-    return date === INFINITY_DATE ? "" : date
+    return date === INFINITY_DATE ? "-" : date
   }
 
   function computeAverage(rate: FreightRate): number {
@@ -279,10 +279,10 @@
     if (index < 0) throw new Error("rate not found")
     if (index === 0) {
       // if this is the first rate, we need to update the end date of the next rate
-      sampleRateHistoryData[1].end_date = inputToZulu(INFINITY_DATE)
+      setEndDate(sampleRateHistoryData[1], inputToZulu(INFINITY_DATE))
     } else {
       // if this is not the first rate, we need to update the end date of the next rate
-      sampleRateHistoryData[index + 1].end_date = rate.end_date
+      setEndDate(sampleRateHistoryData[index - 1], rate.end_date)
     }
     // remove the rate from the sample data
     sampleRateHistoryData = sampleRateHistoryData.filter((r) => r !== rate)
@@ -330,6 +330,7 @@
       {/each}
       <th class="align-right offload">Offload</th>
       <th class="align-right average">Average</th>
+      <th class="toolbar-header">&nbsp;</th>
       <!-- write a row for each freight rate -->
       {#each sampleRateHistoryData as rate}
         <td class="align-right date1 title">Start Date</td>
@@ -475,10 +476,11 @@
   .table {
     display: grid;
     grid-template-columns: repeat(6, 1fr) auto;
-    grid-auto-rows: 3em;
     font-size: larger;
     /* center text vertically */
     align-items: center;
+    border-top: 1px solid var(--border-color-lite);
+    border-bottom: 1px solid var(--border-color-lite);
   }
 
   .table > th {
@@ -518,6 +520,10 @@
     }
   }
 
+  .table .spacer {
+    display: none;
+  }
+
   @media (max-width: 991px) {
     .table {
       grid-template-columns: repeat(2, 1fr);
@@ -545,6 +551,13 @@
     .table > .toolbar {
       grid-column-start: 1;
       grid-column-end: -1;
+    }
+
+    .table .spacer {
+      display: block;
+      height: 1em;
+      grid-row-start: 1;
+      grid-row-end: -1;
     }
   }
 </style>
