@@ -27,7 +27,8 @@ This is a proof of concept for a freight rate editor. It is a simple web app tha
 
 ### Questions
 
-* What is the meaning of "current record"?  Is 2100 meant to be "until further notice"?
+* What is the meaning of "current record"?  ANS: The record with the latest starting date.
+* Is 2100 meant to be "until further notice"? ANS: Yes
 * Does the user need to be able to edit the end date, or is that a calculated value?
 * Is the data sortable? ANS: No, already sorted by date
 * Is the data filterable? ANS: No, already filtered by date (last 12 months)
@@ -87,3 +88,4 @@ When the user adds a new record, that date must be greater than the latest start
 * 01:00am-01:30am - Using [heroicons](https://heroicons.com/) for trash/edit
 * 01:00pm-01:15pm - Remove defects, get good UX flow
 * 01:15pm-01:30pm - Add kbd shortcuts
+* 01:30pm-02:00pm - Working out delta notification UX (blue underline?)

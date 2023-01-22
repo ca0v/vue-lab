@@ -16,19 +16,27 @@
     const key = event.key
     const isAlt = event.altKey
 
-    if (!isAlt) return
-    switch (key) {
-      case "a":
-        addNewFreight()
-        break
-      case "s":
-        save()
-        break
-      case "Escape":
-        cancelSave()
-        break
-      default:
-        return
+    if (isAlt) {
+      switch (key) {
+        case "a":
+          addNewFreight()
+          break
+        case "s":
+          save()
+          break
+        default:
+          return
+      }
+    }
+
+    if (!isAlt) {
+      switch (key) {
+        case "Escape":
+          cancelSave()
+          break
+        default:
+          return
+      }
     }
 
     event.preventDefault()
@@ -48,7 +56,7 @@
   }
 
   const ONE_DAY = 24 * 60 * 60 * 1000
-  const INFINITY_DATE = "2100-01-01"
+  const INFINITY_DATE = "2100-12-31"
 
   let inputForm: HTMLFormElement
 
@@ -136,6 +144,7 @@
     resetForm()
     inputForm["start_date"].value = today()
     showForm = true
+    setTimeout(() => inputForm["start_date"].focus(), 100)
   }
 
   function addDay(start_date: number, days = 1): number {
@@ -272,7 +281,7 @@
   }
 
   function blankIfInfinity(date: string) {
-    return date === INFINITY_DATE ? "-" : date
+    return date === INFINITY_DATE ? "<null>" : date
   }
 
   function computeAverage(rate: FreightRate): number {
@@ -311,6 +320,7 @@
     }
     // show the form
     showForm = true
+    setTimeout(() => inputForm["start_date"].focus(), 100)
   }
 
   function deleteFreightRate(rate: FreightRate) {
@@ -364,53 +374,57 @@
 <div>
   <div class="rates">
     <div class="table">
-      <th class="align-right date1">Start Date</th>
-      <th class="align-right date2">End Date</th>
+      <div class="th align-right date1">Start Date</div>
+      <div class="th align-right date2">End Date</div>
       <!-- write heading for each port type -->
       {#each samplePorts as port, i}
-        <th class={`align-right port${i + 1}`}>{port}</th>
+        <div class={`th align-right port${i + 1}`}>{port}</div>
       {/each}
-      <th class="align-right offload">Offload</th>
-      <th class="align-right average">Average</th>
-      <div class="toolbar">
+      <div class="th align-right offload">Offload</div>
+      <div class="th align-right average">Average</div>
+      <div class="th toolbar">
         <button title="Alt+A" class="quick-add-row" on:click={addNewFreight}
           ><AddIcon /></button
         >
       </div>
       <!-- write a row for each freight rate -->
       {#each sampleRateHistoryData as rate}
-        <td class="align-right date1 title">Start Date</td>
-        <td
+        <div class="align-right date1 title">Start Date</div>
+        <div
           class="align-right date1 value"
           class:hilite={rate._hiliteHack?.has("start_date")}
-          >{asDate(rate.start_date)}</td
         >
-        <td class="align-right date2 title">End Date</td>
-        <td
+          {asDate(rate.start_date)}
+        </div>
+        <div class="align-right date2 title">End Date</div>
+        <div
           class="align-right date2 value"
           class:hilite={rate._hiliteHack?.has("end_date")}
-          >{blankIfInfinity(asDate(rate.end_date))}</td
         >
+          {blankIfInfinity(asDate(rate.end_date))}
+        </div>
         <!-- write a cell for each port rate -->
         {#each rate.port_rates as port, i}
-          <td class={`align-right port${i + 1} title`}>{port.port}</td>
-          <td
+          <div class={`align-right port${i + 1} title`}>{port.port}</div>
+          <div
             class={`align-right port_rate${i + 1} value`}
             class:hilite={isHiliteHack(rate, `port${i + 1}_rate`)}
-            >{asDecimal(port.rate)}</td
           >
+            {asDecimal(port.rate)}
+          </div>
         {/each}
-        <td class="align-right offload title">Offload</td>
-        <td
+        <div class="align-right offload title">Offload</div>
+        <div
           class="align-right offload_rate value"
           class:hilite={isHiliteHack(rate, "offload_rate")}
-          >{asDecimal(rate.offload_rate)}</td
         >
-        <td class="align-right average title">Average</td>
-        <td class="align-right average_rate value"
-          >{asDecimal(computeAverage(rate))}</td
-        >
-        <td class="toolbar">
+          {asDecimal(rate.offload_rate)}
+        </div>
+        <div class="align-right average title">Average</div>
+        <div class="align-right average_rate value">
+          {asDecimal(computeAverage(rate))}
+        </div>
+        <div class="toolbar">
           {#if true}
             <button class="delete" on:click={() => deleteFreightRate(rate)}>
               <TrashIcon />
@@ -419,7 +433,7 @@
           <button class="edit" on:click={() => editFreightRate(rate)}>
             <PencilIcon />
           </button>
-        </td>
+        </div>
       {/each}
     </div>
     <!-- button to add a new rate, date must not be earlier than latest start date -->
@@ -526,9 +540,11 @@
     border-bottom: 1px solid var(--border-color-lite);
   }
 
-  .table > th {
+  .table > .th {
     border-bottom: 1px solid var(--border-color-lite);
     font-weight: bold;
+    height: 2em;
+    line-height: 2rem;
   }
 
   .table > .value {
@@ -547,8 +563,12 @@
 
   /* animation on border color */
   .table .hilite {
-    animation: hilite 5s;
-    border-radius: var(--radius);
+    
+    border-bottom: 1px solid transparent;
+    text-decoration-style: dashed;
+    text-decoration-color: var(--color-delta);
+    text-decoration-line: underline;
+    text-decoration-thickness: 0.25rem;
   }
 
   .toolbar > button.quick-add-row {
@@ -558,23 +578,11 @@
     padding: 0;
   }
 
-  @keyframes hilite {
-    start {
-      background-color: transparent;
-    }
-    50% {
-      background-color: var(--color-delta);
-    }
-    end {
-      background-color: transparent;
-    }
-  }
-
   @media (max-width: 991px) {
     .table {
       grid-template-columns: repeat(2, 1fr);
     }
-    .table > th {
+    .table > .th {
       display: none;
     }
 
@@ -586,7 +594,7 @@
       grid-column-start: 2;
     }
 
-    .table > th {
+    .table > .th {
       display: none;
     }
 
