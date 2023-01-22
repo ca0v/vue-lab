@@ -282,7 +282,7 @@
       setEndDate(sampleRateHistoryData[1], inputToZulu(INFINITY_DATE))
     } else {
       // if this is not the first rate, we need to update the end date of the next rate
-      setEndDate(sampleRateHistoryData[index - 1], rate.end_date)
+      setStartDate(sampleRateHistoryData[index - 1], rate.start_date)
     }
     // remove the rate from the sample data
     sampleRateHistoryData = sampleRateHistoryData.filter((r) => r !== rate)
