@@ -1,5 +1,5 @@
 <script lang="ts">
-  import MainForm from "./lib/MainForm.svelte"
+  import MainForm from "./components/MainForm.svelte"
 </script>
 
 <main>

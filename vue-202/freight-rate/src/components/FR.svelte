@@ -1,7 +1,7 @@
 <script lang="ts">
-  import TrashIcon from "../trash_icon.svelte"
-  import PencilIcon from "../pencil_icon.svelte"
-  import AddIcon from "../add_icon.svelte"
+  import TrashIcon from "../assets/trash_icon.svelte"
+  import PencilIcon from "../assets/pencil_icon.svelte"
+  import AddIcon from "../assets/add_icon.svelte"
   import { onMount } from "svelte"
   import type { FreightRate } from "../@types/FreightRate"
   import {
@@ -12,7 +12,7 @@
     inputToZulu,
     ONE_DAY,
     today,
-  } from "./fun"
+  } from "../lib/fun"
   import { injectSampleRates, samplePorts } from "../mock/freight-data"
 
   let showForm: boolean = false

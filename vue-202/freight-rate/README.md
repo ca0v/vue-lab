@@ -91,4 +91,4 @@ When the user adds a new record, that date must be greater than the latest start
 * 01:00pm-01:15pm - Remove defects, get good UX flow
 * 01:15pm-01:30pm - Add kbd shortcuts
 * 01:30pm-02:00pm - Working out delta notification UX (blue underline?)
-* 09:00pm-09:15pm - Refactor
+* 09:00pm-09:30pm - Refactor
