@@ -13,16 +13,18 @@
     ONE_DAY,
     today,
   } from "../lib/fun"
-  import { injectSampleRates, samplePorts } from "../mock/freight-data"
+  import { samplePorts } from "../mock/freight-data"
+  import { more } from "../data/freight-store"
 
   let showForm: boolean = false
   let inputForm: HTMLFormElement
-  let sampleRateHistoryData: Array<FreightRate> = []
+
+  let freightRateData = more()
+  freightRateData[0].end_date = inputToZulu(INFINITY_DATE)
 
   // when the component mounts...
   onMount(() => {
     document.addEventListener("keydown", handleKeyDown)
-    sampleRateHistoryData = injectSampleRates()
     return () => {
       document.removeEventListener("keydown", handleKeyDown)
     }
@@ -129,7 +131,7 @@
     if (data.primary_key) {
       // this is an update, find the proper rate
       const id = inputToZulu(data.primary_key)
-      const rate = sampleRateHistoryData.find((rate) => rate.start_date === id)
+      const rate = freightRateData.find((rate) => rate.start_date === id)
       if (!rate) throw new Error("rate not found")
       setStartDate(rate, startDate)
       const offload_rate = parseFloat(data.offload_rate)
@@ -145,9 +147,9 @@
       })
 
       // update the end date of the previous rate
-      const index = sampleRateHistoryData.indexOf(rate) + 1
-      if (index < sampleRateHistoryData.length) {
-        setEndDate(sampleRateHistoryData[index], addDay(startDate, -1))
+      const index = freightRateData.indexOf(rate) + 1
+      if (index < freightRateData.length) {
+        setEndDate(freightRateData[index], addDay(startDate, -1))
       }
     } else {
       const newData = {
@@ -159,7 +161,7 @@
       // this is an insert
       // find the rate that will be in effect after this one expires and use the start date to update the new end date
       // find the rate that was in effect before the new rate and update the end date
-      const priorRate = sampleRateHistoryData.find(
+      const priorRate = freightRateData.find(
         (rate) => rate.start_date <= startDate
       )
       if (priorRate) {
@@ -171,12 +173,12 @@
         setEndDate(newData, priorRate.end_date)
         // this is the last rate
         setEndDate(priorRate, addDay(startDate, -1))
-        const priorRateIndex = sampleRateHistoryData.indexOf(priorRate)
+        const priorRateIndex = freightRateData.indexOf(priorRate)
         // insert the new rate before the prior rate
-        sampleRateHistoryData.splice(priorRateIndex, 0, newData)
+        freightRateData.splice(priorRateIndex, 0, newData)
       } else {
         // add the new rate to the end of the list
-        sampleRateHistoryData.push(newData)
+        freightRateData.push(newData)
       }
       // hilite the entire row
       hiliteRate(newData, "start_date")
@@ -187,7 +189,7 @@
     }
 
     // trigger redraw
-    sampleRateHistoryData = sampleRateHistoryData
+    freightRateData = freightRateData
 
     // clear the form data
     resetForm()
@@ -209,7 +211,7 @@
 
   function editFreightRate(rate: FreightRate) {
     // since we are using sample data, we will just remove the rate from the sample data
-    const index = sampleRateHistoryData.indexOf(rate)
+    const index = freightRateData.indexOf(rate)
     if (index < 0) throw new Error("rate not found")
     // clear the inputForm and set the values
     if (!inputForm) throw new Error("form is not defined")
@@ -222,14 +224,14 @@
       inputForm[portRate.port].value = asDecimal(portRate.rate)
     })
     // the start_date range is between the previous rate and the next rate
-    if (index < sampleRateHistoryData.length - 1) {
-      const previousRate = sampleRateHistoryData[index + 1]
+    if (index < freightRateData.length - 1) {
+      const previousRate = freightRateData[index + 1]
       inputForm["start_date"].min = blankIfInfinity(
         asDate(previousRate.end_date + ONE_DAY)
       )
     }
     if (index > 0) {
-      const nextRate = sampleRateHistoryData[index - 1]
+      const nextRate = freightRateData[index - 1]
       inputForm["start_date"].max = asDate(nextRate.start_date - ONE_DAY)
     }
     // show the form
@@ -239,19 +241,19 @@
 
   function deleteFreightRate(rate: FreightRate) {
     // since we are using sample data, we will just remove the rate from the sample data
-    const index = sampleRateHistoryData.indexOf(rate)
+    const index = freightRateData.indexOf(rate)
     if (index < 0) throw new Error("rate not found")
     if (index === 0) {
-      if (sampleRateHistoryData.length > 1) {
+      if (freightRateData.length > 1) {
         // if this is the first rate, we need to update the end date of the next rate
-        setEndDate(sampleRateHistoryData[1], inputToZulu(INFINITY_DATE))
+        setEndDate(freightRateData[1], inputToZulu(INFINITY_DATE))
       }
     } else {
       // if this is not the first rate, we need to update the end date of the next rate
-      setStartDate(sampleRateHistoryData[index - 1], rate.start_date)
+      setStartDate(freightRateData[index - 1], rate.start_date)
     }
     // remove the rate from the sample data
-    sampleRateHistoryData = sampleRateHistoryData.filter((r) => r !== rate)
+    freightRateData = freightRateData.filter((r) => r !== rate)
   }
 
   type HiliteFields =
@@ -272,8 +274,12 @@
     console.log("hilite", asDate(newData.start_date), field)
     setTimeout(() => {
       newData._hiliteHack.delete(field)
-      sampleRateHistoryData = sampleRateHistoryData
+      freightRateData = freightRateData
     }, 5000)
+  }
+
+  function getMoreData() {
+    freightRateData = [...freightRateData, ...more()]
   }
 </script>
 
@@ -302,7 +308,7 @@
         >
       </div>
       <!-- write a row for each freight rate -->
-      {#each sampleRateHistoryData as rate}
+      {#each freightRateData as rate}
         <div class="align-right date1 title">Start Date</div>
         <div
           class="align-right date1 value"
@@ -349,6 +355,7 @@
           </button>
         </div>
       {/each}
+      <button on:click={() => getMoreData()}>More</button>
     </div>
     <!-- button to add a new rate, date must not be earlier than latest start date -->
     <dialog open={showForm}>

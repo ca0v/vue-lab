@@ -85,10 +85,15 @@ When the user adds a new record, that date must be greater than the latest start
 
 ### 2023-01-22
 
-1.5 hours - In-memory POC operational with change feedback
+3.0 hours - In-memory POC operational with change feedback
 
 * 01:00am-01:30am - Using [heroicons](https://heroicons.com/) for trash/edit
 * 01:00pm-01:15pm - Remove defects, get good UX flow
 * 01:15pm-01:30pm - Add kbd shortcuts
 * 01:30pm-02:00pm - Working out delta notification UX (blue underline?)
 * 09:00pm-09:30pm - Refactor
+* 09:30pm-10:00pm - Add "more" button and the mock experience
+
+### Future
+
+* create mock services, use writables

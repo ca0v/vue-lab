@@ -16,12 +16,30 @@ export function addDay(start_date: number, days = 1): number {
   return start_date + days * ONE_DAY
 }
 
-export function asZulu(year: number, month: number, day: number): number {
-    // return a date as a zulu time
-    return Date.UTC(year, month - 1, day)
+export function addMonth(zulu: number, months = 1): number {
+  console.log(zulu, asDate(zulu))
+  // return the month before the start_date
+  let [year, month, day] = asDate(zulu)
+    .split("-")
+    .map((v) => parseInt(v))
+
+  console.log("addMonth", year, month, day)
+  month += months
+
+  if (month > 12) {
+    year += 1
+    month = 1
   }
-  
-  export function inputToZulu(date: string): number {
+  console.log("addMonth", year, month, day)
+  return asZulu(year, month, day)
+}
+
+export function asZulu(year: number, month: number, day: number): number {
+  // return a date as a zulu time
+  return Date.UTC(year, month - 1, day)
+}
+
+export function inputToZulu(date: string): number {
   // convert a date string in yyyy-mm-dd format to zulu time
   const [year, month, day] = date.split("-").map((s) => parseInt(s))
   return asZulu(year, month, day)
