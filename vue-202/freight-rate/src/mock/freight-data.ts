@@ -22,7 +22,7 @@ export function injectSampleRates(before: number) {
 
   for (let i = 1; i <= 12; i++) {
     const start_date = addMonth(before, -i)
-    const end_date = addDay(addMonth(before, -i), -1)
+    const end_date = addDay(addMonth(start_date, 1), -1)
     sampleRateHistoryData.push({
       start_date,
       end_date,
