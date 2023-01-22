@@ -43,4 +43,8 @@
     border-color: var(--border-color-dark);
     font-weight: bolder;
   }
+
+  button > span {
+    font-size: smaller;
+  }
 </style>
