@@ -563,7 +563,6 @@
 
   /* animation on border color */
   .table .hilite {
-    
     border-bottom: 1px solid transparent;
     text-decoration-style: dashed;
     text-decoration-color: var(--color-delta);
@@ -584,6 +583,14 @@
     }
     .table > .th {
       display: none;
+    }
+
+    .table > .th.toolbar {
+      display: flex;
+      grid-column-start: 1;
+      grid-column-end: -1;
+      /* align items to the right */
+      justify-content: flex-end;
     }
 
     .table > .title {
