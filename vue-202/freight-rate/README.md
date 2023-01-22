@@ -85,3 +85,5 @@ When the user adds a new record, that date must be greater than the latest start
 ### 2023-01-22
 
 * 01:00am-01:30am - Using [heroicons](https://heroicons.com/) for trash/edit
+* 01:00pm-01:15pm - Remove defects, get good UX flow
+* 01:15pm-01:30pm - Add kbd shortcuts

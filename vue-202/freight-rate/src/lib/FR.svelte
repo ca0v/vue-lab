@@ -1,6 +1,39 @@
 <script lang="ts">
   import TrashIcon from "../trash_icon.svelte"
   import PencilIcon from "../pencil_icon.svelte"
+  import AddIcon from "../add_icon.svelte"
+  import { onMount } from "svelte"
+
+  // when the component mounts...
+  onMount(() => {
+    document.addEventListener("keydown", handleKeyDown)
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown)
+    }
+  })
+
+  function handleKeyDown(event: KeyboardEvent) {
+    const key = event.key
+    const isAlt = event.altKey
+
+    if (!isAlt) return
+    switch (key) {
+      case "a":
+        addNewFreight()
+        break
+      case "s":
+        save()
+        break
+      case "Escape":
+        cancelSave()
+        break
+      default:
+        return
+    }
+
+    event.preventDefault()
+  }
+
   type PortRate = {
     port: string
     rate: number
@@ -101,6 +134,7 @@
   function addNewFreight() {
     // clear the form data
     resetForm()
+    inputForm["start_date"].value = today()
     showForm = true
   }
 
@@ -128,6 +162,20 @@
     if (rate.end_date !== value) {
       rate.end_date = value
       hiliteRate(rate, "end_date")
+    }
+  }
+
+  function setStartDate(rate: FreightRate, value: number) {
+    if (rate.start_date !== value) {
+      rate.start_date = value
+      hiliteRate(rate, "start_date")
+    }
+  }
+
+  function setValue<T>(rate: FreightRate, value: T, key: HiliteFields) {
+    if (rate[key] !== value) {
+      rate[key] = value
+      hiliteRate(rate, key)
     }
   }
 
@@ -160,16 +208,10 @@
       const id = inputToZulu(data.primary_key)
       const rate = sampleRateHistoryData.find((rate) => rate.start_date === id)
       if (!rate) throw new Error("rate not found")
-      if (rate.start_date !== startDate) {
-        rate.start_date = startDate
-        hiliteRate(rate, "start_date")
-      }
+      setStartDate(rate, startDate)
       const offload_rate = parseFloat(data.offload_rate)
-      if (rate.offload_rate !== offload_rate) {
-        console.log(`offload_rate: ${rate.offload_rate} -> ${offload_rate}`)
-        rate.offload_rate = offload_rate
-        hiliteRate(rate, "offload_rate")
-      }
+      setValue(rate, offload_rate, "offload_rate")
+      setValue(rate, offload_rate, "offload_rate")
 
       portRates.forEach((portRate, i) => {
         if (!rate.port_rates) rate.port_rates = portRates
@@ -203,11 +245,9 @@
           alert("duplicate start date")
           return
         }
-        newData.end_date = priorRate.end_date
-        hiliteRate(newData, "end_date")
+        setEndDate(newData, priorRate.end_date)
         // this is the last rate
-        priorRate.end_date = addDay(startDate, -1)
-        hiliteRate(priorRate, "end_date")
+        setEndDate(priorRate, addDay(startDate, -1))
         const priorRateIndex = sampleRateHistoryData.indexOf(priorRate)
         // insert the new rate before the prior rate
         sampleRateHistoryData.splice(priorRateIndex, 0, newData)
@@ -215,7 +255,7 @@
         // add the new rate to the end of the list
         sampleRateHistoryData.push(newData)
       }
-      // hilite the new rate
+      // hilite the entire row
       hiliteRate(newData, "start_date")
       hiliteRate(newData, "end_date")
       hiliteRate(newData, "offload_rate")
@@ -262,7 +302,7 @@
     if (index < sampleRateHistoryData.length - 1) {
       const previousRate = sampleRateHistoryData[index + 1]
       inputForm["start_date"].min = blankIfInfinity(
-        asDate(previousRate.start_date + ONE_DAY)
+        asDate(previousRate.end_date + ONE_DAY)
       )
     }
     if (index > 0) {
@@ -278,8 +318,10 @@
     const index = sampleRateHistoryData.indexOf(rate)
     if (index < 0) throw new Error("rate not found")
     if (index === 0) {
-      // if this is the first rate, we need to update the end date of the next rate
-      setEndDate(sampleRateHistoryData[1], inputToZulu(INFINITY_DATE))
+      if (sampleRateHistoryData.length > 1) {
+        // if this is the first rate, we need to update the end date of the next rate
+        setEndDate(sampleRateHistoryData[1], inputToZulu(INFINITY_DATE))
+      }
     } else {
       // if this is not the first rate, we need to update the end date of the next rate
       setStartDate(sampleRateHistoryData[index - 1], rate.start_date)
@@ -330,7 +372,11 @@
       {/each}
       <th class="align-right offload">Offload</th>
       <th class="align-right average">Average</th>
-      <th class="toolbar-header">&nbsp;</th>
+      <div class="toolbar">
+        <button title="Alt+A" class="quick-add-row" on:click={addNewFreight}
+          ><AddIcon /></button
+        >
+      </div>
       <!-- write a row for each freight rate -->
       {#each sampleRateHistoryData as rate}
         <td class="align-right date1 title">Start Date</td>
@@ -387,7 +433,7 @@
         <label for="start_date">Start Date</label>
         <input type="date" required name="start_date" value={today()} />
         <label for="end_date">End Date</label>
-        <input type="date" name="end_date" readonly value={INFINITY_DATE} />
+        <input type="text" name="end_date" readonly value={INFINITY_DATE} />
         <!-- write a row for each port -->
         {#each samplePorts as port}
           <label for={port}>{port}</label>
@@ -407,9 +453,6 @@
         </nav>
       </form>
     </dialog>
-    <nav>
-      <button on:click={() => addNewFreight()}>Add New Rate</button>
-    </nav>
   </div>
 </div>
 
@@ -508,6 +551,13 @@
     border-radius: var(--radius);
   }
 
+  .toolbar > button.quick-add-row {
+    width: 2em;
+    height: 2em;
+    margin: 0;
+    padding: 0;
+  }
+
   @keyframes hilite {
     start {
       background-color: transparent;
@@ -518,10 +568,6 @@
     end {
       background-color: transparent;
     }
-  }
-
-  .table .spacer {
-    display: none;
   }
 
   @media (max-width: 991px) {
@@ -551,13 +597,6 @@
     .table > .toolbar {
       grid-column-start: 1;
       grid-column-end: -1;
-    }
-
-    .table .spacer {
-      display: block;
-      height: 1em;
-      grid-row-start: 1;
-      grid-row-end: -1;
     }
   }
 </style>

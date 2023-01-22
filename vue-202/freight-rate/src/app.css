@@ -2,13 +2,15 @@
 @import "https://unpkg.com/@picocss/pico@latest/css/pico.min.css";
 
 :root {
+  --color-blue: hsl(188, 63%, 40%);
   --border-color-dark: hsl(206, 40%, 10%);
   --border-color-lite: hsl(206, 40%, 60%);
-  --primary-color: hsl(188, 63%, 40%);
+  --primary-color: var(--color-blue);
   --secondary-color: hsl(191, 40%, 52%);
   --white-text: white;
   --black-text: black;
   --radius: 0.5em;
+  --insert-color: var(--color-blue);
   --delete-color: hsl(10, 100%, 20%);
   --delete-color-intense: hsl(0, 100%, 50%);
   --border-color-intense: hsl(206, 100%, 50%);
