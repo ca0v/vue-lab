@@ -1,7 +1,7 @@
 import type { FreightRate } from "../@types/FreightRate"
 import { addMonth, asDate, asZulu, inputToZulu } from "../lib/fun"
 
-const API_URL = "http://localhost:3003/api/"
+const API_URL = 0 ? "http://localhost:3003/api/" : "/api/"
 
 // to build a collection of freight rates is called a "freight store"
 export async function more(start_date = 0) {

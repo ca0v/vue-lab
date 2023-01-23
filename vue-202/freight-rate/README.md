@@ -74,6 +74,7 @@ If no – stay on the screen and revert. (DONE)
 
 ### Future
 
+* need a solution for dev-specific endpoint
 * create mock services, use writables
 * [Python with Active Directory](https://pypi.org/project/ms-active-directory/)
 
