@@ -94,6 +94,10 @@ When the user adds a new record, that date must be greater than the latest start
 * 09:00pm-09:30pm - Refactor
 * 09:30pm-10:00pm - Add "more" button and the mock experience
 
+### 2023-01-23
+
+* 08:00am-08:30am - test workflow logic (add, edit, delete)
+
 ### Future
 
 * create mock services, use writables

@@ -213,7 +213,7 @@
   }
 
   function blankIfInfinity(date: string) {
-    return date === INFINITY_DATE ? "<null>" : date
+    return date === INFINITY_DATE ? "" : date
   }
 
   function computeAverage(rate: FreightRate): number {
@@ -242,9 +242,7 @@
     // the start_date range is between the previous rate and the next rate
     if (index < freightRateData.length - 1) {
       const previousRate = freightRateData[index + 1]
-      inputForm["start_date"].min = blankIfInfinity(
-        asDate(previousRate.end_date + ONE_DAY)
-      )
+      inputForm["start_date"].min = asDate(previousRate.start_date + ONE_DAY)
     }
     if (index > 0) {
       const nextRate = freightRateData[index - 1]
@@ -295,9 +293,10 @@
   }
 
   function getMoreData() {
-    freightRateData = [...freightRateData, ...more(freightRateData[freightRateData.length-1].start_date)].sort(
-      (a, b) => b.start_date - a.start_date
-    )
+    freightRateData = [
+      ...freightRateData,
+      ...more(freightRateData[freightRateData.length - 1].start_date),
+    ].sort((a, b) => b.start_date - a.start_date)
   }
 </script>
 
@@ -339,7 +338,7 @@
           class="align-right date2 value"
           class:hilite={rate._hiliteHack?.has("end_date")}
         >
-          {blankIfInfinity(asDate(rate.end_date))}
+          {blankIfInfinity(asDate(rate.end_date)) || "<null>"}
         </div>
         <!-- write a cell for each port rate -->
         {#each rate.port_rates as port, i}
