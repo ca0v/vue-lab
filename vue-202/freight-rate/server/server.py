@@ -81,7 +81,7 @@ def rates(start, end):
         # generate rates for samplePorts
         port_rates = []
         for port in samplePorts:
-            port_rates.append(PortRate(port, 1000 + random.random() * days))
+            port_rates.append(PortRate(port, 1000 + round(random.random() * days, 2)))
 
         d1 = unix_to_date(start_date.timestamp())
         d2 = unix_to_date(end_date.timestamp())
