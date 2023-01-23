@@ -4,6 +4,7 @@
 :root {
   --color-blue: hsl(188, 63%, 40%);
   --border-color-dark: hsl(206, 40%, 10%);
+  --border-color-lite-50: hsl(206, 40%, 60%, 0.5);
   --border-color-lite: hsl(206, 40%, 60%);
   --primary-color: var(--color-blue);
   --secondary-color: hsl(191, 40%, 52%);

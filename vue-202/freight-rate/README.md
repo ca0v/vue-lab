@@ -97,7 +97,10 @@ When the user adds a new record, that date must be greater than the latest start
 ### 2023-01-23
 
 * 08:00am-08:30am - test workflow logic (add, edit, delete)
+* 10:30am-11:00am - move data into a mock service
+* 4:00pm-4:30pm - apply feedback from UX review
 
 ### Future
 
 * create mock services, use writables
+* [Python with Active Directory](https://pypi.org/project/ms-active-directory/)

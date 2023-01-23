@@ -19,11 +19,12 @@
   let showForm: boolean = false
   let inputForm: HTMLFormElement
 
-  let freightRateData = more()
-  freightRateData[0].end_date = inputToZulu(INFINITY_DATE)
+  let freightRateData: Array<FreightRate> = []
 
   // when the component mounts...
-  onMount(() => {
+  onMount(async () => {
+    freightRateData = await more()
+    freightRateData[0].end_date = inputToZulu(INFINITY_DATE)
     document.addEventListener("keydown", handleKeyDown)
     return () => {
       document.removeEventListener("keydown", handleKeyDown)
@@ -292,11 +293,13 @@
     }, 5000)
   }
 
-  function getMoreData() {
-    freightRateData = [
-      ...freightRateData,
-      ...more(freightRateData[freightRateData.length - 1].start_date),
-    ].sort((a, b) => b.start_date - a.start_date)
+  async function getMoreData() {
+    const moreData = await more(
+      freightRateData[freightRateData.length - 1].start_date
+    )
+    freightRateData = [...freightRateData, ...moreData].sort(
+      (a, b) => b.start_date - a.start_date
+    )
   }
 </script>
 
@@ -487,6 +490,7 @@
 
   .table > .value {
     white-space: nowrap;
+    border-bottom: 0.5px solid var(--border-color-lite-50);
   }
 
   .table > .date1.value {
@@ -513,6 +517,10 @@
     height: 2em;
     margin: 0;
     padding: 0;
+  }
+
+  dialog > form {
+    background: var(--background-color);
   }
 
   @media (max-width: 991px) {
