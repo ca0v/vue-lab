@@ -99,19 +99,24 @@
     }
   }
 
-  function setValue<T>(rate: FreightRate, value: T, key: HiliteFields) {
-    if (rate[key] !== value) {
-      rate[key] = value
-      hiliteRate(rate, key)
+  function setOffloadRate(rate: FreightRate, value: number) {
+    if (rate.offload_rate !== value) {
+      rate.offload_rate = value
+      hiliteRate(rate, "offload_rate")
     }
   }
 
-  function save() {
-    if (!inputForm) throw new Error("form is not defined")
+  function toss(message: string) {
+    alert(message)
+    throw new Error(message)
+  }
+
+  function save(): boolean | undefined {
+    if (!inputForm) throw toss("form is not defined")
     // validate the form inputs
     if (!inputForm.checkValidity()) {
       inputForm.reportValidity()
-      return
+      return false
     }
 
     // fake a save by adding a new rate to the sample data
@@ -121,41 +126,32 @@
     const data = Object.fromEntries(rawData) as {
       primary_key: string
       start_date: string
+      end_date: string
       offload_rate: string
     }
 
     // for each port, get the rate
     const portRates = samplePorts.map((port) => {
-      return { port, rate: parseFloat(data[port]) }
+      return { port, rate: parseFloat((<any>data)[port]) }
     })
 
-    // find the mock data
     const startDate = inputToZulu(data.start_date)
+    const newData: FreightRate = {
+      start_date: startDate,
+      end_date: inputToZulu(data.end_date),
+      port_rates: portRates,
+      offload_rate: parseFloat(data.offload_rate),
+    }
+
+    // find the mock data
     if (data.primary_key) {
       // this is an update, find the proper rate
       const id = inputToZulu(data.primary_key)
       const rate = freightRateData.find((rate) => rate.start_date === id)
-      if (!rate) throw new Error("rate not found")
-      setStartDate(rate, startDate)
-      const offload_rate = parseFloat(data.offload_rate)
-      setValue(rate, offload_rate, "offload_rate")
-
-      portRates.forEach((portRate, i) => {
-        if (!rate.port_rates) rate.port_rates = portRates
-        if (rate.port_rates[i].rate !== portRate.rate) {
-          rate.port_rates[i].rate = portRate.rate
-          hiliteRate(rate, <"port1_rate">`port${i + 1}_rate`)
-        }
-      })
-      updateFreightRate(rate)
+      if (!rate) throw toss("rate not found")
+      if (!updateFreightRate(rate, newData)) return false
     } else {
-      const newData: FreightRate = {
-        start_date: startDate,
-        end_date: inputToZulu(INFINITY_DATE),
-        port_rates: portRates,
-        offload_rate: parseFloat(data.offload_rate),
-      }
-
+      newData.end_date = inputToZulu(INFINITY_DATE)
       insertFreightRate(newData)
     }
 
@@ -167,13 +163,45 @@
     showForm = false
   }
 
-  function updateFreightRate(data: FreightRate) {
-    // update the end date of the previous rate
+  function updateFreightRate(rate: FreightRate, data: FreightRate): boolean {
+    const index = freightRateData.indexOf(rate)
+    if (index < 0) throw toss("rate not found")
+
     const startDate = data.start_date
-    const index = freightRateData.indexOf(data) + 1
-    if (index < freightRateData.length) {
-      setEndDate(freightRateData[index], addDay(startDate, -1))
+
+    // confirm the change with user
+    if (index < freightRateData.length - 1) {
+      // get the date range of the prior rate
+      const priorRate = freightRateData[index + 1]
+      const priorStartDate = asDate(priorRate.start_date)
+      const priorEndDate = asDate(priorRate.end_date)
+      // the new end date will change...
+      const newPriorEndDate = asDate(addDay(startDate, -1))
+      // if the new end date is not the same as the prior end date, confirm the change
+      if (priorEndDate !== newPriorEndDate) {
+        const message = `The previous time block will change from\n${priorStartDate}, ${priorEndDate} to\n${priorStartDate},${newPriorEndDate}.  Continue?`
+        if (!confirm(message)) return false
+      }
     }
+
+    // update rate
+    setStartDate(rate, data.start_date)
+    setOffloadRate(rate, data.offload_rate)
+
+    if (!rate.port_rates) rate.port_rates = data.port_rates
+    data.port_rates.forEach((portRate, i) => {
+      if (rate.port_rates[i].rate !== portRate.rate) {
+        rate.port_rates[i].rate = portRate.rate
+        hiliteRate(rate, <"port1_rate">`port${i + 1}_rate`)
+      }
+    })
+
+    // update the end date of the previous rate
+    if (index < freightRateData.length - 1) {
+      setEndDate(freightRateData[index + 1], addDay(startDate, -1))
+    }
+
+    return true
   }
 
   function insertFreightRate(data: FreightRate) {
@@ -229,9 +257,9 @@
   function editFreightRate(rate: FreightRate) {
     // since we are using sample data, we will just remove the rate from the sample data
     const index = freightRateData.indexOf(rate)
-    if (index < 0) throw new Error("rate not found")
+    if (index < 0) throw toss("rate not found")
     // clear the inputForm and set the values
-    if (!inputForm) throw new Error("form is not defined")
+    if (!inputForm) throw toss("form is not defined")
     resetForm()
     inputForm["primary_key"].value = asDate(rate.start_date)
     inputForm["start_date"].value = asDate(rate.start_date)
@@ -254,21 +282,35 @@
     setTimeout(() => inputForm["start_date"].focus(), 100)
   }
 
-  function deleteFreightRate(rate: FreightRate) {
+  function deleteFreightRate(rate: FreightRate): boolean {
     // since we are using sample data, we will just remove the rate from the sample data
     const index = freightRateData.indexOf(rate)
-    if (index < 0) throw new Error("rate not found")
+    if (index < 0) throw toss("rate not found")
+
     if (index === 0) {
       if (freightRateData.length > 1) {
         // if this is the first rate, we need to update the end date of the next rate
-        setEndDate(freightRateData[1], inputToZulu(INFINITY_DATE))
+        const priorRate = freightRateData[1]
+        const priorStartDate = asDate(priorRate.start_date)
+        const priorEndDate = asDate(priorRate.end_date)
+        const newPriorEndDate = inputToZulu(INFINITY_DATE)
+        const message = `The previous time block ${priorStartDate} through ${priorEndDate}\nwill become unbounded.\n\nContinue?`
+        if (!confirm(message)) return false
+        setEndDate(priorRate, newPriorEndDate)
       }
     } else {
       // if this is not the first rate, we need to update the end date of the next rate
-      setStartDate(freightRateData[index - 1], rate.start_date)
+      const nextRate = freightRateData[index - 1]
+      const nextStartDate = asDate(nextRate.start_date)
+      const nextEndDate = blankIfInfinity(asDate(nextRate.end_date)) || "unbounded"
+      const newNextStartDate = asDate(rate.start_date)
+      const message = `The next time block ${nextStartDate} through ${nextEndDate}\nwill become ${newNextStartDate} through ${nextEndDate}.\n\nContinue?`
+      if (!confirm(message)) return false
+      setStartDate(nextRate, rate.start_date)
     }
     // remove the rate from the sample data
     freightRateData = freightRateData.filter((r) => r !== rate)
+    return true
   }
 
   type HiliteFields =
@@ -288,7 +330,7 @@
     newData._hiliteHack.add(field)
     console.log("hilite", asDate(newData.start_date), field)
     setTimeout(() => {
-      newData._hiliteHack.delete(field)
+      newData._hiliteHack?.delete(field)
       freightRateData = freightRateData
     }, 5000)
   }

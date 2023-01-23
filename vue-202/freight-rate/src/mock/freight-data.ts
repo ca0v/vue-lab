@@ -8,7 +8,7 @@ import {
   round2,
 } from "../lib/fun"
 
-export const samplePorts = ["LB", "NY"]
+export const samplePorts: Array<"LB" | "NY"> = ["LB", "NY"]
 
 export function createSamplePortRate(port: string) {
   return { port, rate: round2(1000 + Math.random() * 100) }

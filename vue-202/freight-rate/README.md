@@ -57,7 +57,51 @@ As I currently understand the requirements, there will be a grid that lists some
 
 When the user adds a new record, that date must be greater than the latest starting date.  The user will be able to enter two prices, one for LB and one for NY.  The user will not be able to edit the ending date.  The prior "current" record will have the ending date updated to one day before the new starting date.
 
+### Feedback
+
+* Display a message about the dates changing – like “The previous time block is going to change from _____ to ______” – do you want this to happen?  (DONE)
+
+* If yes – then go back to main screen and highlight as it is currently doing. (DONE)
+If no – stay on the screen and revert. (DONE)
+
+* Same with the delete – if they delete a record – "are you sure – this will change  (fill in the blank)". (DONE)
+
+* Remove the “Shipping zone” option.  (DONE)
+
+* How far back did you load data?  Remove everything before Jan 2020.  The first record is Jan 2020.
+
 ## Work Log
+
+### Future
+
+* create mock services, use writables
+* [Python with Active Directory](https://pypi.org/project/ms-active-directory/)
+
+### 2023-01-23
+
+* 08:00am-08:30am - test workflow logic (add, edit, delete)
+* 10:30am-11:00am - move data into a mock service
+* 4:00pm-5:00pm - apply feedback from UX review
+
+### 2023-01-22
+
+3.0 hours - In-memory POC operational with change feedback
+
+* 01:00am-01:30am - Using [heroicons](https://heroicons.com/) for trash/edit
+* 01:00pm-01:15pm - Remove defects, get good UX flow
+* 01:15pm-01:30pm - Add kbd shortcuts
+* 01:30pm-02:00pm - Working out delta notification UX (blue underline?)
+* 09:00pm-09:30pm - Refactor
+* 09:30pm-10:00pm - Add "more" button and the mock experience
+
+### 2023-01-21
+
+3.0 hours - Mocked UX (responsive, edit/delete/add hilite changes)
+
+* 8:00am-9:00am - Adds missing mock features (Offload, avg, table -> grid to improve responsiveness)
+* 10:00am-11:00am - Mock edit/delete experience
+* 10:30pm-11:00pm - Mock edit/delete experience (continued)
+* 11:00pm-11:30pm - Added a hilite feature to show the changes (row editor may have been better)
 
 ### 2023-01-20
 
@@ -73,34 +117,3 @@ When the user adds a new record, that date must be greater than the latest start
 * 7:45pm-8:00pm - Add "delete" button (should historic data be deletable?)
 * 8:30pm-8:45pm - Add "edit" and continue mocking "delete" functionality to confirm assumptions
 * 8:45pm-9:00pm - mobile betterment
-
-### 2023-01-21
-
-3.0 hours - Mocked UX (responsive, edit/delete/add hilite changes)
-
-* 8:00am-9:00am - Adds missing mock features (Offload, avg, table -> grid to improve responsiveness)
-* 10:00am-11:00am - Mock edit/delete experience
-* 10:30pm-11:00pm - Mock edit/delete experience (continued)
-* 11:00pm-11:30pm - Added a hilite feature to show the changes (row editor may have been better)
-
-### 2023-01-22
-
-3.0 hours - In-memory POC operational with change feedback
-
-* 01:00am-01:30am - Using [heroicons](https://heroicons.com/) for trash/edit
-* 01:00pm-01:15pm - Remove defects, get good UX flow
-* 01:15pm-01:30pm - Add kbd shortcuts
-* 01:30pm-02:00pm - Working out delta notification UX (blue underline?)
-* 09:00pm-09:30pm - Refactor
-* 09:30pm-10:00pm - Add "more" button and the mock experience
-
-### 2023-01-23
-
-* 08:00am-08:30am - test workflow logic (add, edit, delete)
-* 10:30am-11:00am - move data into a mock service
-* 4:00pm-4:30pm - apply feedback from UX review
-
-### Future
-
-* create mock services, use writables
-* [Python with Active Directory](https://pypi.org/project/ms-active-directory/)

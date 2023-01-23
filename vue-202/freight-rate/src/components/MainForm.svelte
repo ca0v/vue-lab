@@ -26,7 +26,6 @@
       element_id="FR"
       on:click={() => open("/fr")}
     />
-    <LogoButton title="Shipping Zones" element_id="SZ" />
   </nav>
   <br/>
   <main>

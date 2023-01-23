@@ -3,6 +3,7 @@
 import datetime
 import json
 import os
+import random
 import sys
 from flask import Flask, send_from_directory
 app = Flask(__name__, static_folder='../dist', static_url_path='')
@@ -69,12 +70,17 @@ def rates(start, end):
 
     freight_rates = []
     while start_date < end:
-        end_date = start_date + datetime.timedelta(days=13)
+        # days from today
+        days = (start_date - datetime.datetime.now()).days
+
+        # add time to the start_date
+        next_start_date = start_date + datetime.timedelta(days=28)
+        end_date = next_start_date + datetime.timedelta(days=-1)
 
         # generate rates for samplePorts
         port_rates = []
         for port in samplePorts:
-            port_rates.append(PortRate(port, 1000))
+            port_rates.append(PortRate(port, 1000 + random.random() * days))
 
         d1 = unix_to_date(start_date.timestamp())
         d2 = unix_to_date(end_date.timestamp())
@@ -82,13 +88,16 @@ def rates(start, end):
         print('d2', d2)
 
         freight_rate = FreightRate(
-            start_date=d1, end_date=d2, offload_rate=1000, port_rates=port_rates)
+            start_date=d1, end_date=d2, offload_rate=500 + days, port_rates=port_rates)
 
         freight_rates.append(freight_rate)
-        start_date = end_date + datetime.timedelta(days=1)
+        start_date = next_start_date
 
     # sort the list of freight rates by start date (descending order)
     freight_rates.sort(key=lambda x: x.start_date, reverse=True)
+
+    # remove dates before Jan 2020
+    freight_rates = [x for x in freight_rates if x.start_date >= '2020-01-01']
 
     # convert freight_rates to json
     response = json.dumps(
