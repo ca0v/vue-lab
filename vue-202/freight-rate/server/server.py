@@ -1,6 +1,7 @@
 # use flask to server static files from the current directory
 # and serve the index.html file for all other requests
-import datetime
+from datetime import *
+from dateutil.relativedelta import *
 import json
 import os
 import random
@@ -48,7 +49,7 @@ samplePorts = ["LB", "NY"]
 
 
 def unix_to_date(unix):
-    return datetime.datetime.utcfromtimestamp(unix).strftime('%Y-%m-%d')
+    return datetime.utcfromtimestamp(unix).strftime('%Y-%m-%d')
 
 
 @app.route('/api/rates/<start>/<end>')
@@ -58,8 +59,8 @@ def rates(start, end):
     print('end', end)
 
     # convert the start date from yyyy-mm-dd to unix timestamp
-    start = datetime.datetime.strptime(start, '%Y-%m-%d')
-    end = datetime.datetime.strptime(end, '%Y-%m-%d')
+    start = datetime.strptime(start, '%Y-%m-%d')
+    end = datetime.strptime(end, '%Y-%m-%d')
 
     print('start', start)
     print('end', end)
@@ -71,11 +72,11 @@ def rates(start, end):
     freight_rates = []
     while start_date < end:
         # days from today
-        days = (start_date - datetime.datetime.now()).days
+        days = (start_date - datetime.now()).days
 
         # add time to the start_date
-        next_start_date = start_date + datetime.timedelta(days=28)
-        end_date = next_start_date + datetime.timedelta(days=-1)
+        next_start_date = start_date + relativedelta(months=1)
+        end_date = next_start_date + relativedelta(days=-1)
 
         # generate rates for samplePorts
         port_rates = []
@@ -84,8 +85,6 @@ def rates(start, end):
 
         d1 = unix_to_date(start_date.timestamp())
         d2 = unix_to_date(end_date.timestamp())
-        print('d1', d1)
-        print('d2', d2)
 
         freight_rate = FreightRate(
             start_date=d1, end_date=d2, offload_rate=500 + days, port_rates=port_rates)

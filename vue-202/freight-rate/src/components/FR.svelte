@@ -302,7 +302,8 @@
       // if this is not the first rate, we need to update the end date of the next rate
       const nextRate = freightRateData[index - 1]
       const nextStartDate = asDate(nextRate.start_date)
-      const nextEndDate = blankIfInfinity(asDate(nextRate.end_date)) || "unbounded"
+      const nextEndDate =
+        blankIfInfinity(asDate(nextRate.end_date)) || "unbounded"
       const newNextStartDate = asDate(rate.start_date)
       const message = `The next time block ${nextStartDate} through ${nextEndDate}\nwill become ${newNextStartDate} through ${nextEndDate}.\n\nContinue?`
       if (!confirm(message)) return false
@@ -339,6 +340,10 @@
     const moreData = await more(
       freightRateData[freightRateData.length - 1].start_date
     )
+    if (!moreData.length) {
+      alert("No results found")
+      return
+    }
     freightRateData = [...freightRateData, ...moreData].sort(
       (a, b) => b.start_date - a.start_date
     )
