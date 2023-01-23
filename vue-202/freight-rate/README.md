@@ -83,7 +83,7 @@ If no – stay on the screen and revert. (DONE)
 
 * 08:00am-08:30am - test workflow logic (add, edit, delete)
 * 10:30am-11:00am - move data into a mock service
-* 4:00pm-5:00pm - apply feedback from UX review
+* 4:00pm-6:00pm - apply feedback from UX review
 
 ### 2023-01-22
 

@@ -179,7 +179,7 @@
       const newPriorEndDate = asDate(addDay(startDate, -1))
       // if the new end date is not the same as the prior end date, confirm the change
       if (priorEndDate !== newPriorEndDate) {
-        const message = `The previous time block will change from\n${priorStartDate}, ${priorEndDate} to\n${priorStartDate}, ${newPriorEndDate}.  Continue?`
+        const message = `The previous time block will change from\n${priorStartDate} through ${priorEndDate} to\n${priorStartDate} through ${newPriorEndDate}.\n\nContinue?`
         if (!confirm(message)) return false
       }
     }
