@@ -27,9 +27,7 @@ export async function more(start_date = 0) {
 // get the rates from the services at http://localhost:3003/api/rates/2022-01-01/2023-01-01
 export async function getRates(start_date: number, end_date: number) {
   // convert the dates to strings
-  const url = `http://localhost:3003/api/rates/${asDate(start_date)}/${asDate(
-    end_date
-  )}`
+  const url = `/api/rates/${asDate(start_date)}/${asDate(end_date)}`
   const response = await fetch(url)
   const data = (await response.json()) as Array<FreightRate>
   // convert the strings to numbers
