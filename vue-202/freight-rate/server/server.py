@@ -72,7 +72,7 @@ def rates(start, end):
     freight_rates = []
     while start_date < end:
         # days from today
-        days = (start_date - datetime.now()).days
+        days = (start_date - datetime.now()).days % 100
 
         # add time to the start_date
         next_start_date = start_date + relativedelta(months=1)
