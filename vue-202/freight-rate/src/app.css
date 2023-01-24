@@ -57,6 +57,12 @@ body {
   border-radius: 50%;
 }
 
+.main.logo {
+  background-image: url(./assets/OIP.jfif);
+  border-radius: 0;
+  background-color: transparent;
+}
+
 button {
   background-color: var(--primary-color);
 }
@@ -67,4 +73,17 @@ button {
 
 .h-6 {
   height: 1.5em;
+}
+
+header {
+  display: flex;
+  flex-direction: row;
+  /* vertical align center */
+  align-items: center;
+  justify-content: center;
+}
+
+header > h1 {
+  /* center text vertically */
+  margin: 0;
 }

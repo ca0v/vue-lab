@@ -18,7 +18,6 @@
 </script>
 
 <div class="flex">
-  <h1>Ecommerce Tracking Maintenance</h1>
   <nav>
     <LogoButton title="ASIN Exclusion List" element_id="XL" />
     <LogoButton

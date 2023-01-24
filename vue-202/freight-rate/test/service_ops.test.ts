@@ -17,21 +17,12 @@ describe("freight-store", () => {
   })
 
   it("insertRate", async () => {
-
     const data = await services.insertRate({
       start_date: 0,
       end_date: 0,
       offload_rate: 0,
-      port_rates: [
-        {
-          port: "NY",
-          rate: 0,
-        },
-        {
-          port: "LB",
-          rate: 0,
-        },
-      ],
+      port1_rate: 0,
+      port2_rate: 0,
     })
     expect(data.status).toBe(200)
   })
@@ -41,16 +32,8 @@ describe("freight-store", () => {
       start_date: 0,
       end_date: 0,
       offload_rate: 0,
-      port_rates: [
-        {
-          port: "NY",
-          rate: 0,
-        },
-        {
-          port: "LB",
-          rate: 0,
-        },
-      ],
+      port1_rate: 0,
+      port2_rate: 0,
     })
     expect(data.status).toBe(200)
   })

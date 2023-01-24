@@ -6,8 +6,16 @@
     <title>ECommerce Tracking Maintenance</title>
   </head>
   <body>
-    <div class="logo">E</div>
+    <header>
+      <div class="main logo"></div>
+      <h1>Ecommerce Tracking Maintenance</h1>
+    </header>
     <div id="app"></div>
+    <script>
+      window.addEventListener("unhandledrejection", function (event) {
+        alert(`UNHANDLED EXCEPTION: ${event.reason}`)
+      })
+    </script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

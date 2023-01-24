@@ -7,12 +7,12 @@ const API_URL = 1 ? "http://localhost:5000/api/" : "/api/"
 export async function more(start_date = 0) {
   console.log("more", start_date)
   if (!start_date) {
-    // generate for today and go backward 12 months
-    const today = new Date()
-    const year = today.getFullYear() - 1
-    const month = today.getMonth() + 1
-    const day = 1
-    start_date = asZulu(year, month, day)
+    // get the latest rates
+    const response = await fetch(`${API_URL}rates/12`)
+    console.log("more", response)
+    const data = (await response.json()) as Array<FreightRate>
+    console.log("more", data)
+    return data
   }
 
   // get rates for from 12 months ago to start_date
@@ -39,8 +39,9 @@ export async function getRates(start_date: number, end_date: number) {
   return data
 }
 
-export async function updateRate(rate: FreightRate) {
-  const url = `${API_URL}rates/${rate.start_date}`
+export async function updateRate(primaryKey: number, rate: FreightRate) {
+  const url = `${API_URL}rates/${primaryKey}`
+
   const response = await fetch(url, {
     method: "PUT",
     headers: {
@@ -49,6 +50,9 @@ export async function updateRate(rate: FreightRate) {
     body: JSON.stringify(rate),
   })
   console.log("updateRate", response)
+  if (!response.ok) {
+    throw new Error("updateRate failed")
+  }
   return response
 }
 
@@ -63,6 +67,9 @@ export async function insertRate(rate: FreightRate) {
     body: JSON.stringify(rate),
   })
   console.log("insertRate", response)
+  if (!response.ok) {
+    throw new Error("insertRate failed")
+  }
   return response
 }
 
@@ -72,5 +79,8 @@ export async function deleteRate(start_date: number) {
     method: "DELETE",
   })
   console.log("deleteRate", response)
+  if (!response.ok) {
+    throw new Error("deleteRate failed")
+  }
   return response
 }

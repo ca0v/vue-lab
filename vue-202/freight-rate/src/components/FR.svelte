@@ -13,8 +13,12 @@
     ONE_DAY,
     today,
   } from "../lib/fun"
-  import { samplePorts } from "../mock/freight-data"
-  import { more, updateRate, insertRate } from "../data/freight-store"
+  import {
+    more,
+    updateRate,
+    insertRate,
+    deleteRate,
+  } from "../data/freight-store"
 
   let showForm: boolean = false
   let inputForm: HTMLFormElement
@@ -69,6 +73,7 @@
   }
 
   function resetForm() {
+    if (!inputForm) return
     // clear the form data
     inputForm.reset()
     inputForm["start_date"].min = ""
@@ -107,7 +112,7 @@
 
   function toss(message: string) {
     alert(message)
-    throw new Error(message)
+    return message
   }
 
   async function save() {
@@ -127,18 +132,16 @@
       start_date: string
       end_date: string
       offload_rate: string
+      port1_rate: string
+      port2_rate: string
     }
-
-    // for each port, get the rate
-    const portRates = samplePorts.map((port) => {
-      return { port, rate: parseFloat((<any>data)[port]) }
-    })
 
     const startDate = inputToZulu(data.start_date)
     const newData: FreightRate = {
       start_date: startDate,
       end_date: inputToZulu(data.end_date),
-      port_rates: portRates,
+      port1_rate: parseFloat(data.port1_rate),
+      port2_rate: parseFloat(data.port2_rate),
       offload_rate: parseFloat(data.offload_rate),
     }
 
@@ -149,12 +152,12 @@
       const rate = freightRateData.find((rate) => rate.start_date === id)
       if (!rate) throw toss("rate not found")
       if (!(await updateFreightRate(rate, newData))) {
-        return false
+        throw toss("update failed")
       }
     } else {
       newData.end_date = inputToZulu(INFINITY_DATE)
       if (!(await insertFreightRate(newData))) {
-        return false
+        throw toss("insert failed")
       }
     }
 
@@ -167,9 +170,19 @@
   }
 
   async function updateFreightRate(rate: FreightRate, data: FreightRate) {
+    try {
+      return await unsafeUpdateFreightRate(rate, data)
+    } catch (error: any) {
+      toss(error?.message || error)
+      return false
+    }
+  }
+
+  async function unsafeUpdateFreightRate(rate: FreightRate, data: FreightRate) {
     const index = freightRateData.indexOf(rate)
     if (index < 0) throw toss("rate not found")
 
+    const primaryKey = rate.start_date
     const startDate = data.start_date
 
     // confirm the change with user
@@ -182,7 +195,7 @@
       const newPriorEndDate = asDate(addDay(startDate, -1))
       // if the new end date is not the same as the prior end date, confirm the change
       if (priorEndDate !== newPriorEndDate) {
-        const message = `The previous time block will change from\n${priorStartDate} through ${priorEndDate} to\n${priorStartDate} through ${newPriorEndDate}.\n\nContinue?`
+        const message = `The previous time block will change from\n${priorStartDate} to ${priorEndDate}\nand become\n${priorStartDate} to ${newPriorEndDate}.\n\nContinue?`
         if (!confirm(message)) return false
       }
     }
@@ -190,25 +203,34 @@
     // update rate
     setStartDate(rate, data.start_date)
     setOffloadRate(rate, data.offload_rate)
-
-    if (!rate.port_rates) rate.port_rates = data.port_rates
-    data.port_rates.forEach((portRate, i) => {
-      if (rate.port_rates[i].rate !== portRate.rate) {
-        rate.port_rates[i].rate = portRate.rate
-        hiliteRate(rate, <"port1_rate">`port${i + 1}_rate`)
-      }
-    })
+    if (rate.port1_rate !== data.port1_rate) {
+      rate.port1_rate = data.port1_rate
+      hiliteRate(rate, "port1_rate")
+    }
+    if (rate.port2_rate !== data.port2_rate) {
+      rate.port2_rate = data.port2_rate
+      hiliteRate(rate, "port2_rate")
+    }
 
     // update the end date of the previous rate
     if (index < freightRateData.length - 1) {
       setEndDate(freightRateData[index + 1], addDay(startDate, -1))
     }
 
-    await updateRate(rate)
+    await updateRate(primaryKey, rate)
     return true
   }
 
   async function insertFreightRate(data: FreightRate) {
+    try {
+      return await unsafeInsertFreightRate(data)
+    } catch (error: any) {
+      toss(error?.message || error)
+      return false
+    }
+  }
+
+  async function unsafeInsertFreightRate(data: FreightRate) {
     // this is an insert
     // find the rate that will be in effect after this one expires and use the start date to update the new end date
     // find the rate that was in effect before the new rate and update the end date
@@ -254,12 +276,9 @@
   }
 
   function computeAverage(rate: FreightRate): number {
-    if (!rate.port_rates.length) return rate.offload_rate
-    // compute the average rate
-    const sum = rate.port_rates.reduce((sum, portRate) => {
-      return sum + portRate.rate
-    }, 0)
-    return sum / rate.port_rates.length + rate.offload_rate
+    if (!rate) return 0
+    const portTotal = rate.port1_rate + rate.port2_rate
+    return portTotal / 2 + rate.offload_rate
   }
 
   function editFreightRate(rate: FreightRate) {
@@ -273,9 +292,9 @@
     inputForm["start_date"].value = asDate(rate.start_date)
     inputForm["end_date"].value = asDate(rate.end_date)
     inputForm["offload_rate"].value = asDecimal(rate.offload_rate)
-    rate.port_rates.forEach((portRate) => {
-      inputForm[portRate.port].value = asDecimal(portRate.rate)
-    })
+    inputForm["port1_rate"].value = asDecimal(rate.port1_rate)
+    inputForm["port2_rate"].value = asDecimal(rate.port2_rate)
+
     // the start_date range is between the previous rate and the next rate
     if (index < freightRateData.length - 1) {
       const previousRate = freightRateData[index + 1]
@@ -290,7 +309,16 @@
     setTimeout(() => inputForm["start_date"].focus(), 100)
   }
 
-  function deleteFreightRate(rate: FreightRate): boolean {
+  async function deleteFreightRate(rate: FreightRate) {
+    try {
+      return await unsafeDeleteFreightRate(rate)
+    } catch (error: any) {
+      toss(error?.message || error)
+      return false
+    }
+  }
+
+  async function unsafeDeleteFreightRate(rate: FreightRate) {
     // since we are using sample data, we will just remove the rate from the sample data
     const index = freightRateData.indexOf(rate)
     if (index < 0) throw toss("rate not found")
@@ -302,7 +330,7 @@
         const priorStartDate = asDate(priorRate.start_date)
         const priorEndDate = asDate(priorRate.end_date)
         const newPriorEndDate = inputToZulu(INFINITY_DATE)
-        const message = `The previous time block ${priorStartDate} through ${priorEndDate}\nwill become unbounded.\n\nContinue?`
+        const message = `The previous time block ${priorStartDate} to ${priorEndDate}\nwill become unbounded.\n\nContinue?`
         if (!confirm(message)) return false
         setEndDate(priorRate, newPriorEndDate)
       }
@@ -311,14 +339,17 @@
       const nextRate = freightRateData[index - 1]
       const nextStartDate = asDate(nextRate.start_date)
       const nextEndDate =
-        blankIfInfinity(asDate(nextRate.end_date)) || "unbounded"
+        blankIfInfinity(asDate(nextRate.end_date)) || "present"
       const newNextStartDate = asDate(rate.start_date)
-      const message = `The next time block ${nextStartDate} through ${nextEndDate}\nwill become ${newNextStartDate} through ${nextEndDate}.\n\nContinue?`
+      const message = `The next time block ${nextStartDate} to ${nextEndDate}\nwill become ${newNextStartDate} to ${nextEndDate}.\n\nContinue?`
       if (!confirm(message)) return false
       setStartDate(nextRate, rate.start_date)
     }
     // remove the rate from the sample data
     freightRateData = freightRateData.filter((r) => r !== rate)
+    if (!(await deleteRate(rate.start_date))) {
+      throw toss("delete failed")
+    }
     return true
   }
 
@@ -345,6 +376,14 @@
   }
 
   async function getMoreData() {
+    try {
+      return await unsafeGetMoreData()
+    } catch (err: any) {
+      toss(err?.message || err)
+    }
+  }
+
+  async function unsafeGetMoreData() {
     console.log("getMoreData")
     let startDate = 0
     if (freightRateData && freightRateData.length) {
@@ -355,6 +394,8 @@
       alert("No results found")
       return
     }
+
+    console.log({ moreData })
     freightRateData = [...(freightRateData || []), ...moreData].sort(
       (a, b) => b.start_date - a.start_date
     )
@@ -375,9 +416,8 @@
       <div class="th align-right date1">Start Date</div>
       <div class="th align-right date2">End Date</div>
       <!-- write heading for each port type -->
-      {#each samplePorts as port, i}
-        <div class={`th align-right port${i + 1}`}>{port}</div>
-      {/each}
+      <div class={`th align-right port`}>LB</div>
+      <div class={`th align-right port`}>NY</div>
       <div class="th align-right offload">Offload</div>
       <div class="th align-right average">Average</div>
       <div class="th toolbar">
@@ -402,15 +442,20 @@
           {blankIfInfinity(asDate(rate.end_date)) || "<null>"}
         </div>
         <!-- write a cell for each port rate -->
-        {#each rate.port_rates as port, i}
-          <div class={`align-right port${i + 1} title`}>{port.port}</div>
-          <div
-            class={`align-right port_rate${i + 1} value`}
-            class:hilite={isHiliteHack(rate, `port${i + 1}_rate`)}
-          >
-            {asDecimal(port.rate)}
-          </div>
-        {/each}
+        <div class={`align-right port1 title`}>LB</div>
+        <div
+          class={`align-right port_rate1 value`}
+          class:hilite={isHiliteHack(rate, `port1_rate`)}
+        >
+          {asDecimal(rate.port1_rate)}
+        </div>
+        <div class={`align-right port2 title`}>LB</div>
+        <div
+          class={`align-right port_rate2 value`}
+          class:hilite={isHiliteHack(rate, `port2_rate`)}
+        >
+          {asDecimal(rate.port2_rate)}
+        </div>
         <div class="align-right offload title">Offload</div>
         <div
           class="align-right offload_rate value"
@@ -448,10 +493,22 @@
         <label for="end_date">End Date</label>
         <input type="text" name="end_date" readonly value={INFINITY_DATE} />
         <!-- write a row for each port -->
-        {#each samplePorts as port}
-          <label for={port}>{port}</label>
-          <input type="number" name={port} min="0.01" step="0.01" required />
-        {/each}
+        <label for={"port1_rate"}>LB</label>
+        <input
+          type="number"
+          name={"port1_rate"}
+          min="0.01"
+          step="0.01"
+          required
+        />
+        <label for={"port2_rate"}>NY</label>
+        <input
+          type="number"
+          name={"port2_rate"}
+          min="0.01"
+          step="0.01"
+          required
+        />
         <label for="offload_rate">Offload</label>
         <input
           type="number"
