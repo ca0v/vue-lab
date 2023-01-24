@@ -9,7 +9,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "serve": "python3 ./server/server.py live 3003",
+    "serve": "waitress-serve --port=3003 --call 'server:create_app'",
     "serve:watch": "flask --app ./server/server.py --debug run",
     "check": "svelte-check --tsconfig ./tsconfig.json",
     "kill": "lsof -t -i:3003 | xargs kill -9"
