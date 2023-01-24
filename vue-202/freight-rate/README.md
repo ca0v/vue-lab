@@ -79,7 +79,14 @@ If no – stay on the screen and revert. (DONE)
 * create mock services, use writables
 * [Python with Active Directory](https://pypi.org/project/ms-active-directory/)
 
+### 2023-01-24
+
+07:30am-08:30am - Setup a mock database (sqlite)
+11:30am-12:30am - Created unit tests
+
 ### 2023-01-23
+
+3.0 hours - Applied UX feedback, added mock services
 
 * 08:00am-08:30am - test workflow logic (add, edit, delete)
 * 10:30am-11:00am - move data into a mock service

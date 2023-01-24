@@ -14,7 +14,7 @@
     today,
   } from "../lib/fun"
   import { samplePorts } from "../mock/freight-data"
-  import { more } from "../data/freight-store"
+  import { more, updateRate, insertRate } from "../data/freight-store"
 
   let showForm: boolean = false
   let inputForm: HTMLFormElement
@@ -23,8 +23,7 @@
 
   // when the component mounts...
   onMount(async () => {
-    freightRateData = await more()
-    freightRateData[0].end_date = inputToZulu(INFINITY_DATE)
+    getMoreData()
     document.addEventListener("keydown", handleKeyDown)
     return () => {
       document.removeEventListener("keydown", handleKeyDown)
@@ -111,7 +110,7 @@
     throw new Error(message)
   }
 
-  function save(): boolean | undefined {
+  async function save() {
     if (!inputForm) throw toss("form is not defined")
     // validate the form inputs
     if (!inputForm.checkValidity()) {
@@ -149,10 +148,14 @@
       const id = inputToZulu(data.primary_key)
       const rate = freightRateData.find((rate) => rate.start_date === id)
       if (!rate) throw toss("rate not found")
-      if (!updateFreightRate(rate, newData)) return false
+      if (!(await updateFreightRate(rate, newData))) {
+        return false
+      }
     } else {
       newData.end_date = inputToZulu(INFINITY_DATE)
-      insertFreightRate(newData)
+      if (!(await insertFreightRate(newData))) {
+        return false
+      }
     }
 
     // trigger redraw
@@ -163,7 +166,7 @@
     showForm = false
   }
 
-  function updateFreightRate(rate: FreightRate, data: FreightRate): boolean {
+  async function updateFreightRate(rate: FreightRate, data: FreightRate) {
     const index = freightRateData.indexOf(rate)
     if (index < 0) throw toss("rate not found")
 
@@ -201,10 +204,11 @@
       setEndDate(freightRateData[index + 1], addDay(startDate, -1))
     }
 
+    await updateRate(rate)
     return true
   }
 
-  function insertFreightRate(data: FreightRate) {
+  async function insertFreightRate(data: FreightRate) {
     // this is an insert
     // find the rate that will be in effect after this one expires and use the start date to update the new end date
     // find the rate that was in effect before the new rate and update the end date
@@ -239,6 +243,10 @@
     hiliteRate(data, "offload_rate")
     hiliteRate(data, "port1_rate")
     hiliteRate(data, "port2_rate")
+
+    await insertRate(data)
+
+    return true
   }
 
   function blankIfInfinity(date: string) {
@@ -337,14 +345,17 @@
   }
 
   async function getMoreData() {
-    const moreData = await more(
-      freightRateData[freightRateData.length - 1].start_date
-    )
+    console.log("getMoreData")
+    let startDate = 0
+    if (freightRateData && freightRateData.length) {
+      startDate = freightRateData[freightRateData.length - 1].start_date
+    }
+    const moreData = await more(startDate)
     if (!moreData.length) {
       alert("No results found")
       return
     }
-    freightRateData = [...freightRateData, ...moreData].sort(
+    freightRateData = [...(freightRateData || []), ...moreData].sort(
       (a, b) => b.start_date - a.start_date
     )
   }
