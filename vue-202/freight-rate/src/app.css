@@ -82,3 +82,8 @@ header {
   align-items: center;
   justify-content: center;
 }
+
+header > h1 {
+  /* center text vertically */
+  margin: 0;
+}

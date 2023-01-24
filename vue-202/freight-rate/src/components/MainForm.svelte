@@ -26,7 +26,7 @@
       on:click={() => open("/fr")}
     />
   </nav>
-  <br/>
+  <br />
   <main>
     <slot />
     {#if showFreightRatesPage}
@@ -40,10 +40,6 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-  }
-
-  h1 {
-    text-align: center;
   }
 
   nav {
