@@ -8,11 +8,13 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api
 from flask_cors import CORS
 
-app = Flask(__name__, static_folder='../dist', static_url_path='')
+app = Flask(__name__, static_folder='./dist', static_url_path='')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 
 api = Api(app)
 db = SQLAlchemy(app)
+
+MAX_DATE = "2100-12-31"
 
 
 @dataclass
@@ -56,10 +58,13 @@ def unix_to_date(unix):
     return datetime.utcfromtimestamp(unix).strftime('%Y-%m-%d')
 
 
+def date_to_ticks(date):
+    return datetime.strptime(date, '%Y-%m-%d').timestamp() * 1000
+
 # get the last n rates sorted by start_date descending
 
 
-@app.route('/api/rates/<int:n>', methods=['GET'])
+@app.route('/aiq/api/rates/<int:n>', methods=['GET'])
 def get_last_n_rates(n: int):
     print('get_last_n_rates', n)
     rates = FreightRate.query.order_by(
@@ -67,7 +72,7 @@ def get_last_n_rates(n: int):
     return jsonify(rates)
 
 
-@app.route('/api/rates/<path:start>/<path:end>', methods=['GET'])
+@app.route('/aiq/api/rates/<path:start>/<path:end>', methods=['GET'])
 def get_rates(start: int, end: int):
     # convert to unix time
     print('get_rates', start, end)
@@ -83,7 +88,7 @@ def get_rates(start: int, end: int):
 # http put function to update rates
 
 
-@app.route("/api/rates/<start_date>", methods=['PUT'])
+@app.route("/aiq/api/rates/<start_date>", methods=['PUT'])
 def update_rate(start_date: int):
     print('update_rate', start_date)
 
@@ -106,7 +111,7 @@ def update_rate(start_date: int):
     rate.port1_rate = changes.port1_rate
     rate.port2_rate = changes.port2_rate
 
-    db.session.commit() # after a select
+    db.session.commit()  # after a select
     db.session.begin()
     try:
         # did the start_date change?
@@ -141,20 +146,15 @@ def update_rate(start_date: int):
 # http post to add a new rate
 
 
-@app.route("/api/rates", methods=['POST'])
-def add_rate():
+@app.route("/aiq/api/rates", methods=['POST'])
+def insert_rate():
     rateRequest = request.get_json()
-    print('add_rate', rateRequest)
 
     # convert rateRequest to a FreightRate object
     rate = as_rate(rateRequest)
-    print('add_rate', rate)
 
     db.session.begin()
     try:
-        # add the new rate
-        db.session.add(rate)
-
         # if the start date in within the range of an existing rate
         # then the existing rate must be modified by moving the end date back
 
@@ -169,7 +169,25 @@ def add_rate():
             overlap.end_date = add_day(rate.start_date, -1)
             # update the rate data
             db.session.merge(overlap)
+        else:
+            # find the rate this comes before and update its end date
+            previous = FreightRate.query.order_by(FreightRate.start_date.desc()).filter(
+                FreightRate.start_date < rate.start_date).first()
+            if previous is not None:
+                previous.end_date = add_day(rate.start_date, -1)
+                db.session.merge(previous)
 
+            # find the rate that comes after to compute an end date
+            next = FreightRate.query.order_by(FreightRate.start_date).filter(
+                FreightRate.start_date > rate.start_date).first()
+            if next is not None:
+                rate.end_date = add_day(next.start_date, -1)
+            else:
+                print('no end_date')
+                rate.end_date = date_to_ticks(MAX_DATE)
+
+        # add the new rate
+        db.session.add(rate)
     except Exception as e:
         print(e)
         db.session.rollback()
@@ -192,7 +210,7 @@ def add_rate():
 # http delete to remove a rate
 
 
-@app.route("/api/rates/<start_date>", methods=['DELETE'])
+@app.route("/aiq/api/rates/<start_date>", methods=['DELETE'])
 def delete_rate(start_date: int):
     print('delete_rate', start_date)
 

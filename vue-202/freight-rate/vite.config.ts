@@ -6,6 +6,6 @@ export default defineConfig({
   plugins: [svelte()],
   base: "/aiq",
   build: {
-    outDir: "dist",
+    outDir: "./server/dist/aiq",
   },
 })

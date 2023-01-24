@@ -330,7 +330,7 @@
         const priorStartDate = asDate(priorRate.start_date)
         const priorEndDate = asDate(priorRate.end_date)
         const newPriorEndDate = inputToZulu(INFINITY_DATE)
-        const message = `The previous time block ${priorStartDate} to ${priorEndDate}\nwill become unbounded.\n\nContinue?`
+        const message = `The previous time block ${priorStartDate} to ${priorEndDate}\nwill become ${priorStartDate} to present.\n\nContinue?`
         if (!confirm(message)) return false
         setEndDate(priorRate, newPriorEndDate)
       }
