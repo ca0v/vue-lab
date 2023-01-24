@@ -11,7 +11,8 @@
     "preview": "vite preview",
     "serve": "python3 ./server/server.py live 3003",
     "serve:watch": "flask --app ./server/server.py --debug run",
-    "check": "svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "kill": "lsof -t -i:3003 | xargs kill -9"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.0",

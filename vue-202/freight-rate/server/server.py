@@ -259,7 +259,7 @@ with app.app_context():
     db.create_all()
 
 ############################################
-# waitress-serve --port=5500 --call 'server:create_app'
+# waitress-serve --port=3003 --call 'server:create_app'
 # or python3 server.py
 # or flask --app server.py --debug run
 ############################################
