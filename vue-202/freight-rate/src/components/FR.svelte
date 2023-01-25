@@ -21,6 +21,7 @@
     getRates,
   } from "../data/freight-store"
   import { proposeToast } from "../store/messaging"
+  import { object_without_properties } from "svelte/internal"
 
   let showForm: boolean = false
   let inputForm: HTMLFormElement
@@ -219,14 +220,27 @@
     return true
   }
 
+  function keyOf<T>(obj: T) {
+    return Object.keys(<any>obj) as (keyof T)[]
+  }
+
   function mergeFreightItems(response: FreightRate[]) {
     response.forEach((response_rate) => {
       const index = freightRateData.findIndex(
         (rate) => rate.start_date === response_rate.start_date
       )
       if (index >= 0) {
+        const target = freightRateData[index]!
+        keyOf(response_rate).forEach((key) => {
+          const newValue = <any>response_rate[key]
+          if (target[key] != newValue) {
+            target[key] = newValue
+            hiliteRate(response_rate, key)
+          }
+        })
         freightRateData[index] = response_rate
       } else {
+        hiliteRate(response_rate, "start_date")
         freightRateData.push(response_rate)
       }
     })
@@ -357,12 +371,7 @@
     return true
   }
 
-  type HiliteFields =
-    | "start_date"
-    | "end_date"
-    | "offload_rate"
-    | "port1_rate"
-    | "port2_rate"
+  type HiliteFields = keyof FreightRate
 
   async function mergeDiffgram(response: Response) {
     const data = (await response.json()) as {

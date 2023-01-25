@@ -165,6 +165,8 @@ def update_rate(start_date: int):
         if new_start_date != start_date:
             print('start_date changed', unix_to_date(
                 start_date), unix_to_date(new_start_date))
+
+            diffgram['deletes'].append(start_date)
             # find the previous rate and adjust its end_date
             previous = FreightRate.query.order_by(FreightRate.start_date.desc()).filter(
                 FreightRate.start_date < start_date).first()
@@ -188,7 +190,6 @@ def update_rate(start_date: int):
         rate.port1_rate = changes.port1_rate
         rate.port2_rate = changes.port2_rate
         db.session.merge(rate)  # redundant?
-        diffgram['deletes'].append(start_date)
         diffgram['updates'].append(rate.start_date)
 
     except Exception as e:
