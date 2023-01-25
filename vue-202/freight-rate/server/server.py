@@ -58,8 +58,17 @@ def unix_to_date(unix):
     return datetime.utcfromtimestamp(unix).strftime('%Y-%m-%d')
 
 
-def date_to_ticks(date):
-    return datetime.strptime(date, '%Y-%m-%d').timestamp() * 1000
+def date_to_unix(date):
+    return datetime.strptime(date, '%Y-%m-%d').timestamp()
+
+
+def ticks_to_unix(ticks):
+    # floor to the nearest second
+    return ticks//1000
+
+
+def unix_to_ticks(unix):
+    return int(unix*1000)
 
 # get the last n rates sorted by start_date descending
 
@@ -67,10 +76,10 @@ def date_to_ticks(date):
 @app.route('/aiq/api/rates/reset', methods=['GET'])
 def reset_rates():
     # delete all rates
-    num_rows_deleted = db.session.query(FreightRate).delete()
+    db.session.query(FreightRate).delete()
     # insert a rate for each month from 2020-01-01 to 2023-01-01
-    start_date = date_to_ticks('2020-01-01')
-    cutoff_date = date_to_ticks('2023-01-01')
+    start_date = date_to_unix('2020-01-01')
+    cutoff_date = date_to_unix('2020-12-01')
     pennies = 0.01
     while start_date < cutoff_date:
         # add a month to the start_date
@@ -79,12 +88,14 @@ def reset_rates():
         pennies += 0.01
         db.session.add(rate)
         start_date = add_day(start_date, 28)
+
+    rate = FreightRate(start_date=start_date, end_date=date_to_unix(MAX_DATE),
+                       offload_rate=1000, port1_rate=1100, port2_rate=1200)
+    db.session.add(rate)
     db.session.commit()
-    return app.response_class(
-        response=jsonify({'message': 'reset complete'}),
-        status=200,
-        mimetype='application/json'
-    )
+
+    # return the entire dataset
+    return get_last_n_rates(1000)
 
 
 @app.route('/aiq/api/rates/<int:n>', methods=['GET'])
@@ -92,6 +103,10 @@ def get_last_n_rates(n: int):
     print('get_last_n_rates', n)
     rates = FreightRate.query.order_by(
         FreightRate.start_date.desc()).limit(n).all()
+    # convert to ticks
+    for rate in rates:
+        rate.start_date = unix_to_ticks(rate.start_date)
+        rate.end_date = unix_to_ticks(rate.end_date)
     return jsonify(rates)
 
 
@@ -99,65 +114,73 @@ def get_last_n_rates(n: int):
 def get_rates(start_date: str, end_date: str):
     # convert to unix time
     print('get_rates', start_date, end_date)
-    start_date = date_to_ticks(start_date)
-    end_date = date_to_ticks(end_date)
+    start_date = date_to_unix(start_date)
+    end_date = date_to_unix(end_date)
     print('get_rates', start_date, end_date)
 
     rates = FreightRate.query.filter(
         FreightRate.start_date >= start_date, FreightRate.start_date < end_date).all()
+
+    # convert to ticks
+    for rate in rates:
+        rate.start_date = unix_to_ticks(rate.start_date)
+        rate.end_date = unix_to_ticks(rate.end_date)
 
     return jsonify(rates)
 
 # http put function to update rates
 
 
-@app.route("/aiq/api/rates/<start_date>", methods=['PUT'])
+@app.route("/aiq/api/rates/<path:start_date>", methods=['PUT'])
 def update_rate(start_date: int):
     print('update_rate', start_date)
 
-    rate = FreightRate.query.filter_by(start_date=start_date).first()
-    if rate is None:
-        return app.response_class(
-            response=jsonify({'error': 'not found'}),
-            status=404,
-            mimetype='application/json'
-        )
+    # convert to unix time
+    start_date = ticks_to_unix(int(start_date))
 
-    # read request as a FreightRate object
-    changes = request.get_json()
-    changes = as_rate(changes)
-
-    # update the rate with the changes
-    rate.start_date = changes.start_date
-    rate.end_date = changes.end_date
-    rate.offload_rate = changes.offload_rate
-    rate.port1_rate = changes.port1_rate
-    rate.port2_rate = changes.port2_rate
-
-    db.session.commit()  # after a select
     db.session.begin()
     try:
+        rate = FreightRate.query.filter_by(start_date=start_date).first()
+        if rate is None:
+            return jsonify({'error': 'not found'})
+
+        # read request as a FreightRate object
+        changes = request.get_json()
+        changes = as_rate(changes)
+
+        # update the rate with the changes (this performs database changes!)
+        rate.start_date = ticks_to_unix(changes.start_date)
+        rate.end_date = ticks_to_unix(changes.end_date)
+        rate.offload_rate = changes.offload_rate
+        rate.port1_rate = changes.port1_rate
+        rate.port2_rate = changes.port2_rate
+
         # did the start_date change?
         if rate.start_date != start_date:
-            # adjust the new end_date to the end_date of the overlapped rate
-            # adjust the overlapped end_date to the day before the new start_date
+            print('start_date changed', unix_to_date(
+                start_date), unix_to_date(rate.start_date))
+            # find the previous rate and adjust its end_date
             previous = FreightRate.query.order_by(FreightRate.start_date.desc()).filter(
                 FreightRate.start_date < start_date).first()
             if previous is not None:
-                rate.end_date = previous.end_date
+                print('previous rate found', unix_to_date(
+                    previous.start_date), "diff", previous.start_date - start_date)
                 previous.end_date = add_day(rate.start_date, -1)
                 db.session.merge(previous)
-        # update the rate data (will this work if the start_date changes?)
-        db.session.merge(rate)
+            # find the next rate and adjust our end_date
+            next = FreightRate.query.order_by(FreightRate.start_date).filter(
+                FreightRate.start_date > start_date).first()
+            if next is not None:
+                print('next rate found', unix_to_date(next.start_date))
+                rate.end_date = add_day(next.start_date, -1)
+                db.session.merge(next)
+            # update the rate data (will this work if the start_date changes?)
+        db.session.merge(rate)  # redundant?
     except Exception as e:
         print(e)
         db.session.rollback()
         # return the error
-        return app.response_class(
-            response=jsonify({'error': e}),
-            status=500,
-            mimetype='application/json'
-        )
+        return jsonify({'error': e})
     else:
         db.session.commit()
 
@@ -176,6 +199,10 @@ def insert_rate():
     # convert rateRequest to a FreightRate object
     rate = as_rate(rateRequest)
 
+    # convert to unix time
+    rate.start_date = ticks_to_unix(rate.start_date)
+    rate.end_date = ticks_to_unix(rate.end_date)
+
     db.session.begin()
     try:
         # if the start date in within the range of an existing rate
@@ -188,7 +215,9 @@ def insert_rate():
 
         # if there is an overlap
         if overlap is not None:
-            # move the end date back
+            print('overlap found, moving its end date before the new start date, setting new end date to the existing end date')
+            # preserve end date of the existing rate
+            rate.end_date = overlap.end_date
             overlap.end_date = add_day(rate.start_date, -1)
             # update the rate data
             db.session.merge(overlap)
@@ -204,10 +233,12 @@ def insert_rate():
             next = FreightRate.query.order_by(FreightRate.start_date).filter(
                 FreightRate.start_date > rate.start_date).first()
             if next is not None:
+                print('using next start date to compute end date: ' +
+                      unix_to_date(next.start_date))
                 rate.end_date = add_day(next.start_date, -1)
             else:
                 print('no end_date')
-                rate.end_date = date_to_ticks(MAX_DATE)
+                rate.end_date = date_to_unix(MAX_DATE)
 
         # add the new rate
         db.session.add(rate)
@@ -226,6 +257,10 @@ def insert_rate():
     # return the new rate
     rate = FreightRate.query.filter_by(start_date=rate.start_date).first()
 
+    # convert to ticks
+    rate.start_date = unix_to_ticks(rate.start_date)
+    rate.end_date = unix_to_ticks(rate.end_date)
+
     # convert to json
     return jsonify(rate)
 
@@ -233,8 +268,12 @@ def insert_rate():
 # http delete to remove a rate
 
 
-@app.route("/aiq/api/rates/<start_date>", methods=['DELETE'])
+@app.route("/aiq/api/rates/<path:start_date>", methods=['DELETE'])
 def delete_rate(start_date: int):
+    print('delete_rate', start_date)
+
+    # convert to unix time
+    start_date = ticks_to_unix(int(start_date))
     print('delete_rate', start_date)
 
     # begin a transaction
@@ -245,6 +284,8 @@ def delete_rate(start_date: int):
         # so the future rates must be moved back or the past rates must be moved forward
         # future takes precedence
         rate = FreightRate.query.filter_by(start_date=start_date).first()
+        if rate is None:
+            return jsonify({'error': 'not found'}),
 
         # delete the rate
         db.session.delete(rate)
@@ -269,11 +310,7 @@ def delete_rate(start_date: int):
         print(e)
         db.session.rollback()
         # return the error
-        return app.response_class(
-            response=jsonify({'error': e}),
-            status=500,
-            mimetype='application/json'
-        )
+        jsonify({'error': e})
     else:
         db.session.commit()
 
@@ -283,7 +320,7 @@ def delete_rate(start_date: int):
 
 # add a day to a date
 def add_day(date: int, days: int = 1):
-    return date + days * (1000 * 60 * 60 * 24)
+    return date + days * (60 * 60 * 24)
 
 
 def as_rate(rateRequest):

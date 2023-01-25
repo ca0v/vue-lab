@@ -148,7 +148,7 @@
     // find the mock data
     if (data.primary_key) {
       // this is an update, find the proper rate
-      const id = inputToZulu(data.primary_key)
+      const id = parseInt(data.primary_key)
       const rate = freightRateData.find((rate) => rate.start_date === id)
       if (!rate) throw toss("rate not found")
       if (!(await updateFreightRate(rate, newData))) {
@@ -288,7 +288,7 @@
     // clear the inputForm and set the values
     if (!inputForm) throw toss("form is not defined")
     resetForm()
-    inputForm["primary_key"].value = asDate(rate.start_date)
+    inputForm["primary_key"].value = rate.start_date
     inputForm["start_date"].value = asDate(rate.start_date)
     inputForm["end_date"].value = asDate(rate.end_date)
     inputForm["offload_rate"].value = asDecimal(rate.offload_rate)
