@@ -54,8 +54,7 @@ export async function updateRate(primaryKey: number, rate: FreightRate) {
         )
     }
   }
-  const data = (await response.json()) as Array<FreightRate>
-  return data
+  return response
 }
 
 export async function insertRate(rate: FreightRate) {
@@ -79,8 +78,7 @@ export async function insertRate(rate: FreightRate) {
         )
     }
   }
-  const data = (await response.json()) as Array<FreightRate>
-  return data
+  return response
 }
 
 export async function deleteRate(start_date: number) {

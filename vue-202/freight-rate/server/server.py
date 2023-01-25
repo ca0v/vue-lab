@@ -1,5 +1,6 @@
 # use flask to server static files from the current directory
 # and serve the index.html file for all other requests
+import jsonpickle
 from dataclasses import dataclass
 from datetime import *
 from dateutil.relativedelta import *
@@ -141,8 +142,11 @@ def update_rate(start_date: int):
     # convert to unix time
     start_date = ticks_to_unix(int(start_date))
 
-    # items to return
-    response_items = []
+    diffgram = {
+        'deletes': [],
+        'updates': [],
+        'inserts': []
+    }
 
     db.session.begin()
     try:
@@ -169,7 +173,7 @@ def update_rate(start_date: int):
                     previous.start_date), "diff", previous.start_date - start_date)
                 previous.end_date = add_day(new_start_date, -1)
                 db.session.merge(previous)
-                response_items.append(previous.start_date)
+                diffgram['updates'].append(previous.start_date)
             # find the next rate and adjust our end_date
             next = FreightRate.query.order_by(FreightRate.start_date).filter(
                 FreightRate.start_date > start_date).first()
@@ -177,7 +181,6 @@ def update_rate(start_date: int):
                 print('next rate found', unix_to_date(next.start_date))
                 rate.end_date = add_day(next.start_date, -1)
                 db.session.merge(next)
-                response_items.append(next.start_date)
             # update the rate data (will this work if the start_date changes?)
         # update the rate with the changes (this performs database changes!)
         rate.start_date = ticks_to_unix(changes.start_date)
@@ -185,7 +188,8 @@ def update_rate(start_date: int):
         rate.port1_rate = changes.port1_rate
         rate.port2_rate = changes.port2_rate
         db.session.merge(rate)  # redundant?
-        response_items.append(rate.start_date)
+        diffgram['deletes'].append(start_date)
+        diffgram['updates'].append(rate.start_date)
 
     except Exception as e:
         print(e)
@@ -195,14 +199,7 @@ def update_rate(start_date: int):
     else:
         db.session.commit()
 
-    # read the rates for all keys in response_items
-    rates = []
-    for key in response_items:
-        rate = FreightRate.query.filter_by(start_date=key).first()
-        rate.start_date = unix_to_ticks(rate.start_date)
-        rate.end_date = unix_to_ticks(rate.end_date)
-        rates.append(rate)
-    return jsonify(rates)
+    return prepare_diffgram(diffgram)
 
 
 # http post to add a new rate
@@ -218,6 +215,12 @@ def insert_rate():
     # convert to unix time
     rate.start_date = ticks_to_unix(rate.start_date)
     rate.end_date = ticks_to_unix(rate.end_date)
+
+    diffgram = {
+        'deletes': [],
+        'updates': [],
+        'inserts': []
+    }
 
     db.session.begin()
     try:
@@ -237,6 +240,7 @@ def insert_rate():
             overlap.end_date = add_day(rate.start_date, -1)
             # update the rate data
             db.session.merge(overlap)
+            diffgram['updates'].append(overlap.start_date)
         else:
             # find the rate this comes before and update its end date
             previous = FreightRate.query.order_by(FreightRate.start_date.desc()).filter(
@@ -244,6 +248,7 @@ def insert_rate():
             if previous is not None:
                 previous.end_date = add_day(rate.start_date, -1)
                 db.session.merge(previous)
+                diffgram['updates'].append(previous.start_date)
 
             # find the rate that comes after to compute an end date
             next = FreightRate.query.order_by(FreightRate.start_date).filter(
@@ -258,6 +263,7 @@ def insert_rate():
 
         # add the new rate
         db.session.add(rate)
+        diffgram['inserts'].append(rate.start_date)
     except Exception as e:
         print(e)
         db.session.rollback()
@@ -270,15 +276,7 @@ def insert_rate():
     else:
         db.session.commit()
 
-    # return the new rate
-    rate = FreightRate.query.filter_by(start_date=rate.start_date).first()
-
-    # convert to ticks
-    rate.start_date = unix_to_ticks(rate.start_date)
-    rate.end_date = unix_to_ticks(rate.end_date)
-
-    # convert to json
-    return jsonify(rate)
+    return prepare_diffgram(diffgram)
 
 
 # http delete to remove a rate
@@ -292,7 +290,12 @@ def delete_rate(start_date: int):
     start_date = ticks_to_unix(int(start_date))
     print('delete_rate', start_date)
 
-    response_items = []
+    diffgram = {
+        'deletes': [],
+        'updates': [],
+        'inserts': []
+    }
+
     # begin a transaction
     db.session.begin()
     try:
@@ -312,9 +315,10 @@ def delete_rate(start_date: int):
             FreightRate.start_date > start_date).limit(1).first()
         if future_rate is not None:
             # move the future rate back
+            diffgram['deletes'].append(future_rate.start_date)
             future_rate.start_date = start_date
+            diffgram['updates'].append(future_rate.start_date)
             db.session.merge(future_rate)
-            response_items.append(future_rate.start_date)
 
         else:
             # find the past rate
@@ -324,7 +328,7 @@ def delete_rate(start_date: int):
                 # move the past rate forward
                 past_rate.end_date = rate.end_date
                 db.session.merge(past_rate)
-                response_items.append(past_rate.start_date)
+                diffgram['updates'].append(past_rate.start_date)
     except Exception as e:
         print(e)
         db.session.rollback()
@@ -333,15 +337,15 @@ def delete_rate(start_date: int):
     else:
         db.session.commit()
 
-    # return the rates identified by response_items keys
-    rates = []
-    for item in response_items:
-        rate = FreightRate.query.filter_by(start_date=item).first()
-        # convert to ticks
-        rate.start_date = unix_to_ticks(rate.start_date)
-        rate.end_date = unix_to_ticks(rate.end_date)
-        rates.append(rate)
-    return jsonify(rates)
+    # convert to ticks
+    return prepare_diffgram(diffgram)
+
+
+def prepare_diffgram(diffgram):
+    diffgram['deletes'] = [unix_to_ticks(d) for d in diffgram['deletes']]
+    diffgram['updates'] = [unix_to_ticks(d) for d in diffgram['updates']]
+    diffgram['inserts'] = [unix_to_ticks(d) for d in diffgram['inserts']]
+    return jsonpickle.encode(diffgram)
 
 
 # add a day to a date

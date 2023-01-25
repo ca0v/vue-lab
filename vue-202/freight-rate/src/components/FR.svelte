@@ -18,6 +18,7 @@
     updateRate,
     insertRate,
     deleteRate,
+    getRates,
   } from "../data/freight-store"
   import { proposeToast } from "../store/messaging"
 
@@ -214,14 +215,11 @@
 
     // update rate
     const response = await updateRate(primaryKey, data)
-    // remove the old rate
-    freightRateData.splice(index, 1)
-    // merge the results into freightRateData
-    mergeResponseData(response)
+    await mergeDiffgram(response)
     return true
   }
 
-  function mergeResponseData(response: FreightRate[]) {
+  function mergeFreightItems(response: FreightRate[]) {
     response.forEach((response_rate) => {
       const index = freightRateData.findIndex(
         (rate) => rate.start_date === response_rate.start_date
@@ -262,7 +260,7 @@
 
     const response = await insertRate(data)
     // merge the results into freightRateData
-    mergeResponseData(response)
+    await mergeDiffgram(response)
 
     return true
   }
@@ -354,9 +352,7 @@
     }
 
     // merge the results into freightRateData
-    const data = (await response.json()) as FreightRate[]
-    freightRateData.splice(index, 1) // remove the deleted rate
-    mergeResponseData(data) // update any other rates that were affected
+    await mergeDiffgram(response)
 
     return true
   }
@@ -367,6 +363,33 @@
     | "offload_rate"
     | "port1_rate"
     | "port2_rate"
+
+  async function mergeDiffgram(response: Response) {
+    const data = (await response.json()) as {
+      inserts: number[]
+      updates: number[]
+      deletes: number[]
+    }
+    if (data.deletes) {
+      freightRateData = freightRateData.filter(
+        (r) => !data.deletes.includes(r.start_date)
+      )
+    }
+    if (data.updates) {
+      // fetch the rates that were updated
+      const updatedRates = await Promise.all(
+        data.updates.map((key) => getRates(key, 1))
+      )
+      mergeFreightItems(updatedRates.flat())
+    }
+    if (data.inserts) {
+      // fetch the rates that were inserted
+      const updatedRates = await Promise.all(
+        data.inserts.map((key) => getRates(key, 1))
+      )
+      mergeFreightItems(updatedRates.flat())
+    }
+  }
 
   function isHiliteHack(newData: FreightRate, field: string) {
     return newData._hiliteHack?.has(field as HiliteFields)

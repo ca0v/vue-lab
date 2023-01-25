@@ -86,6 +86,7 @@ If no – stay on the screen and revert. (DONE)
 * 12:30pm-1:00pm - Apply requested changes (use 'time frame', remove logo placeholders, use "..." for "all future dates")
 * 1:00pm-1:30pm - Improve dialog cancellation workflow (do not treat it as an error)
 * 2:00pm-2:30pm - Remove client-side data manipulation (use server-side)
+* 4:00pm-5:00pm - compute diffs to highlight changes
 
 ### 2023-01-24
 
