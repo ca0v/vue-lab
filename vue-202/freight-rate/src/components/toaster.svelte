@@ -1,7 +1,10 @@
 <script lang="ts">
   import { messages, proposeToast } from "../store/messaging"
-  proposeToast("Hello world!!", 1)
-  proposeToast("Oh No!!", 10, { error: true })
+  proposeToast("Hello world!!", { lifetime: 3 })
+  proposeToast(
+    "Hello world!! Hello world!! Hello world!! Hello world!! Hello world!! Hello world!!"
+  )
+  proposeToast("Oh No!!", { error: true })
 </script>
 
 <div>
@@ -41,10 +44,11 @@
 
   .toaster_message {
     color: var(--color-gray-100);
+    white-space: nowrap;
+    overflow: hidden;
   }
 
   .toaster_message.error {
     color: var(--color-red-50);
   }
-  
 </style>

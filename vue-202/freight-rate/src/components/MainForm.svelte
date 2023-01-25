@@ -21,7 +21,7 @@
 
 <svelte:window
   on:unhandledrejection={(event) =>
-    proposeToast(`UNHANDLED EXCEPTION: ${event.reason}`, 5, { error: true })}
+    proposeToast(`UNHANDLED EXCEPTION: ${event.reason}`, { error: true })}
 />
 
 <div class="flex">

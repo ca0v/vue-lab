@@ -140,7 +140,7 @@
     proposeToast(message)
   }
   function toss(message: string) {
-    alert(message)
+    proposeToast(message, { error: true })
     return message
   }
 
@@ -511,7 +511,15 @@
           </button>
         </div>
       {/each}
-      <button on:click={() => getMoreData()}>More Rows</button>
+      <nav>
+        <button
+          on:click={async () => {
+            await getMoreData()
+            // scroll to the bottom of the page
+            window.scrollTo(0, document.body.scrollHeight)
+          }}>More Rows</button
+        >
+      </nav>
     </div>
     <!-- button to add a new rate, date must not be earlier than latest start date -->
     <dialog open={showForm}>
@@ -607,10 +615,16 @@
   }
 
   nav {
+    grid-column-start: 1;
+    grid-column-end: -1;
     display: flex;
     flex-direction: row;
     justify-content: center;
+    /* align buttons to the right */
+    justify-content: flex-end;
     gap: 1em;
+    padding: 1em;
+    padding-bottom: 0;
   }
 
   nav > button {
@@ -624,7 +638,6 @@
     /* center text vertically */
     align-items: center;
     border-top: 1px solid var(--border-color-lite);
-    border-bottom: 1px solid var(--border-color-lite);
   }
 
   .table > .th {
