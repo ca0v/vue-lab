@@ -19,9 +19,31 @@
     insertRate,
     deleteRate,
   } from "../data/freight-store"
+  import { proposeToast } from "../store/messaging"
 
   let showForm: boolean = false
   let inputForm: HTMLFormElement
+
+  const MESSAGE_TEMPLATES = {
+    prior: (
+      priorStartDate: string,
+      priorEndDate: string,
+      newPriorEndDate: string
+    ) =>
+      `The time frame ${priorStartDate} to ${priorEndDate}\nwill become\n${priorStartDate} to ${newPriorEndDate}.\n\nContinue?`,
+    delete_prev: (priorStartDate: string, priorEndDate: string) =>
+      `The previous time frame ${priorStartDate} to ${priorEndDate}\nwill become ${priorStartDate} to all future dates.\n\nContinue?`,
+    delete_next: (
+      nextStartDate: string,
+      nextEndDate: string,
+      newNextStartDate: string
+    ) => {
+      if (!newNextStartDate) {
+        return `The time frame ${nextStartDate} to ${nextEndDate}\nwill become ${nextStartDate} to all future dates.\n\nContinue?`
+      }
+      return `The time frame ${nextStartDate} to ${nextEndDate}\nwill become ${newNextStartDate} to ${nextEndDate}.\n\nContinue?`
+    },
+  }
 
   let freightRateData: Array<FreightRate> = []
 
@@ -68,8 +90,12 @@
     // clear the form data
     resetForm()
     inputForm["start_date"].value = today()
+    openDialog()
+  }
+
+  function openDialog() {
     showForm = true
-    setTimeout(() => inputForm["start_date"].focus(), 100)
+    setTimeout(() => inputForm["start_date"]?.focus(), 100)
   }
 
   function resetForm() {
@@ -110,6 +136,9 @@
     }
   }
 
+  function alert(message: string) {
+    proposeToast(message)
+  }
   function toss(message: string) {
     alert(message)
     return message
@@ -130,7 +159,6 @@
     const data = Object.fromEntries(rawData) as {
       primary_key: string
       start_date: string
-      end_date: string
       offload_rate: string
       port1_rate: string
       port2_rate: string
@@ -139,7 +167,7 @@
     const startDate = inputToZulu(data.start_date)
     const newData: FreightRate = {
       start_date: startDate,
-      end_date: inputToZulu(data.end_date),
+      end_date: 0, // don't care
       port1_rate: parseFloat(data.port1_rate),
       port2_rate: parseFloat(data.port2_rate),
       offload_rate: parseFloat(data.offload_rate),
@@ -155,7 +183,6 @@
         throw toss("update failed")
       }
     } else {
-      newData.end_date = inputToZulu(INFINITY_DATE)
       if (!(await insertFreightRate(newData))) {
         throw toss("insert failed")
       }
@@ -195,7 +222,11 @@
       const newPriorEndDate = asDate(addDay(startDate, -1))
       // if the new end date is not the same as the prior end date, confirm the change
       if (priorEndDate !== newPriorEndDate) {
-        const message = `The previous time block will change from\n${priorStartDate} to ${priorEndDate}\nand become\n${priorStartDate} to ${newPriorEndDate}.\n\nContinue?`
+        const message = MESSAGE_TEMPLATES.prior(
+          priorStartDate,
+          priorEndDate,
+          newPriorEndDate
+        )
         if (!confirm(message)) return false
       }
     }
@@ -290,7 +321,6 @@
     resetForm()
     inputForm["primary_key"].value = rate.start_date
     inputForm["start_date"].value = asDate(rate.start_date)
-    inputForm["end_date"].value = asDate(rate.end_date)
     inputForm["offload_rate"].value = asDecimal(rate.offload_rate)
     inputForm["port1_rate"].value = asDecimal(rate.port1_rate)
     inputForm["port2_rate"].value = asDecimal(rate.port2_rate)
@@ -305,8 +335,7 @@
       inputForm["start_date"].max = asDate(nextRate.start_date - ONE_DAY)
     }
     // show the form
-    showForm = true
-    setTimeout(() => inputForm["start_date"].focus(), 100)
+    openDialog()
   }
 
   async function deleteFreightRate(rate: FreightRate) {
@@ -330,7 +359,10 @@
         const priorStartDate = asDate(priorRate.start_date)
         const priorEndDate = asDate(priorRate.end_date)
         const newPriorEndDate = inputToZulu(INFINITY_DATE)
-        const message = `The previous time block ${priorStartDate} to ${priorEndDate}\nwill become ${priorStartDate} to present.\n\nContinue?`
+        const message = MESSAGE_TEMPLATES.delete_prev(
+          priorStartDate,
+          priorEndDate
+        )
         if (!confirm(message)) return false
         setEndDate(priorRate, newPriorEndDate)
       }
@@ -338,10 +370,13 @@
       // if this is not the first rate, we need to update the end date of the next rate
       const nextRate = freightRateData[index - 1]
       const nextStartDate = asDate(nextRate.start_date)
-      const nextEndDate =
-        blankIfInfinity(asDate(nextRate.end_date)) || "present"
+      const nextEndDate = blankIfInfinity(asDate(nextRate.end_date))
       const newNextStartDate = asDate(rate.start_date)
-      const message = `The next time block ${nextStartDate} to ${nextEndDate}\nwill become ${newNextStartDate} to ${nextEndDate}.\n\nContinue?`
+      const message = MESSAGE_TEMPLATES.delete_next(
+        nextStartDate,
+        nextEndDate,
+        newNextStartDate
+      )
       if (!confirm(message)) return false
       setStartDate(nextRate, rate.start_date)
     }
@@ -439,7 +474,7 @@
           class="align-right date2 value"
           class:hilite={rate._hiliteHack?.has("end_date")}
         >
-          {blankIfInfinity(asDate(rate.end_date)) || "<null>"}
+          {blankIfInfinity(asDate(rate.end_date)) || "..."}
         </div>
         <!-- write a cell for each port rate -->
         <div class={`align-right port1 title`}>LB</div>
@@ -468,11 +503,9 @@
           {asDecimal(computeAverage(rate))}
         </div>
         <div class="toolbar">
-          {#if true}
-            <button class="delete" on:click={() => deleteFreightRate(rate)}>
-              <TrashIcon />
-            </button>
-          {/if}
+          <button class="delete" on:click={() => deleteFreightRate(rate)}>
+            <TrashIcon />
+          </button>
           <button class="edit" on:click={() => editFreightRate(rate)}>
             <PencilIcon />
           </button>
@@ -490,8 +523,6 @@
         <input type="hidden" name="primary_key" />
         <label for="start_date">Start Date</label>
         <input type="date" required name="start_date" value={today()} />
-        <label for="end_date">End Date</label>
-        <input type="text" name="end_date" readonly value={INFINITY_DATE} />
         <!-- write a row for each port -->
         <label for={"port1_rate"}>LB</label>
         <input

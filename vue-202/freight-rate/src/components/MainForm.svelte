@@ -1,6 +1,7 @@
 <script lang="ts">
   import LogoButton from "./LogoButton.svelte"
   import FR from "./FR.svelte"
+  import Toaster from "./toaster.svelte"
 
   let showFreightRatesPage: boolean
 
@@ -19,10 +20,10 @@
 
 <div class="flex">
   <nav>
-    <LogoButton title="ASIN Exclusion List" element_id="XL" />
+    <LogoButton title="ASIN Exclusion List" element_id="" />
     <LogoButton
       title="Freight Rates"
-      element_id="FR"
+      element_id=""
       on:click={() => open("/fr")}
     />
   </nav>
@@ -33,6 +34,9 @@
       <svelte:component this={FR} />
     {/if}
   </main>
+  <div class="toaster">
+    <Toaster />
+  </div>
 </div>
 
 <style>
@@ -55,5 +59,15 @@
     width: 100%;
     height: auto;
     border-radius: var(--radius);
+  }
+
+  .toaster {
+    /* stick to the bottom left of screen */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    /* allow click-through */
+    pointer-events: none;
   }
 </style>

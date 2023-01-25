@@ -13,19 +13,28 @@
 </script>
 
 <button on:click={click}>
-  <div class="logo">{element_id}</div>
-  <span>{title}</span>
+  {#if element_id}
+    <div class="logo">{element_id}</div>
+    <span>{title}</span>
+  {:else}
+    <span class="fill">{title}</span>
+  {/if}
 </button>
 
 <style>
   button {
     display: grid;
-    grid-template-rows: 1fr 2fr;
+    grid-template-rows: 1fr;
     /* center */
     justify-items: center;
+    align-items: center;
     max-width: 12em;
     max-height: 8em;
     padding: 1em;
+  }
+
+  button:has(.logo) {
+    grid-template-rows: 1fr 2fr;
   }
 
   button > .logo {
@@ -34,7 +43,7 @@
     line-height: 3em;
     font-size: 1em;
     margin: 0.5em;
-    border: 1px solid;
+    border: none;
   }
 
   button:focus > .logo,
@@ -46,5 +55,10 @@
 
   button > span {
     font-size: smaller;
+    font-weight: bolder;
+  }
+
+  button > span.fill {
+    font-size: 1em;
   }
 </style>
