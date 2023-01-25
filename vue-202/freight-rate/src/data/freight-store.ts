@@ -43,9 +43,19 @@ export async function updateRate(primaryKey: number, rate: FreightRate) {
   })
   console.log("updateRate", response)
   if (!response.ok) {
-    throw new Error("updateRate failed")
+    switch (response.status) {
+      case 404:
+        throw "rate item not found"
+      default:
+        const data = await response.json()
+        throw (
+          data?.error ||
+          "failed to update the freight rate for an unknown reason"
+        )
+    }
   }
-  return response
+  const data = (await response.json()) as Array<FreightRate>
+  return data
 }
 
 export async function insertRate(rate: FreightRate) {
@@ -60,9 +70,17 @@ export async function insertRate(rate: FreightRate) {
   })
   console.log("insertRate", response)
   if (!response.ok) {
-    throw new Error("insertRate failed")
+    switch (response.status) {
+      default:
+        const data = await response.json()
+        throw (
+          data?.error ||
+          "failed to insert the freight rate for an unknown reason"
+        )
+    }
   }
-  return response
+  const data = (await response.json()) as Array<FreightRate>
+  return data
 }
 
 export async function deleteRate(start_date: number) {

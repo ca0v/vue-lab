@@ -120,31 +120,6 @@
     showForm = false
   }
 
-  // I am fully aware this should be done with a store, just poc-ing (and regretting it)
-  function setEndDate(rate: FreightRate, value: number) {
-    if (rate.end_date !== value) {
-      rate.end_date = value
-      hiliteRate(rate, "end_date")
-    }
-  }
-
-  function setStartDate(rate: FreightRate, value: number) {
-    if (rate.start_date !== value) {
-      rate.start_date = value
-      hiliteRate(rate, "start_date")
-    }
-  }
-
-  function setOffloadRate(rate: FreightRate, value: number) {
-    if (rate.offload_rate !== value) {
-      rate.offload_rate = value
-      hiliteRate(rate, "offload_rate")
-    }
-  }
-
-  function alert(message: string) {
-    proposeToast(message)
-  }
   function toss(message: string) {
     proposeToast(message, { error: true })
     return message
@@ -238,24 +213,26 @@
     }
 
     // update rate
-    setStartDate(rate, data.start_date)
-    setOffloadRate(rate, data.offload_rate)
-    if (rate.port1_rate !== data.port1_rate) {
-      rate.port1_rate = data.port1_rate
-      hiliteRate(rate, "port1_rate")
-    }
-    if (rate.port2_rate !== data.port2_rate) {
-      rate.port2_rate = data.port2_rate
-      hiliteRate(rate, "port2_rate")
-    }
-
-    // update the end date of the previous rate
-    if (index < freightRateData.length - 1) {
-      setEndDate(freightRateData[index + 1], addDay(startDate, -1))
-    }
-
-    await updateRate(primaryKey, rate)
+    const response = await updateRate(primaryKey, data)
+    // remove the old rate
+    freightRateData.splice(index, 1)
+    // merge the results into freightRateData
+    mergeResponseData(response)
     return true
+  }
+
+  function mergeResponseData(response: FreightRate[]) {
+    response.forEach((response_rate) => {
+      const index = freightRateData.findIndex(
+        (rate) => rate.start_date === response_rate.start_date
+      )
+      if (index >= 0) {
+        freightRateData[index] = response_rate
+      } else {
+        freightRateData.push(response_rate)
+      }
+    })
+    sortFreightRates()
   }
 
   async function insertFreightRate(data: FreightRate) {
@@ -278,32 +255,14 @@
     if (priorRate) {
       // if priorRate start date is the same then we have a problem, throw
       if (priorRate.start_date === startDate) {
-        alert("duplicate start date")
+        proposeToast("This would create a duplicate start date.")
         return
       }
-      setEndDate(data, priorRate.end_date)
-      // this is the last rate
-      setEndDate(priorRate, addDay(startDate, -1))
-      const priorRateIndex = freightRateData.indexOf(priorRate)
-      // insert the new rate before the prior rate
-      freightRateData.splice(priorRateIndex, 0, data)
-    } else {
-      // add the new rate to the end of the list
-      // set the "end_date" to one day before the next start date
-      if (freightRateData.length) {
-        const nextRate = freightRateData[freightRateData.length - 1]
-        setEndDate(data, addDay(nextRate.start_date, -1))
-      }
-      freightRateData.push(data)
     }
-    // hilite the entire row
-    hiliteRate(data, "start_date")
-    hiliteRate(data, "end_date")
-    hiliteRate(data, "offload_rate")
-    hiliteRate(data, "port1_rate")
-    hiliteRate(data, "port2_rate")
 
-    await insertRate(data)
+    const response = await insertRate(data)
+    // merge the results into freightRateData
+    mergeResponseData(response)
 
     return true
   }
@@ -364,13 +323,11 @@
         const priorRate = freightRateData[1]
         const priorStartDate = asDate(priorRate.start_date)
         const priorEndDate = asDate(priorRate.end_date)
-        const newPriorEndDate = inputToZulu(INFINITY_DATE)
         const message = MESSAGE_TEMPLATES.delete_prev(
           priorStartDate,
           priorEndDate
         )
         if (!confirm(message)) return false
-        setEndDate(priorRate, newPriorEndDate)
       }
     } else {
       // if this is not the first rate, we need to update the end date of the next rate
@@ -384,13 +341,23 @@
         newNextStartDate
       )
       if (!confirm(message)) return false
-      setStartDate(nextRate, rate.start_date)
     }
-    // remove the rate from the sample data
-    freightRateData = freightRateData.filter((r) => r !== rate)
-    if (!(await deleteRate(rate.start_date))) {
-      throw toss("delete failed")
+    const response = await deleteRate(rate.start_date)
+    if (!response.ok) {
+      switch (response.status) {
+        case 404:
+          throw toss("Rate not found")
+        default:
+          const data = await response.json()
+          throw toss(data?.message || "Error deleting rate")
+      }
     }
+
+    // merge the results into freightRateData
+    const data = (await response.json()) as FreightRate[]
+    freightRateData.splice(index, 1) // remove the deleted rate
+    mergeResponseData(data) // update any other rates that were affected
+
     return true
   }
 
@@ -433,11 +400,16 @@
     }
     const moreData = await more(startDate, 12)
     if (!moreData.length) {
-      alert("No results found")
+      proposeToast("No results found")
       return
     }
 
-    freightRateData = [...(freightRateData || []), ...moreData].sort(
+    freightRateData.push(...moreData)
+    sortFreightRates()
+  }
+
+  function sortFreightRates() {
+    freightRateData = freightRateData.sort(
       (a, b) => b.start_date - a.start_date
     )
   }

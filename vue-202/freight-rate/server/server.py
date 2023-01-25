@@ -141,11 +141,16 @@ def update_rate(start_date: int):
     # convert to unix time
     start_date = ticks_to_unix(int(start_date))
 
+    # items to return
+    response_items = []
+
     db.session.begin()
     try:
         rate = FreightRate.query.filter_by(start_date=start_date).first()
         if rate is None:
-            return jsonify({'error': 'not found'})
+            print('rate not found', unix_to_date(start_date))
+            # return 404
+            return jsonify({'error': 'rate not found'}), 404
 
         # read request as a FreightRate object
         changes = request.get_json()
@@ -164,6 +169,7 @@ def update_rate(start_date: int):
                     previous.start_date), "diff", previous.start_date - start_date)
                 previous.end_date = add_day(new_start_date, -1)
                 db.session.merge(previous)
+                response_items.append(previous.start_date)
             # find the next rate and adjust our end_date
             next = FreightRate.query.order_by(FreightRate.start_date).filter(
                 FreightRate.start_date > start_date).first()
@@ -171,6 +177,7 @@ def update_rate(start_date: int):
                 print('next rate found', unix_to_date(next.start_date))
                 rate.end_date = add_day(next.start_date, -1)
                 db.session.merge(next)
+                response_items.append(next.start_date)
             # update the rate data (will this work if the start_date changes?)
         # update the rate with the changes (this performs database changes!)
         rate.start_date = ticks_to_unix(changes.start_date)
@@ -178,6 +185,8 @@ def update_rate(start_date: int):
         rate.port1_rate = changes.port1_rate
         rate.port2_rate = changes.port2_rate
         db.session.merge(rate)  # redundant?
+        response_items.append(rate.start_date)
+
     except Exception as e:
         print(e)
         db.session.rollback()
@@ -186,9 +195,14 @@ def update_rate(start_date: int):
     else:
         db.session.commit()
 
-    # read the updated rate from the database
-    rate = FreightRate.query.filter_by(start_date=start_date).first()
-    return jsonify(rate)
+    # read the rates for all keys in response_items
+    rates = []
+    for key in response_items:
+        rate = FreightRate.query.filter_by(start_date=key).first()
+        rate.start_date = unix_to_ticks(rate.start_date)
+        rate.end_date = unix_to_ticks(rate.end_date)
+        rates.append(rate)
+    return jsonify(rates)
 
 
 # http post to add a new rate
@@ -278,6 +292,7 @@ def delete_rate(start_date: int):
     start_date = ticks_to_unix(int(start_date))
     print('delete_rate', start_date)
 
+    response_items = []
     # begin a transaction
     db.session.begin()
     try:
@@ -299,6 +314,7 @@ def delete_rate(start_date: int):
             # move the future rate back
             future_rate.start_date = start_date
             db.session.merge(future_rate)
+            response_items.append(future_rate.start_date)
 
         else:
             # find the past rate
@@ -308,6 +324,7 @@ def delete_rate(start_date: int):
                 # move the past rate forward
                 past_rate.end_date = rate.end_date
                 db.session.merge(past_rate)
+                response_items.append(past_rate.start_date)
     except Exception as e:
         print(e)
         db.session.rollback()
@@ -316,8 +333,15 @@ def delete_rate(start_date: int):
     else:
         db.session.commit()
 
-    # return the deleted rate
-    return jsonify(rate)
+    # return the rates identified by response_items keys
+    rates = []
+    for item in response_items:
+        rate = FreightRate.query.filter_by(start_date=item).first()
+        # convert to ticks
+        rate.start_date = unix_to_ticks(rate.start_date)
+        rate.end_date = unix_to_ticks(rate.end_date)
+        rates.append(rate)
+    return jsonify(rates)
 
 
 # add a day to a date
