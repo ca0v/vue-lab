@@ -81,12 +81,13 @@ If no – stay on the screen and revert. (DONE)
 
 ### 2023-01-24
 
-4.0 hours - Adds database/transaction/services and UX improvements
+4.25 hours - Adds database/transaction/services and UX improvements
 
 * 07:30am-08:30am - Setup a mock database (sqlite)
 * 11:30am-12:30pm - Created unit tests
 * 12:30pm-02:00pm - Test, fix, refactor (wrapping up completed POC)
 * 2:30pm-03:00pm - Apply feedback from UX review
+* 11:30pm-11:45pm - Add mock data reset/injection service
 
 ### 2023-01-23
 

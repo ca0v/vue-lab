@@ -32,11 +32,6 @@ export async function getRates(start_date: number, end_date: number) {
   console.log("getRates", response)
   const data = (await response.json()) as Array<FreightRate>
   console.log("getRates", data)
-  // convert the strings to numbers
-  data.forEach((rate) => {
-    rate.start_date = inputToZulu(<string>(<unknown>rate.start_date))
-    rate.end_date = inputToZulu(<string>(<unknown>rate.end_date))
-  })
   return data
 }
 

@@ -64,6 +64,29 @@ def date_to_ticks(date):
 # get the last n rates sorted by start_date descending
 
 
+@app.route('/aiq/api/rates/reset', methods=['GET'])
+def reset_rates():
+    # delete all rates
+    num_rows_deleted = db.session.query(FreightRate).delete()
+    # insert a rate for each month from 2020-01-01 to 2023-01-01
+    start_date = date_to_ticks('2020-01-01')
+    cutoff_date = date_to_ticks('2023-01-01')
+    pennies = 0.01
+    while start_date < cutoff_date:
+        # add a month to the start_date
+        rate = FreightRate(start_date=start_date, end_date=add_day(start_date, 27),
+                           offload_rate=789+pennies, port1_rate=1100.99, port2_rate=1300.01)
+        pennies += 0.01
+        db.session.add(rate)
+        start_date = add_day(start_date, 28)
+    db.session.commit()
+    return app.response_class(
+        response=jsonify({'message': 'reset complete'}),
+        status=200,
+        mimetype='application/json'
+    )
+
+
 @app.route('/aiq/api/rates/<int:n>', methods=['GET'])
 def get_last_n_rates(n: int):
     print('get_last_n_rates', n)
@@ -72,16 +95,16 @@ def get_last_n_rates(n: int):
     return jsonify(rates)
 
 
-@app.route('/aiq/api/rates/<path:start>/<path:end>', methods=['GET'])
-def get_rates(start: int, end: int):
+@app.route('/aiq/api/rates/<path:start_date>/<path:end_date>', methods=['GET'])
+def get_rates(start_date: str, end_date: str):
     # convert to unix time
-    print('get_rates', start, end)
-    start = datetime.strptime(start, '%Y-%m-%d').timestamp()
-    end = datetime.strptime(end, '%Y-%m-%d').timestamp()
-    print('get_rates', start, end)
+    print('get_rates', start_date, end_date)
+    start_date = date_to_ticks(start_date)
+    end_date = date_to_ticks(end_date)
+    print('get_rates', start_date, end_date)
 
     rates = FreightRate.query.filter(
-        FreightRate.start_date >= start, FreightRate.start_date < end).all()
+        FreightRate.start_date >= start_date, FreightRate.start_date < end_date).all()
 
     return jsonify(rates)
 
@@ -260,7 +283,7 @@ def delete_rate(start_date: int):
 
 # add a day to a date
 def add_day(date: int, days: int = 1):
-    return date + days * (60 * 60 * 24)
+    return date + days * (1000 * 60 * 60 * 24)
 
 
 def as_rate(rateRequest):
