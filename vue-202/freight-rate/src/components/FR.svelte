@@ -180,11 +180,11 @@
       const rate = freightRateData.find((rate) => rate.start_date === id)
       if (!rate) throw toss("rate not found")
       if (!(await updateFreightRate(rate, newData))) {
-        throw toss("update failed")
+        return false
       }
     } else {
       if (!(await insertFreightRate(newData))) {
-        throw toss("insert failed")
+        return false
       }
     }
 
