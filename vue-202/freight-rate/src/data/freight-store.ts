@@ -5,23 +5,17 @@ const API_URL = localStorage.getItem("API_URL") || "/aiq/api/"
 localStorage.setItem("API_URL", API_URL)
 
 // to build a collection of freight rates is called a "freight store"
-export async function more(start_date = 0) {
+export async function more(start_date: number, count = 12) {
   console.log("more", start_date)
   if (!start_date) {
     // get the latest rates
-    const response = await fetch(`${API_URL}rates/12`)
+    const response = await fetch(`${API_URL}rates/${count}`)
     const data = (await response.json()) as Array<FreightRate>
-    if (data.length) {
-      start_date = data[data.length - 1].start_date
-    }
     return data
   }
 
   // get next 12 rates
-  const data = await getRates(start_date - ONE_DAY, 12)
-  if (data.length) {
-    start_date = data[data.length - 1].start_date
-  }
+  const data = await getRates(start_date, count)
   return data
 }
 

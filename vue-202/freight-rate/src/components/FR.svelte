@@ -377,6 +377,7 @@
 
   async function getMoreData() {
     try {
+      console.log("getMoreData")
       return await unsafeGetMoreData()
     } catch (err: any) {
       toss(err?.message || err)
@@ -384,19 +385,17 @@
   }
 
   async function unsafeGetMoreData() {
-    console.log("getMoreData")
     let startDate = 0
     if (freightRateData && freightRateData.length) {
       startDate = freightRateData[freightRateData.length - 1].start_date
-      startDate = startDate + ONE_DAY
+      startDate = startDate - ONE_DAY
     }
-    const moreData = await more(startDate)
+    const moreData = await more(startDate, 12)
     if (!moreData.length) {
       alert("No results found")
       return
     }
 
-    console.log({ moreData })
     freightRateData = [...(freightRateData || []), ...moreData].sort(
       (a, b) => b.start_date - a.start_date
     )

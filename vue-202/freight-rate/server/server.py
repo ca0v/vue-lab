@@ -116,10 +116,11 @@ def get_rates(start_date: str, n: int):
 
     # convert to unix time
     start_date = date_to_unix(start_date)
+    print('get_rates', unix_to_date(start_date), n)
 
     rates = FreightRate.query.order_by(FreightRate.start_date.desc()).filter(
         FreightRate.start_date <= start_date)
-        
+
     # just the last n rates
     rates = rates.limit(n).all()
 
