@@ -58,12 +58,18 @@
 
   function handleKeyDown(event: KeyboardEvent) {
     const key = event.key
-    const isAlt = event.altKey
+    const isAlt = event.altKey || event.metaKey
 
     if (isAlt) {
       switch (key) {
         case "a":
           addNewFreight()
+          break
+        case "m":
+          getMoreData().then(() => {
+            // scroll to the bottom
+            window.scrollTo(0, document.body.scrollHeight)
+          })
           break
         case "s":
           save()
@@ -513,6 +519,7 @@
       {/each}
       <nav>
         <button
+          title="Alt+M"
           on:click={async () => {
             await getMoreData()
             // scroll to the bottom of the page
