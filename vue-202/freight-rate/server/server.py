@@ -320,8 +320,8 @@ def delete_rate(start_date: int):
             future_rate.start_date = start_date
             diffgram['updates'].append(future_rate.start_date)
             db.session.merge(future_rate)
-
         else:
+            diffgram['deletes'].append(start_date)
             # find the past rate
             past_rate = FreightRate.query.order_by(FreightRate.start_date.desc()).filter(
                 FreightRate.start_date < start_date).limit(1).first()
