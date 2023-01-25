@@ -73,21 +73,21 @@ def unix_to_ticks(unix):
 # get the last n rates sorted by start_date descending
 
 
-@app.route('/aiq/api/rates/reset', methods=['GET'])
-def reset_rates():
+@app.route('/aiq/api/rates/reset/<int:step_size>', methods=['GET'])
+def reset_rates(step_size: int):
     # delete all rates
     db.session.query(FreightRate).delete()
     # insert a rate for each month from 2020-01-01 to 2023-01-01
     start_date = date_to_unix('2020-01-01')
-    cutoff_date = date_to_unix('2020-12-01')
+    cutoff_date = date_to_unix('2023-12-31')
     pennies = 0.01
     while start_date < cutoff_date:
         # add a month to the start_date
-        rate = FreightRate(start_date=start_date, end_date=add_day(start_date, 27),
+        rate = FreightRate(start_date=start_date, end_date=add_day(start_date, step_size-1),
                            offload_rate=789+pennies, port1_rate=1100.99, port2_rate=1300.01)
         pennies += 0.01
         db.session.add(rate)
-        start_date = add_day(start_date, 28)
+        start_date = add_day(start_date, step_size)
 
     rate = FreightRate(start_date=start_date, end_date=date_to_unix(MAX_DATE),
                        offload_rate=1000, port1_rate=1100, port2_rate=1200)
@@ -110,16 +110,18 @@ def get_last_n_rates(n: int):
     return jsonify(rates)
 
 
-@app.route('/aiq/api/rates/<path:start_date>/<path:end_date>', methods=['GET'])
-def get_rates(start_date: str, end_date: str):
-    # convert to unix time
-    print('get_rates', start_date, end_date)
-    start_date = date_to_unix(start_date)
-    end_date = date_to_unix(end_date)
-    print('get_rates', start_date, end_date)
+@app.route('/aiq/api/rates/<path:start_date>/<int:n>', methods=['GET'])
+def get_rates(start_date: str, n: int):
+    print('get_rates', start_date, n)
 
-    rates = FreightRate.query.filter(
-        FreightRate.start_date >= start_date, FreightRate.start_date < end_date).all()
+    # convert to unix time
+    start_date = date_to_unix(start_date)
+
+    rates = FreightRate.query.order_by(FreightRate.start_date.desc()).filter(
+        FreightRate.start_date <= start_date)
+        
+    # just the last n rates
+    rates = rates.limit(n).all()
 
     # convert to ticks
     for rate in rates:

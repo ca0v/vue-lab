@@ -1,5 +1,5 @@
 import type { FreightRate } from "../@types/FreightRate"
-import { addMonth, asDate, asZulu, inputToZulu } from "../lib/fun"
+import { addMonth, asDate, asZulu, inputToZulu, ONE_DAY } from "../lib/fun"
 
 const API_URL = localStorage.getItem("API_URL") || "/aiq/api/"
 localStorage.setItem("API_URL", API_URL)
@@ -10,24 +10,26 @@ export async function more(start_date = 0) {
   if (!start_date) {
     // get the latest rates
     const response = await fetch(`${API_URL}rates/12`)
-    console.log("more", response)
     const data = (await response.json()) as Array<FreightRate>
-    console.log("more", data)
+    if (data.length) {
+      start_date = data[data.length - 1].start_date
+    }
     return data
   }
 
-  // get rates for from 12 months ago to start_date
-  const nextStartDate = addMonth(start_date, -12)
-  const data = await getRates(nextStartDate, start_date)
-  start_date = nextStartDate
+  // get next 12 rates
+  const data = await getRates(start_date - ONE_DAY, 12)
+  if (data.length) {
+    start_date = data[data.length - 1].start_date
+  }
   return data
 }
 
-// get the rates from the services at http://localhost:3003/api/rates/2022-01-01/2023-01-01
-export async function getRates(start_date: number, end_date: number) {
-  console.log("getRates", start_date, end_date)
+// get the rates from the services at http://localhost:3003/api/rates/2022-01-01/12
+export async function getRates(start_date: number, count = 12) {
+  console.log("getRates", start_date, count)
   // convert the dates to strings
-  const url = `${API_URL}rates/${asDate(start_date)}/${asDate(end_date)}`
+  const url = `${API_URL}rates/${asDate(start_date)}/${count}`
   const response = await fetch(url)
   console.log("getRates", response)
   const data = (await response.json()) as Array<FreightRate>

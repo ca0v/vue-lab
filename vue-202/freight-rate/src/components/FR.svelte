@@ -388,6 +388,7 @@
     let startDate = 0
     if (freightRateData && freightRateData.length) {
       startDate = freightRateData[freightRateData.length - 1].start_date
+      startDate = startDate + ONE_DAY
     }
     const moreData = await more(startDate)
     if (!moreData.length) {

@@ -79,6 +79,10 @@ If no – stay on the screen and revert. (DONE)
 * create mock services, use writables
 * [Python with Active Directory](https://pypi.org/project/ms-active-directory/)
 
+### 2023-01-25
+
+* 10:00am-10:30am - Modify "more" service to pull back next 12 (not next year)
+
 ### 2023-01-24
 
 4.25 hours - Adds database/transaction/services and UX improvements
