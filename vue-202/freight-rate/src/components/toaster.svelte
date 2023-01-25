@@ -1,10 +1,5 @@
 <script lang="ts">
-  import { messages, proposeToast } from "../store/messaging"
-  proposeToast("Hello world!!", { lifetime: 3 })
-  proposeToast(
-    "Hello world!! Hello world!! Hello world!! Hello world!! Hello world!! Hello world!!"
-  )
-  proposeToast("Oh No!!", { error: true })
+  import { messages } from "../store/messaging"
 </script>
 
 <div>
