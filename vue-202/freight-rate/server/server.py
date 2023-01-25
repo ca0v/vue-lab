@@ -148,24 +148,18 @@ def update_rate(start_date: int):
         changes = request.get_json()
         changes = as_rate(changes)
 
-        # update the rate with the changes (this performs database changes!)
-        rate.start_date = ticks_to_unix(changes.start_date)
-        rate.end_date = ticks_to_unix(changes.end_date)
-        rate.offload_rate = changes.offload_rate
-        rate.port1_rate = changes.port1_rate
-        rate.port2_rate = changes.port2_rate
-
         # did the start_date change?
-        if rate.start_date != start_date:
+        new_start_date = ticks_to_unix(changes.start_date)
+        if new_start_date != start_date:
             print('start_date changed', unix_to_date(
-                start_date), unix_to_date(rate.start_date))
+                start_date), unix_to_date(new_start_date))
             # find the previous rate and adjust its end_date
             previous = FreightRate.query.order_by(FreightRate.start_date.desc()).filter(
                 FreightRate.start_date < start_date).first()
             if previous is not None:
                 print('previous rate found', unix_to_date(
                     previous.start_date), "diff", previous.start_date - start_date)
-                previous.end_date = add_day(rate.start_date, -1)
+                previous.end_date = add_day(new_start_date, -1)
                 db.session.merge(previous)
             # find the next rate and adjust our end_date
             next = FreightRate.query.order_by(FreightRate.start_date).filter(
@@ -175,6 +169,11 @@ def update_rate(start_date: int):
                 rate.end_date = add_day(next.start_date, -1)
                 db.session.merge(next)
             # update the rate data (will this work if the start_date changes?)
+        # update the rate with the changes (this performs database changes!)
+        rate.start_date = ticks_to_unix(changes.start_date)
+        rate.offload_rate = changes.offload_rate
+        rate.port1_rate = changes.port1_rate
+        rate.port2_rate = changes.port2_rate
         db.session.merge(rate)  # redundant?
     except Exception as e:
         print(e)
