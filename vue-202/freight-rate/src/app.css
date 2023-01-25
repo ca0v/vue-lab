@@ -10,6 +10,8 @@
   --secondary-color: hsl(191, 40%, 52%);
   --white-text: white;
   --black-text: black;
+  --color-red-10: hsl(0, 100%, 50%, 0.1);
+  --color-red-50: hsl(0, 100%, 50%, 0.5);
   --radius: 0.5em;
   --insert-color: var(--color-blue);
   --delete-color: hsl(10, 100%, 20%);
@@ -17,6 +19,7 @@
   --border-color-intense: hsl(206, 100%, 50%);
   --color-delta: hsl(206, 100%, 50%);
   --color-gray-100: hsl(206, 40%, 90%);
+  --color-gray-50: hsl(206, 40%, 90%, 0.5);
   --color-gray-10: hsl(206, 40%, 90%, 0.1);
 }
 

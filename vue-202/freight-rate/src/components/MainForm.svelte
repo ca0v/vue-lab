@@ -2,6 +2,7 @@
   import LogoButton from "./LogoButton.svelte"
   import FR from "./FR.svelte"
   import Toaster from "./toaster.svelte"
+  import { proposeToast } from "../store/messaging"
 
   let showFreightRatesPage: boolean
 
@@ -18,9 +19,14 @@
   }
 </script>
 
+<svelte:window
+  on:unhandledrejection={(event) =>
+    proposeToast(`UNHANDLED EXCEPTION: ${event.reason}`, 5, { error: true })}
+/>
+
 <div class="flex">
   <nav>
-    <LogoButton title="ASIN Exclusion List" element_id="" />
+    <LogoButton title="ASIN Exclusion List" element_id="" disabled />
     <LogoButton
       title="Freight Rates"
       element_id=""

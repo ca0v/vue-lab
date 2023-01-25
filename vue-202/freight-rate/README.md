@@ -84,6 +84,7 @@ If no – stay on the screen and revert. (DONE)
 * 10:00am-10:30am - Modify "more" service to pull back next 12 (not next year)
 * 11:00am-12:00pm - User is getting hammered with error alerts, need to fix that (toaster)
 * 12:30pm-1:00pm - Apply requested changes (use 'time frame', remove logo placeholders, use "..." for "all future dates")
+* 1:00pm-1:30pm - Improve dialog cancellation workflow (do not treat it as an error)
 
 ### 2023-01-24
 

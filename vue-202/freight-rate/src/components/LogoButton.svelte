@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte"
+  export let disabled = false
   export let title: string
   export let element_id: string
 
@@ -12,7 +13,7 @@
   }
 </script>
 
-<button on:click={click}>
+<button on:click={click} {disabled}>
   {#if element_id}
     <div class="logo">{element_id}</div>
     <span>{title}</span>
