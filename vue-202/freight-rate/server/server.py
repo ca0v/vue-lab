@@ -87,15 +87,18 @@ def reset_rates(step_size: int):
     start_date = date_to_unix('2020-01-01')
     cutoff_date = date_to_unix('2023-12-31')
     pennies = 0.01
+
+    pk = 0
     while start_date < cutoff_date:
+        pk += 1
         # add a month to the start_date
-        rate = FreightRate(start_date=start_date, end_date=add_day(start_date, step_size-1),
+        rate = FreightRate(pk=pk, start_date=start_date, end_date=add_day(start_date, step_size-1),
                            offload_rate=789+pennies, port1_rate=1100.99, port2_rate=1300.01)
         pennies += 0.01
         db.session.add(rate)
         start_date = add_day(start_date, step_size)
 
-    rate = FreightRate(start_date=start_date, end_date=date_to_unix(MAX_DATE),
+    rate = FreightRate(pk=pk+1, start_date=start_date, end_date=date_to_unix(MAX_DATE),
                        offload_rate=1000, port1_rate=1100, port2_rate=1200)
     db.session.add(rate)
     db.session.commit()
@@ -224,17 +227,14 @@ def update_rate(pk: int):
 def insert_rate():
     # how to create an access lock to prevent multiple clients from inserting at the same time
     print('enter insert_rate')
-    result = unsafe_insert_rate()
+    # convert rateRequest to a FreightRate object
+    rate = as_rate(request.get_json())
+    result = unsafe_insert_rate(rate)
     print('exit insert_rate')
     return result
 
 
-def unsafe_insert_rate():
-
-    rateRequest = request.get_json()
-
-    # convert rateRequest to a FreightRate object
-    rate = as_rate(rateRequest)
+def unsafe_insert_rate(rate: FreightRate):
 
     # convert to unix time
     rate.start_date = ticks_to_unix(rate.start_date)
