@@ -89,8 +89,8 @@ def reset_rates(step_size: int):
     # delete all rates
     db.session.query(FreightRate).delete()
     # insert a rate for each month from 2020-01-01 to 2023-01-01
-    start_date = date_to_unix('2020-01-01')
-    cutoff_date = date_to_unix('2023-12-31')
+    start_date = date_to_python('2020-01-01')
+    cutoff_date = date_to_python('2023-12-31')
     pennies = 0.01
 
     pk = 0
@@ -99,12 +99,24 @@ def reset_rates(step_size: int):
         # add a month to the start_date
         rate = FreightRate(pk=pk, start_date=start_date, end_date=add_day(start_date, step_size-1),
                            offload_rate=789+pennies, port1_rate=1100.99, port2_rate=1300.01)
+
+        rate.user_added = 'admin'
+        rate.date_added = datetime.now()
+        rate.average = rate.offload_rate + \
+            (rate.port1_rate + rate.port2_rate) / 2
+
         pennies += 0.01
         db.session.add(rate)
         start_date = add_day(start_date, step_size)
 
-    rate = FreightRate(pk=pk+1, start_date=start_date, end_date=date_to_unix(MAX_DATE),
-                       offload_rate=1000, port1_rate=1100, port2_rate=1200)
+    rate = FreightRate(pk=pk+1, start_date=start_date, end_date=date_to_python(MAX_DATE),
+                       offload_rate=1000, port1_rate=1100, port2_rate=1200
+                       )
+
+    rate.user_added = 'admin'
+    rate.date_added = datetime.now()
+    rate.average = rate.offload_rate + (rate.port1_rate + rate.port2_rate) / 2
+
     db.session.add(rate)
     db.session.commit()
 

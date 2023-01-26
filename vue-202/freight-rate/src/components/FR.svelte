@@ -474,14 +474,16 @@
           class="align-right date1 value"
           class:hilite={rate._hiliteHack?.has("start_date")}
         >
-          {asDate(rate.start_date)}
+          {asLocaleDate(rate.start_date)}
         </div>
         <div class="align-right date2 title">End Date</div>
         <div
           class="align-right date2 value"
           class:hilite={rate._hiliteHack?.has("end_date")}
         >
-          {blankIfInfinity(asDate(rate.end_date)) || "..."}
+          {rate.end_date >= inputToZulu(INFINITY_DATE)
+            ? "..."
+            : asLocaleDate(rate.end_date)}
         </div>
         <!-- write a cell for each port rate -->
         <div class={`align-right port1 title`}>LB</div>
