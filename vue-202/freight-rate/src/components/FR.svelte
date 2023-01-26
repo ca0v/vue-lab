@@ -8,6 +8,7 @@
     addDay,
     asDate,
     asDecimal,
+    asLocaleDate,
     INFINITY_DATE,
     inputToZulu,
     ONE_DAY,
@@ -15,7 +16,6 @@
   } from "../lib/fun"
   import { Api } from "../data/freight-store"
   import { proposeToast } from "../store/messaging"
-  import { object_without_properties } from "svelte/internal"
 
   let showForm: boolean = false
   let inputForm: HTMLFormElement
@@ -27,22 +27,31 @@
 
   const MESSAGE_TEMPLATES = {
     prior: (
-      priorStartDate: string,
-      priorEndDate: string,
-      newPriorEndDate: string
-    ) =>
-      `The time frame ${priorStartDate} to ${priorEndDate}\nwill become\n${priorStartDate} to ${newPriorEndDate}.\n\nContinue?`,
-    delete_prev: (priorStartDate: string, priorEndDate: string) =>
-      `The previous time frame ${priorStartDate} to ${priorEndDate}\nwill become ${priorStartDate} to all future dates.\n\nContinue?`,
+      priorStartDate: number,
+      priorEndDate: number,
+      newPriorEndDate: number
+    ) => {
+      return `The timeframe ${asLocaleDate(priorStartDate)} to ${asLocaleDate(
+        priorEndDate
+      )}\nwill become\n${asLocaleDate(priorStartDate)} to ${asLocaleDate(
+        newPriorEndDate
+      )}.\n\nContinue?`
+    },
+    delete_prev: (priorStartDate: number, priorEndDate: number) =>
+      `The previous timeframe ${asLocaleDate(priorStartDate)} to ${asLocaleDate(
+        priorEndDate
+      )}\nwill become ${asLocaleDate(
+        priorStartDate
+      )} to all future dates.\n\nContinue?`,
     delete_next: (
       nextStartDate: string,
       nextEndDate: string,
       newNextStartDate: string
     ) => {
       if (!newNextStartDate) {
-        return `The time frame ${nextStartDate} to ${nextEndDate}\nwill become ${nextStartDate} to all future dates.\n\nContinue?`
+        return `The timeframe ${nextStartDate} to ${nextEndDate}\nwill become ${nextStartDate} to all future dates.\n\nContinue?`
       }
-      return `The time frame ${nextStartDate} to ${nextEndDate}\nwill become ${newNextStartDate} to ${nextEndDate}.\n\nContinue?`
+      return `The timeframe ${nextStartDate} to ${nextEndDate}\nwill become ${newNextStartDate} to ${nextEndDate}.\n\nContinue?`
     },
   }
 
@@ -198,16 +207,13 @@
     if (index < freightRateData.length - 1) {
       // get the date range of the prior rate
       const priorRate = freightRateData[index + 1]
-      const priorStartDate = asDate(priorRate.start_date)
-      const priorEndDate = asDate(priorRate.end_date)
       // the new end date will change...
-      const newPriorEndDate = asDate(addDay(startDate, -1))
       // if the new end date is not the same as the prior end date, confirm the change
-      if (priorEndDate !== newPriorEndDate) {
+      if (priorRate.end_date !== addDay(startDate, -1)) {
         const message = MESSAGE_TEMPLATES.prior(
-          priorStartDate,
-          priorEndDate,
-          newPriorEndDate
+          priorRate.start_date,
+          priorRate.end_date,
+          addDay(startDate, -1)
         )
         if (!confirm(message)) return false
       }
@@ -227,6 +233,9 @@
     keyOf(source).forEach((key) => {
       const newValue = <any>source[key]
       if (target[key] != newValue) {
+        console.log(
+          `${target.pk}:highlighting ${key} ${target[key]} -> ${newValue}`
+        )
         target[key] = newValue
         hiliteRate(target, key)
       }
@@ -319,20 +328,21 @@
       if (freightRateData.length > 1) {
         // if this is the first rate, we need to update the end date of the next rate
         const priorRate = freightRateData[1]
-        const priorStartDate = asDate(priorRate.start_date)
-        const priorEndDate = asDate(priorRate.end_date)
         const message = MESSAGE_TEMPLATES.delete_prev(
-          priorStartDate,
-          priorEndDate
+          priorRate.start_date,
+          priorRate.end_date
         )
         if (!confirm(message)) return false
       }
     } else {
       // if this is not the first rate, we need to update the end date of the next rate
       const nextRate = freightRateData[index - 1]
-      const nextStartDate = asDate(nextRate.start_date)
-      const nextEndDate = blankIfInfinity(asDate(nextRate.end_date))
-      const newNextStartDate = asDate(rate.start_date)
+      const nextStartDate = asLocaleDate(nextRate.start_date)
+      const nextEndDate =
+        nextRate.end_date >= inputToZulu(INFINITY_DATE)
+          ? ""
+          : asLocaleDate(nextRate.end_date)
+      const newNextStartDate = asLocaleDate(rate.start_date)
       const message = MESSAGE_TEMPLATES.delete_next(
         nextStartDate,
         nextEndDate,
@@ -390,7 +400,6 @@
     // find the row that was just added
     newData._hiliteHack = newData._hiliteHack || new Set()
     newData._hiliteHack.add(field)
-    console.log("hilite", asDate(newData.start_date), field)
     setTimeout(() => {
       newData._hiliteHack?.delete(field)
       freightRateData = freightRateData
