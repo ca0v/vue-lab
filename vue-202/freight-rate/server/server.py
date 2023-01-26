@@ -8,6 +8,7 @@ from flask import Flask, send_from_directory, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api
 from flask_cors import CORS
+from sqlalchemy import func
 
 app = Flask(__name__, static_folder='./dist', static_url_path='')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
@@ -21,12 +22,15 @@ MAX_DATE = "2100-12-31"
 @dataclass
 class FreightRate(db.Model):
     __tablename__ = 'FreightRate'
+
+    pk: int
     start_date: int
     end_date: int
     offload_rate: float
     port1_rate: float
     port2_rate: float
 
+    pk = db.Column(db.Integer, primary_key=True)
     start_date = db.Column(db.Integer, primary_key=True)
     end_date = db.Column(db.Integer)
     offload_rate = db.Column(db.Float)
@@ -135,12 +139,9 @@ def get_rates(start_date: str, n: int):
 # http put function to update rates
 
 
-@app.route("/aiq/api/rates/<path:start_date>", methods=['PUT'])
-def update_rate(start_date: int):
-    print('update_rate', start_date)
-
-    # convert to unix time
-    start_date = ticks_to_unix(int(start_date))
+@app.route("/aiq/api/rates/<path:pk>", methods=['PUT'])
+def update_rate(pk: int):
+    print('update_rate', pk)
 
     diffgram = {
         'deletes': [],
@@ -150,11 +151,12 @@ def update_rate(start_date: int):
 
     db.session.begin()
     try:
-        rate = FreightRate.query.filter_by(start_date=start_date).first()
+        # find the rate
+        rate = FreightRate.query.filter_by(pk=pk).first()
         if rate is None:
-            print('rate not found', unix_to_date(start_date))
-            # return 404
             return jsonify({'error': 'rate not found'}), 404
+
+        start_date = rate.start_date
 
         # read request as a FreightRate object
         changes = request.get_json()
@@ -166,7 +168,7 @@ def update_rate(start_date: int):
             print('start_date changed', unix_to_date(
                 start_date), unix_to_date(new_start_date))
 
-            diffgram['deletes'].append(start_date)
+            diffgram['deletes'].append(pk)
             # find the previous rate and adjust its end_date
             previous = FreightRate.query.order_by(FreightRate.start_date.desc()).filter(
                 FreightRate.start_date < start_date).first()
@@ -175,7 +177,7 @@ def update_rate(start_date: int):
                     previous.start_date), "diff", previous.start_date - start_date)
                 previous.end_date = add_day(new_start_date, -1)
                 db.session.merge(previous)
-                diffgram['updates'].append(previous.start_date)
+                diffgram['updates'].append(previous.pk)
             # find the next rate and adjust our end_date
             next = FreightRate.query.order_by(FreightRate.start_date).filter(
                 FreightRate.start_date > start_date).first()
@@ -190,7 +192,7 @@ def update_rate(start_date: int):
         rate.port1_rate = changes.port1_rate
         rate.port2_rate = changes.port2_rate
         db.session.merge(rate)  # redundant?
-        diffgram['updates'].append(rate.start_date)
+        diffgram['updates'].append(rate.pk)
 
     except Exception as e:
         print(e)
@@ -208,6 +210,7 @@ def update_rate(start_date: int):
 
 @app.route("/aiq/api/rates", methods=['POST'])
 def insert_rate():
+    
     rateRequest = request.get_json()
 
     # convert rateRequest to a FreightRate object
@@ -216,6 +219,25 @@ def insert_rate():
     # convert to unix time
     rate.start_date = ticks_to_unix(rate.start_date)
     rate.end_date = ticks_to_unix(rate.end_date)
+
+    # make sure the row does not already exist
+    existing = FreightRate.query.filter_by(start_date=rate.start_date).first()
+    if existing is not None:
+        print('rate already exists', unix_to_date(rate.start_date))
+        # return 404
+        return jsonify({'error': 'rate already exists'}), 404
+        
+    # get the max rowid
+    max_rowid = db.session.query(func.max(FreightRate.pk)).scalar()
+    db.session.commit()
+
+    # if there are no rows in the table then max_rowid will be 0
+    if max_rowid is None:
+        max_rowid = 0
+
+    print('max_rowid', max_rowid)
+
+    rate.pk = max_rowid + 1
 
     diffgram = {
         'deletes': [],
@@ -241,7 +263,7 @@ def insert_rate():
             overlap.end_date = add_day(rate.start_date, -1)
             # update the rate data
             db.session.merge(overlap)
-            diffgram['updates'].append(overlap.start_date)
+            diffgram['updates'].append(overlap.pk)
         else:
             # find the rate this comes before and update its end date
             previous = FreightRate.query.order_by(FreightRate.start_date.desc()).filter(
@@ -249,7 +271,7 @@ def insert_rate():
             if previous is not None:
                 previous.end_date = add_day(rate.start_date, -1)
                 db.session.merge(previous)
-                diffgram['updates'].append(previous.start_date)
+                diffgram['updates'].append(previous.pk)
 
             # find the rate that comes after to compute an end date
             next = FreightRate.query.order_by(FreightRate.start_date).filter(
@@ -264,16 +286,12 @@ def insert_rate():
 
         # add the new rate
         db.session.add(rate)
-        diffgram['inserts'].append(rate.start_date)
+        diffgram['inserts'].append(rate.pk)
     except Exception as e:
-        print(e)
+        print("failed to insert", e)
         db.session.rollback()
         # return the error
-        return app.response_class(
-            response=jsonify({'error': e}),
-            status=500,
-            mimetype='application/json'
-        )
+        return jsonify({'error': "failed to insert"}), 409
     else:
         db.session.commit()
 
@@ -283,13 +301,9 @@ def insert_rate():
 # http delete to remove a rate
 
 
-@app.route("/aiq/api/rates/<path:start_date>", methods=['DELETE'])
-def delete_rate(start_date: int):
-    print('delete_rate', start_date)
-
-    # convert to unix time
-    start_date = ticks_to_unix(int(start_date))
-    print('delete_rate', start_date)
+@app.route("/aiq/api/rates/<path:pk>", methods=['DELETE'])
+def delete_rate(pk: int):
+    print('delete_rate', pk)
 
     diffgram = {
         'deletes': [],
@@ -304,10 +318,11 @@ def delete_rate(start_date: int):
         # a date gap cannot form if the rate is deleted
         # so the future rates must be moved back or the past rates must be moved forward
         # future takes precedence
-        rate = FreightRate.query.filter_by(start_date=start_date).first()
+        rate = FreightRate.query.filter_by(pk=pk).first()
         if rate is None:
-            return jsonify({'error': 'not found'}),
+            return jsonify({'error': 'not found'}), 404
 
+        start_date = rate.start_date
         # delete the rate
         db.session.delete(rate)
 
@@ -316,12 +331,12 @@ def delete_rate(start_date: int):
             FreightRate.start_date > start_date).limit(1).first()
         if future_rate is not None:
             # move the future rate back
-            diffgram['deletes'].append(future_rate.start_date)
+            diffgram['deletes'].append(future_rate.pk)
             future_rate.start_date = start_date
-            diffgram['updates'].append(future_rate.start_date)
+            diffgram['updates'].append(future_rate.pk)
             db.session.merge(future_rate)
         else:
-            diffgram['deletes'].append(start_date)
+            diffgram['deletes'].append(pk)
             # find the past rate
             past_rate = FreightRate.query.order_by(FreightRate.start_date.desc()).filter(
                 FreightRate.start_date < start_date).limit(1).first()
@@ -329,7 +344,7 @@ def delete_rate(start_date: int):
                 # move the past rate forward
                 past_rate.end_date = rate.end_date
                 db.session.merge(past_rate)
-                diffgram['updates'].append(past_rate.start_date)
+                diffgram['updates'].append(past_rate.pk)
     except Exception as e:
         print(e)
         db.session.rollback()
@@ -343,9 +358,6 @@ def delete_rate(start_date: int):
 
 
 def prepare_diffgram(diffgram):
-    diffgram['deletes'] = [unix_to_ticks(d) for d in diffgram['deletes']]
-    diffgram['updates'] = [unix_to_ticks(d) for d in diffgram['updates']]
-    diffgram['inserts'] = [unix_to_ticks(d) for d in diffgram['inserts']]
     return jsonpickle.encode(diffgram)
 
 

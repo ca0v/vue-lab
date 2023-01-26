@@ -3,7 +3,7 @@
   import PencilIcon from "../assets/pencil_icon.svelte"
   import AddIcon from "../assets/add_icon.svelte"
   import { onMount } from "svelte"
-  import type { FreightRate } from "../@types/FreightRate"
+  import type { DiffGram, FreightRate } from "../@types/FreightRate"
   import {
     addDay,
     asDate,
@@ -148,6 +148,7 @@
 
     const startDate = inputToZulu(data.start_date)
     const newData: FreightRate = {
+      pk: 0,
       start_date: startDate,
       end_date: 0, // don't care
       port1_rate: parseFloat(data.port1_rate),
@@ -373,11 +374,7 @@
   type HiliteFields = keyof FreightRate
 
   async function mergeDiffgram(response: Response) {
-    const data = (await response.json()) as {
-      inserts: number[]
-      updates: number[]
-      deletes: number[]
-    }
+    const data = (await response.json()) as DiffGram
     if (data.deletes) {
       freightRateData = freightRateData.filter(
         (r) => !data.deletes.includes(r.start_date)

@@ -6,7 +6,6 @@ class Api {
 
   // to build a collection of freight rates is called a "freight store"
   async more(start_date: number, count = 12) {
-    console.log("more", start_date)
     if (!start_date) {
       // get the latest rates
       const response = await fetch(`${this.API_URL}rates/${count}`)
@@ -21,13 +20,10 @@ class Api {
 
   // get the rates from the services at http://localhost:3003/api/rates/2022-01-01/12
   async getRates(start_date: number, count = 12) {
-    console.log("getRates", start_date, count)
     // convert the dates to strings
     const url = `${this.API_URL}rates/${asDate(start_date)}/${count}`
     const response = await fetch(url)
-    console.log("getRates", response)
     const data = (await response.json()) as Array<FreightRate>
-    console.log("getRates", data)
     return data
   }
 
@@ -41,7 +37,6 @@ class Api {
       },
       body: JSON.stringify(rate),
     })
-    console.log("updateRate", response)
     if (!response.ok) {
       switch (response.status) {
         case 404:
@@ -58,7 +53,6 @@ class Api {
   }
 
   async insertRate(rate: FreightRate) {
-    console.log("insertRate", rate)
     const url = `${this.API_URL}rates`
     const response = await fetch(url, {
       method: "POST",
@@ -67,13 +61,14 @@ class Api {
       },
       body: JSON.stringify(rate),
     })
-    console.log("insertRate", response)
     if (!response.ok) {
       switch (response.status) {
+        case 409:
+          throw "duplicate rate item"
         default:
-          const data = await response.json()
+          console.log(response.status, response.statusText)
           throw (
-            data?.error ||
+            response.statusText ||
             "failed to insert the freight rate for an unknown reason"
           )
       }
@@ -81,14 +76,21 @@ class Api {
     return response
   }
 
-  async deleteRate(start_date: number) {
-    const url = `${this.API_URL}rates/${start_date}`
+  async deleteRate(pk: number) {
+    const url = `${this.API_URL}rates/${pk}`
     const response = await fetch(url, {
       method: "DELETE",
     })
-    console.log("deleteRate", response)
     if (!response.ok) {
-      throw new Error("deleteRate failed")
+      switch (response.status) {
+        case 404:
+          throw "rate item not found"
+        default:
+          throw (
+            response.statusText ||
+            "failed to delete the freight rate for an unknown reason"
+          )
+      }
     }
     return response
   }
