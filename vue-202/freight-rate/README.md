@@ -82,6 +82,7 @@ If no – stay on the screen and revert. (DONE)
 ### 2023-01-26
 
 * 9:30am - 10:30am - Complete coverage of date boundaries for insert, update, delete
+* 10:30am - 11:30am - Switch UX to use pk, manual testing
 
 ### 2023-01-25
 
