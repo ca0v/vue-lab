@@ -50,6 +50,18 @@ export function asDate(zulu: number): string {
   return new Date(zulu).toISOString().slice(0, 10)
 }
 
+export function asLocaleDate(zulu: number) {
+  // convert a zulu time to a "jan 01 2021" format
+  const [y, m, d] = asDate(zulu)
+    .split("-")
+    .map((s) => parseInt(s))
+  return new Date(y, m - 1, d).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  })
+}
+
 export function today() {
   return asDate(Date.now())
 }
