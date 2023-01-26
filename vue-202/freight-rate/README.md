@@ -93,6 +93,8 @@ When the user adds a new record, that date must be greater than the latest start
 
 ### 2023-01-26
 
+3.5 hours - switch to PK with new field names
+
 * 9:30am - 10:30am - Complete coverage of date boundaries for insert, update, delete
 * 10:30am - 11:30am - Switch UX to use pk, manual testing
 * 12:30pm - 1:30pm - Switch to column names

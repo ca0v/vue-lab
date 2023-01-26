@@ -26,7 +26,7 @@
   const api = new Api(API_URL)
 
   const MESSAGE_TEMPLATES = {
-    prior: (
+    update: (
       priorStartDate: number,
       priorEndDate: number,
       newPriorEndDate: number
@@ -201,7 +201,7 @@
     const index = freightRateData.indexOf(rate)
     if (index < 0) throw toss("rate not found")
 
-    const startDate = data.start_date
+    const newPriorEndDate = addDay(data.start_date, -1)
 
     // confirm the change with user
     if (index < freightRateData.length - 1) {
@@ -209,11 +209,16 @@
       const priorRate = freightRateData[index + 1]
       // the new end date will change...
       // if the new end date is not the same as the prior end date, confirm the change
-      if (priorRate.end_date !== addDay(startDate, -1)) {
-        const message = MESSAGE_TEMPLATES.prior(
+      if (priorRate.end_date !== newPriorEndDate) {
+        console.log(
+          `diff, ${priorRate.end_date} - ${newPriorEndDate} = ${
+            priorRate.end_date - newPriorEndDate
+          }`
+        )
+        const message = MESSAGE_TEMPLATES.update(
           priorRate.start_date,
           priorRate.end_date,
-          addDay(startDate, -1)
+          newPriorEndDate
         )
         if (!confirm(message)) return false
       }
