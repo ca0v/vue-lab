@@ -367,8 +367,10 @@
       updates.forEach((row) => {
         const target = freightRateData.find((r) => r.pk === row.pk)
         if (!target) {
+          console.log(`adding missing row: ${row.pk}`)
           freightRateData.push(row)
         } else {
+          console.log(`updating row: ${row.pk}`)
           mergeFreightRateData(target, row)
         }
       })
@@ -379,12 +381,16 @@
         data.inserts.map((key) => api.getRate(key))
       )
       inserts.forEach((row) => {
+        console.log(`inserting row: ${row.pk}`)
         freightRateData.push(row)
-        hiliteRate(row, "start_date")
+        keyOf(row).forEach((field) => {
+          hiliteRate(row, field)
+        })
       })
     }
 
     if (data.deletes) {
+      console.log(`deleting rows: ${data.deletes.join(",")}`)
       freightRateData = freightRateData.filter(
         (r) => !data.deletes.includes(r.pk)
       )

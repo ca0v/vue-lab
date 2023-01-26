@@ -95,7 +95,7 @@ describe("freight-store", () => {
     })
     expect(data.inserts.length, "inserts").toBe(0)
     expect(data.updates.length, "updates").toBe(1)
-    expect(data.deletes.length, "deletes").toBe(1)
+    expect(data.deletes.length, "deletes").toBe(0)
     expect(data.updates[0]).toBe(1)
   })
 
@@ -271,7 +271,7 @@ it("restore day 20 and day 10", async () => {
 })
 
 it("inserts and then updates day 15", async () => {
-  const diffgram = await services.insertRate({
+  let diffgram = await services.insertRate({
     pk: 0,
     start_date: day(15),
     end_date: 0,
@@ -299,7 +299,11 @@ it("inserts and then updates day 15", async () => {
   }
 
   day15.start_date = day(11)
-  await services.updateRate(day15.pk, day15)
+  diffgram = await services.updateRate(day15.pk, day15)
+  expect(diffgram.inserts.length, "inserts").toBe(0)
+  expect(diffgram.updates.length, "updates").toBe(2)
+  expect(diffgram.deletes.length, "deletes").toBe(0)
+
   const day15_ = await services.getRate(3)
   expect(day15_.start_date, "start_date").toBe(day(11))
   expect(day15_.end_date, "end_date").toBe(day(19))

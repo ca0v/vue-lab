@@ -167,7 +167,6 @@ def update_rate(pk: int):
             print('start_date changed', unix_to_date(
                 start_date), unix_to_date(new_start_date))
 
-            diffgram['deletes'].append(pk)
             # find the previous rate and adjust its end_date
             previous = FreightRate.query.order_by(FreightRate.start_date.desc()).filter(
                 FreightRate.start_date < start_date).first()
