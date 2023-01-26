@@ -355,17 +355,6 @@
       if (!confirm(message)) return false
     }
     const response = await api.deleteRate(rate.start_date)
-    if (!response.ok) {
-      switch (response.status) {
-        case 404:
-          throw toss("Rate not found")
-        default:
-          const data = await response.json()
-          throw toss(data?.message || "Error deleting rate")
-      }
-    }
-
-    // merge the results into freightRateData
     await mergeDiffgram(response)
 
     return true
@@ -373,8 +362,7 @@
 
   type HiliteFields = keyof FreightRate
 
-  async function mergeDiffgram(response: Response) {
-    const data = (await response.json()) as DiffGram
+  async function mergeDiffgram(data: DiffGram) {
     if (data.deletes) {
       freightRateData = freightRateData.filter(
         (r) => !data.deletes.includes(r.start_date)

@@ -55,20 +55,20 @@ def after_request(response):
 
 
 @app.route('/<path:path>')
-def static_proxy(path):
+def static_proxy(path: str):
     print('static_proxy')
     return send_from_directory('.', path)
 
 
-def unix_to_date(unix):
+def unix_to_date(unix: int):
     return datetime.utcfromtimestamp(unix).strftime('%Y-%m-%d')
 
 
-def date_to_unix(date):
+def date_to_unix(date: str):
     return datetime.strptime(date, '%Y-%m-%d').timestamp()
 
 
-def ticks_to_unix(ticks):
+def ticks_to_unix(ticks: int):
     # floor to the nearest second
     return ticks//1000
 
@@ -102,6 +102,15 @@ def reset_rates(step_size: int):
 
     # return the entire dataset
     return get_last_n_rates(1000)
+
+
+@app.route('/aiq/api/rate/<int:pk>', methods=['GET'])
+def get_rate(pk: int):
+    print('get_rate', pk)
+    rate = FreightRate.query.filter_by(pk=pk).first()
+    rate.start_date = unix_to_ticks(rate.start_date)
+    rate.end_date = unix_to_ticks(rate.end_date)
+    return jsonify(rate)
 
 
 @app.route('/aiq/api/rates/<int:n>', methods=['GET'])
@@ -140,7 +149,7 @@ def get_rates(start_date: str, n: int):
 # http put function to update rates
 
 
-@app.route("/aiq/api/rates/<path:pk>", methods=['PUT'])
+@app.route("/aiq/api/rates/<int:pk>", methods=['PUT'])
 def update_rate(pk: int):
     print('update_rate', pk)
 
@@ -313,7 +322,7 @@ def unsafe_insert_rate():
 # http delete to remove a rate
 
 
-@app.route("/aiq/api/rates/<path:pk>", methods=['DELETE'])
+@app.route("/aiq/api/rates/<int:pk>", methods=['DELETE'])
 def delete_rate(pk: int):
     print('delete_rate', pk)
 
@@ -337,18 +346,17 @@ def delete_rate(pk: int):
         start_date = rate.start_date
         # delete the rate
         db.session.delete(rate)
+        diffgram['deletes'].append(pk)
 
         # find the future rate
         future_rate = FreightRate.query.order_by(FreightRate.start_date.asc()).filter(
             FreightRate.start_date > start_date).limit(1).first()
         if future_rate is not None:
             # move the future rate back
-            diffgram['deletes'].append(future_rate.pk)
             future_rate.start_date = start_date
-            diffgram['updates'].append(future_rate.pk)
             db.session.merge(future_rate)
+            diffgram['updates'].append(future_rate.pk)
         else:
-            diffgram['deletes'].append(pk)
             # find the past rate
             past_rate = FreightRate.query.order_by(FreightRate.start_date.desc()).filter(
                 FreightRate.start_date < start_date).limit(1).first()
@@ -361,7 +369,7 @@ def delete_rate(pk: int):
         print(e)
         db.session.rollback()
         # return the error
-        jsonify({'error': e})
+        jsonify({'error': e}), 500
     else:
         db.session.commit()
 

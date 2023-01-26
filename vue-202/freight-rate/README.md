@@ -79,6 +79,10 @@ If no – stay on the screen and revert. (DONE)
 * create mock services, use writables
 * [Python with Active Directory](https://pypi.org/project/ms-active-directory/)
 
+### 2023-01-26
+
+* 9:30am - 10:00am - Complete coverage of date boundaries for insert, update, delete
+
 ### 2023-01-25
 
 4.0 hours - UX improvements, server-side diff grams
