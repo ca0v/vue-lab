@@ -1,5 +1,7 @@
-import * as services from "../src/data/freight-store"
+import { Api } from "../src/data/freight-store"
 import { describe, it, expect } from "vitest"
+
+const services = new Api("http://localhost:5000/aiq/api/")
 
 // define a vitest test suite
 describe("freight-store", () => {
@@ -12,7 +14,7 @@ describe("freight-store", () => {
   })
 
   it("more", async () => {
-    const data = await services.more()
+    const data = await services.more(0, 0)
     expect(data.length).toBe(0)
   })
 
@@ -28,8 +30,8 @@ describe("freight-store", () => {
   })
 
   it("updateRate", async () => {
-    const data = await services.updateRate({
-      start_date: 0,
+    const data = await services.updateRate(0, {
+      start_date: 1,
       end_date: 0,
       offload_rate: 0,
       port1_rate: 0,

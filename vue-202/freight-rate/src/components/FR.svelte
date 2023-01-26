@@ -13,18 +13,17 @@
     ONE_DAY,
     today,
   } from "../lib/fun"
-  import {
-    more,
-    updateRate,
-    insertRate,
-    deleteRate,
-    getRates,
-  } from "../data/freight-store"
+  import { Api } from "../data/freight-store"
   import { proposeToast } from "../store/messaging"
   import { object_without_properties } from "svelte/internal"
 
   let showForm: boolean = false
   let inputForm: HTMLFormElement
+
+  const API_URL = localStorage?.getItem("API_URL") || "/aiq/api/"
+  localStorage?.setItem("API_URL", API_URL)
+
+  const api = new Api(API_URL)
 
   const MESSAGE_TEMPLATES = {
     prior: (
@@ -215,7 +214,7 @@
     }
 
     // update rate
-    const response = await updateRate(primaryKey, data)
+    const response = await api.updateRate(primaryKey, data)
     await mergeDiffgram(response)
     return true
   }
@@ -272,7 +271,7 @@
       }
     }
 
-    const response = await insertRate(data)
+    const response = await api.insertRate(data)
     // merge the results into freightRateData
     await mergeDiffgram(response)
 
@@ -354,7 +353,7 @@
       )
       if (!confirm(message)) return false
     }
-    const response = await deleteRate(rate.start_date)
+    const response = await api.deleteRate(rate.start_date)
     if (!response.ok) {
       switch (response.status) {
         case 404:
@@ -387,14 +386,14 @@
     if (data.updates) {
       // fetch the rates that were updated
       const updatedRates = await Promise.all(
-        data.updates.map((key) => getRates(key, 1))
+        data.updates.map((key) => api.getRates(key, 1))
       )
       mergeFreightItems(updatedRates.flat())
     }
     if (data.inserts) {
       // fetch the rates that were inserted
       const updatedRates = await Promise.all(
-        data.inserts.map((key) => getRates(key, 1))
+        data.inserts.map((key) => api.getRates(key, 1))
       )
       mergeFreightItems(updatedRates.flat())
     }
@@ -430,7 +429,7 @@
       startDate = freightRateData[freightRateData.length - 1].start_date
       startDate = startDate - ONE_DAY
     }
-    const moreData = await more(startDate, 12)
+    const moreData = await api.more(startDate, 12)
     if (!moreData.length) {
       proposeToast("No results found")
       return
