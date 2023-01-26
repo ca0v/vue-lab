@@ -270,6 +270,44 @@ it("restore day 20 and day 10", async () => {
   expect(day10__.start_date, "start_date").toBe(day(10))
 })
 
+it("inserts and then updates day 15", async () => {
+  const diffgram = await services.insertRate({
+    pk: 0,
+    start_date: day(15),
+    end_date: 0,
+    offload_rate: 0,
+    port1_rate: 0,
+    port2_rate: 0,
+  })
+
+  expect(diffgram.inserts.length, "inserts").toBe(1)
+  expect(diffgram.updates.length, "updates").toBe(1)
+  expect(diffgram.deletes.length, "deletes").toBe(0)
+  expect(diffgram.inserts[0], "inserts.0").toBe(3)
+  expect(diffgram.updates[0], "updates.0").toBe(1)
+
+  const day15 = await services.getRate(3)
+  expect(day15.start_date, "start_date").toBe(day(15))
+  expect(day15.end_date, "end_date").toBe(day(19))
+
+  day15.start_date = day(10)
+  try {
+    await services.updateRate(day15.pk, day15)
+    throw new Error("should not get here")
+  } catch (err) {
+    console.log("error", err)
+  }
+
+  day15.start_date = day(11)
+  await services.updateRate(day15.pk, day15)
+  const day15_ = await services.getRate(3)
+  expect(day15_.start_date, "start_date").toBe(day(11))
+  expect(day15_.end_date, "end_date").toBe(day(19))
+
+  const day10 = await services.getRate(1)
+  expect(day10.end_date, "end_date").toBe(day(10))
+})
+
 async function deleteAllRows() {
   const rates = await services.more(0, 100)
 

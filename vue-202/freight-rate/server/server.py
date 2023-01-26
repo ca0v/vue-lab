@@ -33,7 +33,7 @@ class FreightRate(db.Model):
     port1_rate: float
     port2_rate: float
 
-    pk = db.Column(db.Integer, primary_key=True)
+    pk = db.Column(db.Integer)
     start_date = db.Column(db.Integer, primary_key=True)
     end_date = db.Column(db.Integer)
     offload_rate = db.Column(db.Float)
@@ -196,8 +196,10 @@ def update_rate(pk: int):
     except Exception as e:
         print(e)
         db.session.rollback()
+        # convert error to a string
+        e = str(e)
         # return the error
-        return jsonify({'error': e})
+        return jsonify({'error': e}), 500
     else:
         db.session.commit()
 
