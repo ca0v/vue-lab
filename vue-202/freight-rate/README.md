@@ -81,7 +81,7 @@ If no – stay on the screen and revert. (DONE)
 
 ### 2023-01-26
 
-* 9:30am - 10:00am - Complete coverage of date boundaries for insert, update, delete
+* 9:30am - 10:30am - Complete coverage of date boundaries for insert, update, delete
 
 ### 2023-01-25
 

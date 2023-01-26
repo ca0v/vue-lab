@@ -11,6 +11,8 @@ from flask_restful import Api
 from flask_cors import CORS
 from sqlalchemy import func
 
+from fun import date_to_unix, ticks_to_unix, unix_to_date, unix_to_ticks
+
 app = Flask(__name__, static_folder='./dist', static_url_path='')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 
@@ -59,22 +61,6 @@ def static_proxy(path: str):
     print('static_proxy')
     return send_from_directory('.', path)
 
-
-def unix_to_date(unix: int):
-    return datetime.utcfromtimestamp(unix).strftime('%Y-%m-%d')
-
-
-def date_to_unix(date: str):
-    return datetime.strptime(date, '%Y-%m-%d').timestamp()
-
-
-def ticks_to_unix(ticks: int):
-    # floor to the nearest second
-    return ticks//1000
-
-
-def unix_to_ticks(unix):
-    return int(unix*1000)
 
 # get the last n rates sorted by start_date descending
 

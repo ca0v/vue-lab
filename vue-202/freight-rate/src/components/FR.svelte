@@ -192,7 +192,6 @@
     const index = freightRateData.indexOf(rate)
     if (index < 0) throw toss("rate not found")
 
-    const primaryKey = rate.start_date
     const startDate = data.start_date
 
     // confirm the change with user
@@ -215,7 +214,7 @@
     }
 
     // update rate
-    const response = await api.updateRate(primaryKey, data)
+    const response = await api.updateRate(rate.pk, data)
     await mergeDiffgram(response)
     return true
   }
@@ -224,27 +223,14 @@
     return Object.keys(<any>obj) as (keyof T)[]
   }
 
-  function mergeFreightItems(response: FreightRate[]) {
-    response.forEach((response_rate) => {
-      const index = freightRateData.findIndex(
-        (rate) => rate.start_date === response_rate.start_date
-      )
-      if (index >= 0) {
-        const target = freightRateData[index]!
-        keyOf(response_rate).forEach((key) => {
-          const newValue = <any>response_rate[key]
-          if (target[key] != newValue) {
-            target[key] = newValue
-            hiliteRate(response_rate, key)
-          }
-        })
-        freightRateData[index] = response_rate
-      } else {
-        hiliteRate(response_rate, "start_date")
-        freightRateData.push(response_rate)
+  function mergeFreightRateData(target: FreightRate, source: FreightRate) {
+    keyOf(source).forEach((key) => {
+      const newValue = <any>source[key]
+      if (target[key] != newValue) {
+        target[key] = newValue
+        hiliteRate(target, key)
       }
     })
-    sortFreightRates()
   }
 
   async function insertFreightRate(data: FreightRate) {
@@ -354,7 +340,7 @@
       )
       if (!confirm(message)) return false
     }
-    const response = await api.deleteRate(rate.start_date)
+    const response = await api.deleteRate(rate.pk)
     await mergeDiffgram(response)
 
     return true
@@ -363,25 +349,37 @@
   type HiliteFields = keyof FreightRate
 
   async function mergeDiffgram(data: DiffGram) {
-    if (data.deletes) {
-      freightRateData = freightRateData.filter(
-        (r) => !data.deletes.includes(r.start_date)
-      )
-    }
     if (data.updates) {
       // fetch the rates that were updated
-      const updatedRates = await Promise.all(
-        data.updates.map((key) => api.getRates(key, 1))
+      const updates = await Promise.all(
+        data.updates.map((key) => api.getRate(key))
       )
-      mergeFreightItems(updatedRates.flat())
+      updates.forEach((row) => {
+        const target = freightRateData.find((r) => r.pk === row.pk)
+        if (!target) {
+          freightRateData.push(row)
+        } else {
+          mergeFreightRateData(target, row)
+        }
+      })
     }
     if (data.inserts) {
       // fetch the rates that were inserted
-      const updatedRates = await Promise.all(
-        data.inserts.map((key) => api.getRates(key, 1))
+      const inserts = await Promise.all(
+        data.inserts.map((key) => api.getRate(key))
       )
-      mergeFreightItems(updatedRates.flat())
+      inserts.forEach((row) => {
+        freightRateData.push(row)
+        hiliteRate(row, "start_date")
+      })
     }
+
+    if (data.deletes) {
+      freightRateData = freightRateData.filter(
+        (r) => !data.deletes.includes(r.pk)
+      )
+    }
+    sortFreightRates()
   }
 
   function isHiliteHack(newData: FreightRate, field: string) {

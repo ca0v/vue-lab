@@ -34,6 +34,7 @@ describe("fun tests", () => {
     expect(addDay(START_DATE)).toBe(START_DATE + ONE_DAY)
     expect(addDay(START_DATE, -1)).toBe(START_DATE - ONE_DAY)
     expect(INFINITY_DATE).toBe("2100-12-31")
+    expect(inputToZulu(INFINITY_DATE)).toBe(4133894400000)
     expect(asDate(addMonth(START_DATE, 0))).toBe("2020-01-01")
     expect(asDate(addMonth(START_DATE))).toBe("2020-02-01")
     expect(asDate(addMonth(START_DATE, 2))).toBe("2020-03-01")
