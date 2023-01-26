@@ -11,7 +11,7 @@ from flask_restful import Api
 from flask_cors import CORS
 from sqlalchemy import func
 
-from fun import date_to_python, date_to_unix, python_to_date, python_to_ticks, ticks_to_python, unix_to_date
+from fun import date_to_python, python_to_date, python_to_ticks, ticks_to_python
 
 app = Flask(__name__, static_folder='./dist', static_url_path='')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
@@ -397,7 +397,7 @@ def add_day(date: date, days: int = 1):
     return date + timedelta(days=days)
 
 
-def prepare_rate_response(rate):
+def prepare_rate_response(rate: FreightRate):
     rate.start_date = python_to_ticks(rate.start_date)
     rate.end_date = python_to_ticks(rate.end_date)
 

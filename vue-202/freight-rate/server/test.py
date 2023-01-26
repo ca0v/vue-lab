@@ -1,7 +1,8 @@
+from datetime import *
 import jsonpickle
 import unittest
 
-from fun import date_to_unix, ticks_to_unix, unix_to_date, unix_to_ticks
+from fun import date_to_python, ticks_to_python, python_to_date, python_to_ticks
 
 
 class TestIt(unittest.TestCase):
@@ -62,11 +63,12 @@ class TestIt(unittest.TestCase):
 
 class TestDateConversion(unittest.TestCase):
     def test_unix_time(self):
-        self.assertEqual(unix_to_date(0), '1970-01-01')
-        self.assertEqual(date_to_unix('1970-01-01'), 0)
-        self.assertEqual(ticks_to_unix(900), 0)
-        self.assertEqual(ticks_to_unix(1234567), 1234)
-        self.assertEqual(unix_to_ticks(1234), 1234000)
+        python_date = datetime(1970, 1, 1)
+        self.assertEqual(python_to_date(python_date), '1970-01-01')
+        self.assertEqual(date_to_python('1970-01-01'), python_date)
+        self.assertEqual(ticks_to_python(
+            900), datetime(1970, 1, 1, 0, 0, 0, 900000))
+        self.assertEqual(python_to_ticks(python_date), 18000000)
 
 
 if __name__ == '__main__':
