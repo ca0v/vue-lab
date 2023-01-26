@@ -241,6 +241,35 @@ it("delete day 25", async () => {
   expect(asDate(day20.end_date), "end_date").toBe(INFINITY_DATE)
 })
 
+it("restore day 20 and day 10", async () => {
+  const day10 = await services.getRate(1)
+  expect(day10.start_date, "start_date").toBe(day(5))
+  expect(day10.end_date, "end_date").toBe(day(14))
+
+  const day20 = await services.getRate(2)
+  expect(day20.start_date, "start_date").toBe(day(15))
+  expect(day20.end_date, "end_date").toBe(inputToZulu(INFINITY_DATE))
+
+  // restore the start date of day 20 (which is now day 5)
+  day20.start_date = day(20)
+  const diffgram = await services.updateRate(day20.pk, day20)
+  const day20_ = await services.getRate(2)
+  expect(day20_.start_date, "start_date").toBe(day(20))
+
+  expect(diffgram.updates.length, "updates").toBe(2)
+  expect(diffgram.updates[0], "updates.0").toBe(1)
+  expect(diffgram.updates[1], "updates.1").toBe(2)
+
+  const day10_ = await services.getRate(1)
+  expect(day10_.end_date, "end_date").toBe(day(19))
+
+  // restore day 10 (which is now day 5)
+  day10.start_date = day(10)
+  await services.updateRate(day10.pk, day10)
+  const day10__ = await services.getRate(1)
+  expect(day10__.start_date, "start_date").toBe(day(10))
+})
+
 async function deleteAllRows() {
   const rates = await services.more(0, 100)
 
