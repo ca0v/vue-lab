@@ -135,9 +135,8 @@ def get_last_n_rates(n: int):
 def get_rates(start_date: str, n: int):
     print('get_rates', start_date, n)
 
-    # convert to unix time
-    start_date = date_to_unix(start_date)
-    print('get_rates', unix_to_date(start_date), n)
+    start_date = date_to_python(start_date)
+    print('get_rates', python_to_date(start_date), n)
 
     rates = FreightRate.query.order_by(FreightRate.start_date.desc()).filter(
         FreightRate.start_date <= start_date)
@@ -195,7 +194,7 @@ def update_rate(pk: int):
             next = FreightRate.query.order_by(FreightRate.start_date).filter(
                 FreightRate.start_date > start_date).first()
             if next is not None:
-                print('next rate found', unix_to_date(next.start_date))
+                print('next rate found', python_to_date(next.start_date))
                 rate.end_date = add_day(next.start_date, -1)
                 db.session.merge(next)
             # update the rate data (will this work if the start_date changes?)

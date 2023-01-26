@@ -201,8 +201,6 @@ describe("diffgram tests", () => {
     expect(day5_.end_date, "end_date").toBe(day(9))
   })
 
-  return
-
   it("delete day 5", async () => {
     const data = await services.deleteRate(5)
     expect(data.inserts.length, "inserts").toBe(0)
