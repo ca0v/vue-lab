@@ -59,30 +59,43 @@ When the user adds a new record, that date must be greater than the latest start
 
 ### Feedback
 
-* Display a message about the dates changing – like “The previous time block is going to change from _____ to ______” – do you want this to happen?  (DONE)
+    CREATE TABLE [web].[Freight_Rates](
 
-* If yes – then go back to main screen and highlight as it is currently doing. (DONE)
-If no – stay on the screen and revert. (DONE)
+        [Beginning_Date] [datetime] NOT NULL,
 
-* Same with the delete – if they delete a record – "are you sure – this will change  (fill in the blank)". (DONE)
+        [Ending_Date] [datetime] NOT NULL,
 
-* Remove the “Shipping zone” option.  (DONE)
+        [LB_Port] [float] NOT NULL,
 
-* How far back did you load data?  Remove everything before Jan 2020.  The first record is Jan 2020.
+        [NY_Port] [float] NOT NULL,
+
+        [OffLoad] [float] NOT NULL,
+
+        [Average] [float] NOT NULL,
+
+        [User_Added] [nvarchar](50) NOT NULL,
+
+        [Date_added] [datetime] NOT NULL,
+
+        [User_Modified] [nvarchar](50) NULL,
+
+        [Date_Modified] [datetime] NULL
+
+    ) ON [PRIMARY]
+
+    GO
 
 ## Work Log
 
 ### Future
 
-* improve the "alert" experience, "dialog" experience
-* need a solution for dev-specific endpoint
-* create mock services, use writables
 * [Python with Active Directory](https://pypi.org/project/ms-active-directory/)
 
 ### 2023-01-26
 
 * 9:30am - 10:30am - Complete coverage of date boundaries for insert, update, delete
 * 10:30am - 11:30am - Switch UX to use pk, manual testing
+* 12:30pm - 1:30pm - Switch to column names
 
 ### 2023-01-25
 

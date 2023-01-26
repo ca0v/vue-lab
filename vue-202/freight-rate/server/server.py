@@ -11,7 +11,7 @@ from flask_restful import Api
 from flask_cors import CORS
 from sqlalchemy import func
 
-from fun import date_to_unix, ticks_to_unix, unix_to_date, unix_to_ticks
+from fun import date_to_python, date_to_unix, python_to_date, python_to_ticks, ticks_to_python, unix_to_date
 
 app = Flask(__name__, static_folder='./dist', static_url_path='')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
@@ -27,18 +27,37 @@ class FreightRate(db.Model):
     __tablename__ = 'FreightRate'
 
     pk: int
-    start_date: int
-    end_date: int
+    start_date: date
+    end_date: date
     offload_rate: float
     port1_rate: float
     port2_rate: float
 
-    pk = db.Column(db.Integer)
-    start_date = db.Column(db.Integer, primary_key=True)
-    end_date = db.Column(db.Integer)
-    offload_rate = db.Column(db.Float)
-    port1_rate = db.Column(db.Float)
-    port2_rate = db.Column(db.Float)
+    # ideally a computed field
+    average: float
+
+    # ideally managed by external system
+    user_added: str
+    date_added: date
+    user_modified: str
+    date_modified: date
+
+    pk = db.Column(db.Integer, nullable=False, unique=True)
+
+    # the actual field name is "Beginning_Date"
+    start_date = db.Column("Beginning_Date", db.Date,
+                           primary_key=True, nullable=False)
+    end_date = db.Column("Ending_Date", db.Date, nullable=False)
+    offload_rate = db.Column("OffLoad", db.Float, nullable=False)
+    port1_rate = db.Column("LB_Port", db.Float, nullable=False)
+    port2_rate = db.Column("NY_Port", db.Float, nullable=False)
+    average = db.Column("Average", db.Float, nullable=False)
+
+    user_added = db.Column("User_Added", db.VARCHAR(50), nullable=False)
+    date_added = db.Column("Date_Added", db.DateTime, nullable=False)
+
+    user_modified = db.Column("User_Modified", db.VARCHAR(50), nullable=True)
+    date_modified = db.Column("Date_Modified", db.DateTime, nullable=True)
 
 
 # open CORS to http://localhost:5173/
@@ -97,8 +116,7 @@ def reset_rates(step_size: int):
 def get_rate(pk: int):
     print('get_rate', pk)
     rate = FreightRate.query.filter_by(pk=pk).first()
-    rate.start_date = unix_to_ticks(rate.start_date)
-    rate.end_date = unix_to_ticks(rate.end_date)
+    prepare_rate_response(rate)
     return jsonify(rate)
 
 
@@ -109,8 +127,7 @@ def get_last_n_rates(n: int):
         FreightRate.start_date.desc()).limit(n).all()
     # convert to ticks
     for rate in rates:
-        rate.start_date = unix_to_ticks(rate.start_date)
-        rate.end_date = unix_to_ticks(rate.end_date)
+        prepare_rate_response(rate)
     return jsonify(rates)
 
 
@@ -130,8 +147,7 @@ def get_rates(start_date: str, n: int):
 
     # convert to ticks
     for rate in rates:
-        rate.start_date = unix_to_ticks(rate.start_date)
-        rate.end_date = unix_to_ticks(rate.end_date)
+        prepare_rate_response(rate)
 
     return jsonify(rates)
 
@@ -151,27 +167,26 @@ def update_rate(pk: int):
     db.session.begin()
     try:
         # find the rate
-        rate = FreightRate.query.filter_by(pk=pk).first()
+        rate: FreightRate = FreightRate.query.filter_by(pk=pk).first()
         if rate is None:
             return jsonify({'error': 'rate not found'}), 404
 
         start_date = rate.start_date
 
         # read request as a FreightRate object
-        changes = request.get_json()
-        changes = as_rate(changes)
+        changes = as_rate(request.get_json())
 
         # did the start_date change?
-        new_start_date = ticks_to_unix(changes.start_date)
+        new_start_date = changes.start_date
         if new_start_date != start_date:
-            print('start_date changed', unix_to_date(
-                start_date), unix_to_date(new_start_date))
+            print('start_date changed', python_to_date(
+                start_date), python_to_date(new_start_date))
 
             # find the previous rate and adjust its end_date
             previous = FreightRate.query.order_by(FreightRate.start_date.desc()).filter(
                 FreightRate.start_date < start_date).first()
             if previous is not None:
-                print('previous rate found', unix_to_date(
+                print('previous rate found', python_to_date(
                     previous.start_date), "diff", previous.start_date - start_date)
                 previous.end_date = add_day(new_start_date, -1)
                 db.session.merge(previous)
@@ -185,7 +200,7 @@ def update_rate(pk: int):
                 db.session.merge(next)
             # update the rate data (will this work if the start_date changes?)
         # update the rate with the changes (this performs database changes!)
-        rate.start_date = ticks_to_unix(changes.start_date)
+        rate.start_date = changes.start_date
         rate.offload_rate = changes.offload_rate
         rate.port1_rate = changes.port1_rate
         rate.port2_rate = changes.port2_rate
@@ -216,6 +231,9 @@ def insert_rate():
     print('enter insert_rate')
     # convert rateRequest to a FreightRate object
     rate = as_rate(request.get_json())
+    rate.user_added = 'admin'
+    rate.date_added = datetime.now()
+    rate.average = rate.offload_rate + (rate.port1_rate + rate.port2_rate) / 2
     result = unsafe_insert_rate(rate)
     print('exit insert_rate')
     return result
@@ -223,16 +241,12 @@ def insert_rate():
 
 def unsafe_insert_rate(rate: FreightRate):
 
-    # convert to unix time
-    rate.start_date = ticks_to_unix(rate.start_date)
-    rate.end_date = ticks_to_unix(rate.end_date)
-
     # make sure the row does not already exist
     existing = FreightRate.query.filter_by(start_date=rate.start_date).first()
     if existing is not None:
-        print('rate already exists', unix_to_date(rate.start_date))
-        # return 404
-        return jsonify({'error': 'rate already exists'}), 404
+        print('rate already exists', python_to_date(rate.start_date))
+        # return 409
+        return jsonify({'error': 'rate already exists'}), 409
 
     # get the max rowid
     max_rowid = db.session.query(func.max(FreightRate.pk)).scalar()
@@ -282,15 +296,15 @@ def unsafe_insert_rate(rate: FreightRate):
                 diffgram['updates'].append(previous.pk)
 
             # find the rate that comes after to compute an end date
-            next = FreightRate.query.order_by(FreightRate.start_date).filter(
+            next: FreightRate = FreightRate.query.order_by(FreightRate.start_date).filter(
                 FreightRate.start_date > rate.start_date).first()
             if next is not None:
                 print('using next start date to compute end date: ' +
-                      unix_to_date(next.start_date))
+                      python_to_date(next.start_date))
                 rate.end_date = add_day(next.start_date, -1)
             else:
                 print('no end_date')
-                rate.end_date = date_to_unix(MAX_DATE)
+                rate.end_date = date_to_python(MAX_DATE)
 
         # add the new rate
         db.session.add(rate)
@@ -298,8 +312,7 @@ def unsafe_insert_rate(rate: FreightRate):
     except Exception as e:
         print("failed to insert", e)
         db.session.rollback()
-        # return the error
-        return jsonify({'error': "failed to insert"}), 409
+        raise e
     else:
         db.session.commit()
 
@@ -309,7 +322,7 @@ def unsafe_insert_rate(rate: FreightRate):
 # http delete to remove a rate
 
 
-@app.route("/aiq/api/rates/<int:pk>", methods=['DELETE'])
+@ app.route("/aiq/api/rates/<int:pk>", methods=['DELETE'])
 def delete_rate(pk: int):
     print('delete_rate', pk)
 
@@ -369,14 +382,19 @@ def prepare_diffgram(diffgram):
 
 
 # add a day to a date
-def add_day(date: int, days: int = 1):
-    return date + days * (60 * 60 * 24)
+def add_day(date: date, days: int = 1):
+    return date + timedelta(days=days)
+
+
+def prepare_rate_response(rate):
+    rate.start_date = python_to_ticks(rate.start_date)
+    rate.end_date = python_to_ticks(rate.end_date)
 
 
 def as_rate(rateRequest):
     rate = FreightRate()
-    rate.start_date = rateRequest['start_date']
-    rate.end_date = rateRequest['end_date']
+    rate.start_date = ticks_to_python(rateRequest['start_date'])
+    rate.end_date = ticks_to_python(rateRequest['end_date'])
     rate.offload_rate = rateRequest['offload_rate']
     rate.port1_rate = rateRequest['port1_rate']
     rate.port2_rate = rateRequest['port2_rate']
