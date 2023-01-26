@@ -125,6 +125,41 @@ describe("diffgram tests", () => {
     expect(data.inserts[0], "inserts.0").toBe(3)
     expect(data.updates[0], "updates.0").toBe(1)
   })
+
+  it("inserts after day 20", async () => {
+    const response = await services.insertRate({
+      pk: 0,
+      start_date: START_DATE + 25 * ONE_DAY,
+      end_date: 0,
+      offload_rate: 0,
+      port1_rate: 0,
+      port2_rate: 0,
+    })
+    expect(response.status).toBe(200)
+    const data = (await response.json()) as DiffGram
+    expect(data.inserts.length, "inserts").toBe(1)
+    expect(data.updates.length, "updates").toBe(1)
+    expect(data.deletes.length, "deletes").toBe(0)
+    expect(data.inserts[0], "inserts.0").toBe(4)
+    expect(data.updates[0], "updates.0").toBe(2)
+  })
+})
+
+it("inserts before day 10", async () => {
+  const response = await services.insertRate({
+    pk: 0,
+    start_date: START_DATE + 5 * ONE_DAY,
+    end_date: 0,
+    offload_rate: 0,
+    port1_rate: 0,
+    port2_rate: 0,
+  })
+  expect(response.status).toBe(200)
+  const data = (await response.json()) as DiffGram
+  expect(data.inserts.length, "inserts").toBe(1)
+  expect(data.updates.length, "updates").toBe(0)
+  expect(data.deletes.length, "deletes").toBe(0)
+  expect(data.inserts[0], "inserts.0").toBe(5)
 })
 
 async function deleteAllRows() {

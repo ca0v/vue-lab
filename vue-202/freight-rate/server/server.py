@@ -280,6 +280,7 @@ def unsafe_insert_rate():
             previous = FreightRate.query.order_by(FreightRate.start_date.desc()).filter(
                 FreightRate.start_date < rate.start_date).first()
             if previous is not None:
+                print('updating the previous end date')
                 previous.end_date = add_day(rate.start_date, -1)
                 db.session.merge(previous)
                 diffgram['updates'].append(previous.pk)
