@@ -48,273 +48,271 @@ describe("fun tests", () => {
 })
 
 // define a vitest test suite
-0 &&
-  describe("freight-store", () => {
-    beforeAll(async () => {
-      await deleteAllRows()
+describe("freight-store", () => {
+  beforeAll(async () => {
+    await deleteAllRows()
+  })
+
+  // define a test
+  it("getRates", async () => {
+    // call the function
+    const data = await services.getRates(0, 1)
+    // check the result
+    expect(data.length, "no data").toBe(0)
+  })
+
+  it("more", async () => {
+    const data = await services.more(0, 1)
+    expect(data.length, "no data").toBe(0)
+  })
+
+  it("insertRate", async () => {
+    const data = await services.insertRate({
+      pk: 0,
+      start_date: day(0),
+      end_date: 0,
+      offload_rate: 0,
+      port1_rate: 0,
+      port2_rate: 0,
     })
+    expect(data.inserts.length, "inserts").toBe(1)
+    expect(data.updates.length, "updates").toBe(0)
+    expect(data.deletes.length, "deletes").toBe(0)
 
-    // define a test
-    it("getRates", async () => {
-      // call the function
-      const data = await services.getRates(0, 1)
-      // check the result
-      expect(data.length, "no data").toBe(0)
-    })
+    expect(data.inserts[0], "primary key").toBe(1)
+  })
 
-    it("more", async () => {
-      const data = await services.more(0, 1)
-      expect(data.length, "no data").toBe(0)
-    })
-
-    it("insertRate", async () => {
-      const data = await services.insertRate({
-        pk: 0,
-        start_date: day(0),
-        end_date: 0,
-        offload_rate: 0,
-        port1_rate: 0,
-        port2_rate: 0,
-      })
-      expect(data.inserts.length, "inserts").toBe(1)
-      expect(data.updates.length, "updates").toBe(0)
-      expect(data.deletes.length, "deletes").toBe(0)
-
-      expect(data.inserts[0], "primary key").toBe(1)
-    })
-
-    it("updateRate", async () => {
-      /*
+  it("updateRate", async () => {
+    /*
     we are updating the primary key so really this is a delete and an insert
     but that is a bad UX so we need to a primary key on the server
     */
-      const data = await services.updateRate(1, {
-        pk: 0,
-        start_date: day(1),
-        end_date: 0,
-        offload_rate: 0,
-        port1_rate: 0,
-        port2_rate: 0,
-      })
-      expect(data.inserts.length, "inserts").toBe(0)
-      expect(data.updates.length, "updates").toBe(1)
-      expect(data.deletes.length, "deletes").toBe(0)
-      expect(data.updates[0]).toBe(1)
+    const data = await services.updateRate(1, {
+      pk: 0,
+      start_date: day(1),
+      end_date: 0,
+      offload_rate: 0,
+      port1_rate: 0,
+      port2_rate: 0,
     })
-
-    it("deleteRate", async () => {
-      const data = await services.deleteRate(1)
-      expect(data.inserts.length, "inserts").toBe(0)
-      expect(data.updates.length, "updates").toBe(0)
-      expect(data.deletes.length, "deletes").toBe(1)
-    })
+    expect(data.inserts.length, "inserts").toBe(0)
+    expect(data.updates.length, "updates").toBe(1)
+    expect(data.deletes.length, "deletes").toBe(0)
+    expect(data.updates[0]).toBe(1)
   })
 
-0 &&
-  describe("diffgram tests", () => {
-    beforeAll(async () => {
-      await deleteAllRows()
-      const doit = async (key: number) => {
-        const data = await services.insertRate({
-          pk: 0,
-          start_date: day(key),
-          end_date: 0,
-          offload_rate: 0,
-          port1_rate: 0,
-          port2_rate: 0,
-        })
-        return data
-      }
+  it("deleteRate", async () => {
+    const data = await services.deleteRate(1)
+    expect(data.inserts.length, "inserts").toBe(0)
+    expect(data.updates.length, "updates").toBe(0)
+    expect(data.deletes.length, "deletes").toBe(1)
+  })
+})
 
-      const day10 = await doit(10)
-      expect(day10.inserts.length, "inserts").toBe(1)
-      expect(day10.updates.length, "updates").toBe(0)
-      expect(day10.deletes.length, "deletes").toBe(0)
-      expect(day10.inserts[0], "inserts.0").toBe(1)
-
-      const day20 = await doit(20)
-      expect(day20.inserts.length, "inserts").toBe(1)
-      expect(day20.updates.length, "updates").toBe(1)
-      expect(day20.deletes.length, "deletes").toBe(0)
-      expect(day20.inserts[0], "inserts.0").toBe(2)
-      expect(day20.updates[0], "update.0").toBe(1)
-    })
-
-    it("confirm day 10 date range", async () => {
-      const day10 = await services.getRate(1)
-      expect(day10.start_date, "start_date").toBe(day(10))
-      expect(day10.end_date, "end_date").toBe(day(19))
-    })
-
-    it("inserts between day 10 and day 20", async () => {
-      const day15 = await services.insertRate({
-        pk: 0,
-        start_date: day(15),
-        end_date: 0,
-        offload_rate: 0,
-        port1_rate: 0,
-        port2_rate: 0,
-      })
-      expect(day15.inserts.length, "inserts").toBe(1)
-      expect(day15.updates.length, "updates").toBe(1)
-      expect(day15.deletes.length, "deletes").toBe(0)
-      expect(day15.inserts[0], "inserts.0").toBe(3)
-      expect(day15.updates[0], "updates.0").toBe(1)
-
-      const day10 = await services.getRate(1)
-      expect(day10.end_date, "end_date").toBe(day(14))
-
-      const day15_ = await services.getRate(3)
-      expect(day15_.end_date, "end_date").toBe(day(19))
-    })
-
-    it("inserts after day 20", async () => {
+describe("diffgram tests", () => {
+  beforeAll(async () => {
+    await deleteAllRows()
+    const doit = async (key: number) => {
       const data = await services.insertRate({
         pk: 0,
-        start_date: day(25),
+        start_date: day(key),
         end_date: 0,
         offload_rate: 0,
         port1_rate: 0,
         port2_rate: 0,
       })
-      expect(data.inserts.length, "inserts").toBe(1)
-      expect(data.updates.length, "updates").toBe(1)
-      expect(data.deletes.length, "deletes").toBe(0)
-      expect(data.inserts[0], "inserts.0").toBe(4)
-      expect(data.updates[0], "updates.0").toBe(2)
+      return data
+    }
 
-      const day20 = await services.getRate(2)
-      expect(day20.end_date, "end_date").toBe(day(24))
-    })
+    const day10 = await doit(10)
+    expect(day10.inserts.length, "inserts").toBe(1)
+    expect(day10.updates.length, "updates").toBe(0)
+    expect(day10.deletes.length, "deletes").toBe(0)
+    expect(day10.inserts[0], "inserts.0").toBe(1)
 
-    it("inserts before day 10", async () => {
-      const day5 = await services.insertRate({
-        pk: 0,
-        start_date: day(5),
-        end_date: 0,
-        offload_rate: 0,
-        port1_rate: 0,
-        port2_rate: 0,
-      })
-      expect(day5.inserts.length, "inserts").toBe(1)
-      expect(day5.updates.length, "updates").toBe(0)
-      expect(day5.deletes.length, "deletes").toBe(0)
-      expect(day5.inserts[0], "inserts.0").toBe(5)
-
-      const day5_ = await services.getRate(5)
-      expect(day5_.end_date, "end_date").toBe(day(9))
-    })
-
-    it("delete day 5", async () => {
-      const data = await services.deleteRate(5)
-      expect(data.inserts.length, "inserts").toBe(0)
-      expect(data.updates.length, "updates").toBe(1)
-      expect(data.deletes.length, "deletes").toBe(1)
-      expect(data.updates[0], "updates.0").toBe(1)
-      expect(data.deletes[0], "deletes.0").toBe(5)
-
-      // this is an interesting case because day 10 becomes day 5
-      // so it is more like we deleted day 10 and updated day 5
-      const day10 = await services.getRate(1)
-      expect(day10.start_date, "start_date").toBe(day(5))
-    })
-
-    it("delete day 15", async () => {
-      const data = await services.deleteRate(3)
-      expect(data.inserts.length, "inserts").toBe(0)
-      expect(data.updates.length, "updates").toBe(1)
-      expect(data.deletes.length, "deletes").toBe(1)
-      expect(data.updates[0], "updates.0").toBe(2)
-      expect(data.deletes[0], "deletes.0").toBe(3)
-
-      // this is an interesting case because day 20 becomes day 15
-      const day20 = await services.getRate(2)
-      expect(day20.start_date, "start_date").toBe(day(15))
-    })
-
-    it("delete day 25", async () => {
-      const data = await services.deleteRate(4)
-      expect(data.inserts.length, "inserts").toBe(0)
-      expect(data.updates.length, "updates").toBe(1)
-      expect(data.deletes.length, "deletes").toBe(1)
-      expect(data.updates[0], "updates.0").toBe(2)
-      expect(data.deletes[0], "deletes.0").toBe(4)
-
-      const day20 = await services.getRate(2)
-      expect(asDate(day20.end_date), "end_date").toBe(INFINITY_DATE)
-    })
-
-    it("restore day 20 and day 10", async () => {
-      const day10 = await services.getRate(1)
-      expect(day10.start_date, "start_date").toBe(day(5))
-      expect(day10.end_date, "end_date").toBe(day(14))
-
-      const day20 = await services.getRate(2)
-      expect(day20.start_date, "start_date").toBe(day(15))
-      expect(day20.end_date, "end_date").toBe(inputToZulu(INFINITY_DATE))
-
-      // restore the start date of day 20 (which is now day 5)
-      day20.start_date = day(20)
-      const diffgram = await services.updateRate(day20.pk, day20)
-      const day20_ = await services.getRate(2)
-      expect(day20_.start_date, "start_date").toBe(day(20))
-
-      expect(diffgram.updates.length, "updates").toBe(2)
-      expect(diffgram.updates[0], "updates.0").toBe(1)
-      expect(diffgram.updates[1], "updates.1").toBe(2)
-
-      const day10_ = await services.getRate(1)
-      expect(day10_.end_date, "end_date").toBe(day(19))
-
-      // restore day 10 (which is now day 5)
-      day10.start_date = day(10)
-      await services.updateRate(day10.pk, day10)
-      const day10__ = await services.getRate(1)
-      expect(day10__.start_date, "start_date").toBe(day(10))
-    })
-
-    it("inserts and then updates day 15", async () => {
-      let diffgram = await services.insertRate({
-        pk: 0,
-        start_date: day(15),
-        end_date: 0,
-        offload_rate: 0,
-        port1_rate: 0,
-        port2_rate: 0,
-      })
-
-      expect(diffgram.inserts.length, "inserts").toBe(1)
-      expect(diffgram.updates.length, "updates").toBe(1)
-      expect(diffgram.deletes.length, "deletes").toBe(0)
-      expect(diffgram.inserts[0], "inserts.0").toBe(3)
-      expect(diffgram.updates[0], "updates.0").toBe(1)
-
-      const day15 = await services.getRate(3)
-      expect(day15.start_date, "start_date").toBe(day(15))
-      expect(day15.end_date, "end_date").toBe(day(19))
-
-      day15.start_date = day(10)
-      try {
-        await services.updateRate(day15.pk, day15)
-        throw new Error("should not get here")
-      } catch (err) {
-        console.log("error", err)
-      }
-
-      day15.start_date = day(11)
-      diffgram = await services.updateRate(day15.pk, day15)
-      expect(diffgram.inserts.length, "inserts").toBe(0)
-      expect(diffgram.updates.length, "updates").toBe(2)
-      expect(diffgram.deletes.length, "deletes").toBe(0)
-
-      const day15_ = await services.getRate(3)
-      expect(day15_.start_date, "start_date").toBe(day(11))
-      expect(day15_.end_date, "end_date").toBe(day(19))
-
-      const day10 = await services.getRate(1)
-      expect(day10.end_date, "end_date").toBe(day(10))
-    })
+    const day20 = await doit(20)
+    expect(day20.inserts.length, "inserts").toBe(1)
+    expect(day20.updates.length, "updates").toBe(1)
+    expect(day20.deletes.length, "deletes").toBe(0)
+    expect(day20.inserts[0], "inserts.0").toBe(2)
+    expect(day20.updates[0], "update.0").toBe(1)
   })
+
+  it("confirm day 10 date range", async () => {
+    const day10 = await services.getRate(1)
+    expect(day10.start_date, "start_date").toBe(day(10))
+    expect(day10.end_date, "end_date").toBe(day(19))
+  })
+
+  it("inserts between day 10 and day 20", async () => {
+    const day15 = await services.insertRate({
+      pk: 0,
+      start_date: day(15),
+      end_date: 0,
+      offload_rate: 0,
+      port1_rate: 0,
+      port2_rate: 0,
+    })
+    expect(day15.inserts.length, "inserts").toBe(1)
+    expect(day15.updates.length, "updates").toBe(1)
+    expect(day15.deletes.length, "deletes").toBe(0)
+    expect(day15.inserts[0], "inserts.0").toBe(3)
+    expect(day15.updates[0], "updates.0").toBe(1)
+
+    const day10 = await services.getRate(1)
+    expect(day10.end_date, "end_date").toBe(day(14))
+
+    const day15_ = await services.getRate(3)
+    expect(day15_.end_date, "end_date").toBe(day(19))
+  })
+
+  it("inserts after day 20", async () => {
+    const data = await services.insertRate({
+      pk: 0,
+      start_date: day(25),
+      end_date: 0,
+      offload_rate: 0,
+      port1_rate: 0,
+      port2_rate: 0,
+    })
+    expect(data.inserts.length, "inserts").toBe(1)
+    expect(data.updates.length, "updates").toBe(1)
+    expect(data.deletes.length, "deletes").toBe(0)
+    expect(data.inserts[0], "inserts.0").toBe(4)
+    expect(data.updates[0], "updates.0").toBe(2)
+
+    const day20 = await services.getRate(2)
+    expect(day20.end_date, "end_date").toBe(day(24))
+  })
+
+  it("inserts before day 10", async () => {
+    const day5 = await services.insertRate({
+      pk: 0,
+      start_date: day(5),
+      end_date: 0,
+      offload_rate: 0,
+      port1_rate: 0,
+      port2_rate: 0,
+    })
+    expect(day5.inserts.length, "inserts").toBe(1)
+    expect(day5.updates.length, "updates").toBe(0)
+    expect(day5.deletes.length, "deletes").toBe(0)
+    expect(day5.inserts[0], "inserts.0").toBe(5)
+
+    const day5_ = await services.getRate(5)
+    expect(day5_.end_date, "end_date").toBe(day(9))
+  })
+
+  it("delete day 5", async () => {
+    const data = await services.deleteRate(5)
+    expect(data.inserts.length, "inserts").toBe(0)
+    expect(data.updates.length, "updates").toBe(1)
+    expect(data.deletes.length, "deletes").toBe(1)
+    expect(data.updates[0], "updates.0").toBe(1)
+    expect(data.deletes[0], "deletes.0").toBe(5)
+
+    // this is an interesting case because day 10 becomes day 5
+    // so it is more like we deleted day 10 and updated day 5
+    const day10 = await services.getRate(1)
+    expect(day10.start_date, "start_date").toBe(day(5))
+  })
+
+  it("delete day 15", async () => {
+    const data = await services.deleteRate(3)
+    expect(data.inserts.length, "inserts").toBe(0)
+    expect(data.updates.length, "updates").toBe(1)
+    expect(data.deletes.length, "deletes").toBe(1)
+    expect(data.updates[0], "updates.0").toBe(2)
+    expect(data.deletes[0], "deletes.0").toBe(3)
+
+    // this is an interesting case because day 20 becomes day 15
+    const day20 = await services.getRate(2)
+    expect(day20.start_date, "start_date").toBe(day(15))
+  })
+
+  it("delete day 25", async () => {
+    const data = await services.deleteRate(4)
+    expect(data.inserts.length, "inserts").toBe(0)
+    expect(data.updates.length, "updates").toBe(1)
+    expect(data.deletes.length, "deletes").toBe(1)
+    expect(data.updates[0], "updates.0").toBe(2)
+    expect(data.deletes[0], "deletes.0").toBe(4)
+
+    const day20 = await services.getRate(2)
+    expect(asDate(day20.end_date), "end_date").toBe(INFINITY_DATE)
+  })
+
+  it("restore day 20 and day 10", async () => {
+    const day10 = await services.getRate(1)
+    expect(day10.start_date, "start_date").toBe(day(5))
+    expect(day10.end_date, "end_date").toBe(day(14))
+
+    const day20 = await services.getRate(2)
+    expect(day20.start_date, "start_date").toBe(day(15))
+    expect(day20.end_date, "end_date").toBe(inputToZulu(INFINITY_DATE))
+
+    // restore the start date of day 20 (which is now day 5)
+    day20.start_date = day(20)
+    const diffgram = await services.updateRate(day20.pk, day20)
+    const day20_ = await services.getRate(2)
+    expect(day20_.start_date, "start_date").toBe(day(20))
+
+    expect(diffgram.updates.length, "updates").toBe(2)
+    expect(diffgram.updates[0], "updates.0").toBe(1)
+    expect(diffgram.updates[1], "updates.1").toBe(2)
+
+    const day10_ = await services.getRate(1)
+    expect(day10_.end_date, "end_date").toBe(day(19))
+
+    // restore day 10 (which is now day 5)
+    day10.start_date = day(10)
+    await services.updateRate(day10.pk, day10)
+    const day10__ = await services.getRate(1)
+    expect(day10__.start_date, "start_date").toBe(day(10))
+  })
+
+  it("inserts and then updates day 15", async () => {
+    let diffgram = await services.insertRate({
+      pk: 0,
+      start_date: day(15),
+      end_date: 0,
+      offload_rate: 0,
+      port1_rate: 0,
+      port2_rate: 0,
+    })
+
+    expect(diffgram.inserts.length, "inserts").toBe(1)
+    expect(diffgram.updates.length, "updates").toBe(1)
+    expect(diffgram.deletes.length, "deletes").toBe(0)
+    expect(diffgram.inserts[0], "inserts.0").toBe(3)
+    expect(diffgram.updates[0], "updates.0").toBe(1)
+
+    const day15 = await services.getRate(3)
+    expect(day15.start_date, "start_date").toBe(day(15))
+    expect(day15.end_date, "end_date").toBe(day(19))
+
+    day15.start_date = day(10)
+    try {
+      await services.updateRate(day15.pk, day15)
+      throw new Error("should not get here")
+    } catch (err) {
+      console.log("error", err)
+    }
+
+    day15.start_date = day(11)
+    diffgram = await services.updateRate(day15.pk, day15)
+    expect(diffgram.inserts.length, "inserts").toBe(0)
+    expect(diffgram.updates.length, "updates").toBe(2)
+    expect(diffgram.deletes.length, "deletes").toBe(0)
+
+    const day15_ = await services.getRate(3)
+    expect(day15_.start_date, "start_date").toBe(day(11))
+    expect(day15_.end_date, "end_date").toBe(day(19))
+
+    const day10 = await services.getRate(1)
+    expect(day10.end_date, "end_date").toBe(day(10))
+  })
+})
 
 async function deleteAllRows() {
   const rates = await services.more(0, 100)
