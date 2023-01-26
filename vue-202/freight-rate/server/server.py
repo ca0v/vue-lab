@@ -1,5 +1,6 @@
 # use flask to server static files from the current directory
 # and serve the index.html file for all other requests
+from asyncio import Lock
 import jsonpickle
 from dataclasses import dataclass
 from datetime import *
@@ -207,10 +208,20 @@ def update_rate(pk: int):
 
 # http post to add a new rate
 
+# lock = Lock()
+
 
 @app.route("/aiq/api/rates", methods=['POST'])
 def insert_rate():
-    
+    # how to create an access lock to prevent multiple clients from inserting at the same time
+    print('enter insert_rate')
+    result = unsafe_insert_rate()
+    print('exit insert_rate')
+    return result
+
+
+def unsafe_insert_rate():
+
     rateRequest = request.get_json()
 
     # convert rateRequest to a FreightRate object
@@ -226,7 +237,7 @@ def insert_rate():
         print('rate already exists', unix_to_date(rate.start_date))
         # return 404
         return jsonify({'error': 'rate already exists'}), 404
-        
+
     # get the max rowid
     max_rowid = db.session.query(func.max(FreightRate.pk)).scalar()
     db.session.commit()

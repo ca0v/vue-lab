@@ -80,32 +80,38 @@ describe("freight-store", () => {
 describe("diffgram tests", () => {
   beforeAll(async () => {
     await deleteAllRows()
-    await Promise.all(
-      [20].map(async (key, i) => {
-        const response = await services.insertRate({
-          pk: 0,
-          start_date: START_DATE + key * ONE_DAY,
-          end_date: key + 2,
-          offload_rate: 0,
-          port1_rate: 0,
-          port2_rate: 0,
-        })
-        expect(response.status).toBe(200)
-        const data = (await response.json()) as DiffGram
-        expect(data.inserts.length).toBe(1)
-        expect(data.updates.length).toBe(0)
-        expect(data.deletes.length).toBe(0)
-        expect(data.inserts[0], "inserts.0").toBe(i + 1)
-
-        return data
+    const doit = async (key: number) => {
+      const response = await services.insertRate({
+        pk: 0,
+        start_date: START_DATE + key * ONE_DAY,
+        end_date: 0,
+        offload_rate: 0,
+        port1_rate: 0,
+        port2_rate: 0,
       })
-    )
+      expect(response.status).toBe(200)
+      const data = (await response.json()) as DiffGram
+      return data
+    }
+
+    let data = await doit(10)
+    expect(data.inserts.length, "inserts").toBe(1)
+    expect(data.updates.length, "updates").toBe(0)
+    expect(data.deletes.length, "deletes").toBe(0)
+    expect(data.inserts[0], "inserts.0").toBe(1)
+
+    data = await doit(20)
+    expect(data.inserts.length, "inserts").toBe(1)
+    expect(data.updates.length, "updates").toBe(1)
+    expect(data.deletes.length, "deletes").toBe(0)
+    expect(data.inserts[0], "inserts.0").toBe(2)
+    expect(data.updates[0], "update.0").toBe(1)
   })
 
-  it("inserts", async () => {
+  it("inserts between day 10 and day 20", async () => {
     const response = await services.insertRate({
       pk: 0,
-      start_date: START_DATE + 1,
+      start_date: START_DATE + 15 * ONE_DAY,
       end_date: 0,
       offload_rate: 0,
       port1_rate: 0,
@@ -114,9 +120,10 @@ describe("diffgram tests", () => {
     expect(response.status).toBe(200)
     const data = (await response.json()) as DiffGram
     expect(data.inserts.length, "inserts").toBe(1)
-    expect(data.updates.length, "updates").toBe(0)
+    expect(data.updates.length, "updates").toBe(1)
     expect(data.deletes.length, "deletes").toBe(0)
-    expect(data.inserts[0], "inserts.0").toBe(2)
+    expect(data.inserts[0], "inserts.0").toBe(3)
+    expect(data.updates[0], "updates.0").toBe(1)
   })
 })
 
