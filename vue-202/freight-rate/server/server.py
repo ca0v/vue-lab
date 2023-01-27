@@ -1,6 +1,7 @@
 # use flask to server static files from the current directory
 # and serve the index.html file for all other requests
 from asyncio import Lock
+import os
 import jsonpickle
 from dataclasses import dataclass
 from datetime import *
@@ -12,10 +13,21 @@ from flask_cors import CORS
 from sqlalchemy import func
 import configparser
 
+# does config.ini exist?
+if not os.path.isfile("config.ini"):
+    # if not, create it
+    config = configparser.ConfigParser()
+    config["db"] = {}
+    config["db"]["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
+    with open("config.ini", "w") as configfile:
+        config.write(configfile)
+
+
 from fun import date_to_python, python_to_date, python_to_ticks, ticks_to_python
 
 config = configparser.ConfigParser()
 config.read("config.ini")
+
 db_config = config["db"]
 
 app = Flask(__name__, static_folder='./dist', static_url_path='')
