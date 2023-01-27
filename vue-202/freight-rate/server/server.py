@@ -10,11 +10,17 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api
 from flask_cors import CORS
 from sqlalchemy import func
+import configparser
 
 from fun import date_to_python, python_to_date, python_to_ticks, ticks_to_python
 
+config = configparser.ConfigParser()
+config.read("config.ini")
+db_config = config["db"]
+
 app = Flask(__name__, static_folder='./dist', static_url_path='')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+app.config["SQLALCHEMY_DATABASE_URI"] = db_config["SQLALCHEMY_DATABASE_URI"]
+
 
 api = Api(app)
 db = SQLAlchemy(app)
