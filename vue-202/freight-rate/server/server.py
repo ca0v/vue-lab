@@ -124,6 +124,13 @@ def reset_rates(step_size: int):
     return get_last_n_rates(1000)
 
 
+@app.route('/aiq/api/rate/count', methods=['GET'])
+def get_rate_count():
+    print('get_rate_count')
+    count = db.session.query(func.count(FreightRate.pk)).scalar()
+    return jsonify(count)
+
+
 @app.route('/aiq/api/rate/<int:pk>', methods=['GET'])
 def get_rate(pk: int):
     print('get_rate', pk)

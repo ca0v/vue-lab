@@ -37,21 +37,16 @@
         newPriorEndDate
       )}.\n\nContinue?`
     },
-    delete_prev: (priorStartDate: number, priorEndDate: number) =>
+    delete_first: (priorStartDate: number, priorEndDate: number) =>
       `The previous timeframe ${asLocaleDate(priorStartDate)} to ${asLocaleDate(
         priorEndDate
       )}\nwill become ${asLocaleDate(
         priorStartDate
       )} to all future dates.\n\nContinue?`,
-    delete_next: (
-      nextStartDate: string,
-      nextEndDate: string,
-      newNextStartDate: string
-    ) => {
-      if (!newNextStartDate) {
-        return `The timeframe ${nextStartDate} to ${nextEndDate}\nwill become ${nextStartDate} to all future dates.\n\nContinue?`
-      }
-      return `The timeframe ${nextStartDate} to ${nextEndDate}\nwill become ${newNextStartDate} to ${nextEndDate}.\n\nContinue?`
+    delete_next: (originalStartDate: number, newStartDate: number) => {
+      return `The timeframe starting on ${asLocaleDate(
+        originalStartDate
+      )} will become ${asLocaleDate(newStartDate)}.\n\nContinue?`
     },
   }
 
@@ -61,6 +56,7 @@
   onMount(async () => {
     getMoreData()
     document.addEventListener("keydown", handleKeyDown)
+    totalRowCount = await api.getRateCount()
     return () => {
       document.removeEventListener("keydown", handleKeyDown)
     }
@@ -333,7 +329,7 @@
       if (freightRateData.length > 1) {
         // if this is the first rate, we need to update the end date of the next rate
         const priorRate = freightRateData[1]
-        const message = MESSAGE_TEMPLATES.delete_prev(
+        const message = MESSAGE_TEMPLATES.delete_first(
           priorRate.start_date,
           priorRate.end_date
         )
@@ -342,16 +338,9 @@
     } else {
       // if this is not the first rate, we need to update the end date of the next rate
       const nextRate = freightRateData[index - 1]
-      const nextStartDate = asLocaleDate(nextRate.start_date)
-      const nextEndDate =
-        nextRate.end_date >= inputToZulu(INFINITY_DATE)
-          ? ""
-          : asLocaleDate(nextRate.end_date)
-      const newNextStartDate = asLocaleDate(rate.start_date)
       const message = MESSAGE_TEMPLATES.delete_next(
-        nextStartDate,
-        nextEndDate,
-        newNextStartDate
+        nextRate.start_date,
+        rate.start_date
       )
       if (!confirm(message)) return false
     }
@@ -447,6 +436,10 @@
       (a, b) => b.start_date - a.start_date
     )
   }
+
+  let totalRowCount = 0
+
+  $: remainingRows = totalRowCount - freightRateData.length
 </script>
 
 <h2>Freight Rates Maintenance</h2>
@@ -532,7 +525,7 @@
             await getMoreData()
             // scroll to the bottom of the page
             window.scrollTo(0, document.body.scrollHeight)
-          }}>More Rows</button
+          }}>{`${remainingRows} More Rows`}</button
         >
       </nav>
     </div>
@@ -691,6 +684,13 @@
     height: 2em;
     margin: 0;
     padding: 0;
+  }
+
+  .th {
+    /* do not scroll off the top of the screen */
+    position: sticky;
+    top: -6px;
+    background-color: var(--background-color);
   }
 
   dialog > form {

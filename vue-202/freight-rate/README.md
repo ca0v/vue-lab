@@ -60,36 +60,27 @@ When the user adds a new record, that date must be greater than the latest start
 ### Feedback
 
     CREATE TABLE [web].[Freight_Rates](
-
         [Beginning_Date] [datetime] NOT NULL,
-
         [Ending_Date] [datetime] NOT NULL,
-
         [LB_Port] [float] NOT NULL,
-
         [NY_Port] [float] NOT NULL,
-
         [OffLoad] [float] NOT NULL,
-
         [Average] [float] NOT NULL,
-
         [User_Added] [nvarchar](50) NOT NULL,
-
-        [Date_added] [datetime] NOT NULL,
-
+        [Date_Added] [datetime] NOT NULL,
         [User_Modified] [nvarchar](50) NULL,
-
         [Date_Modified] [datetime] NULL
-
     ) ON [PRIMARY]
-
-    GO
 
 ## Work Log
 
 ### Future
 
 * [Python with Active Directory](https://pypi.org/project/ms-active-directory/)
+
+### Known Issues
+
+Deleting second row displays a blank end date in the dialog
 
 ### 2023-01-26
 
@@ -99,6 +90,7 @@ When the user adds a new record, that date must be greater than the latest start
 * 10:30am - 11:30am - Switch UX to use pk, manual testing
 * 12:30pm - 1:30pm - Switch to column names
 * 2:00pm - 2:15pm - Deploy and test
+* 9:30pm - 10:00pm - make grid header sticky, show records remaining
 
 ### 2023-01-25
 

@@ -18,6 +18,13 @@ class Api {
     return data
   }
 
+  async getRateCount() {
+    const url = `${this.API_URL}rate/count`
+    const response = await fetch(url)
+    const data = (await response.json()) as number
+    return data
+  }
+
   async getRate(pk: number) {
     // convert the dates to strings
     const url = `${this.API_URL}rate/${pk}`
