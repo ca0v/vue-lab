@@ -4,3 +4,4 @@ flask_restful
 flask_sqlalchemy
 jsonpickle
 python-dateutil
+waitress
