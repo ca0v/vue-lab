@@ -118,10 +118,7 @@ def reset_rates(step_size: int):
         rate = FreightRate(pk=pk, start_date=start_date, end_date=add_day(start_date, step_size-1),
                            offload_rate=789+pennies, port1_rate=1100.99, port2_rate=1300.01)
 
-        rate.user_added = 'admin'
-        rate.date_added = datetime.now()
-        rate.average = rate.offload_rate + \
-            (rate.port1_rate + rate.port2_rate) / 2
+        prepare_for_insert(rate)
 
         pennies += 0.01
         db.session.add(rate)
@@ -140,6 +137,22 @@ def reset_rates(step_size: int):
 
     # return the entire dataset
     return get_last_n_rates(1000)
+
+
+def prepare_for_insert(rate: FreightRate):
+    rate.user_added = 'admin'
+    rate.date_added = datetime.now()
+    compute(rate)
+
+
+def prepare_for_update(rate: FreightRate):
+    rate.user_modified = 'admin'
+    rate.date_modified = datetime.now()
+    compute(rate)
+
+
+def compute(rate):
+    rate.average = rate.offload_rate + (rate.port1_rate + rate.port2_rate) / 2
 
 
 @app.route('/aiq/api/rate/count', methods=['GET'])
@@ -319,6 +332,7 @@ def unsafe_insert_rate(rate: FreightRate):
             rate.end_date = overlap.end_date
             overlap.end_date = add_day(rate.start_date, -1)
             # update the rate data
+            prepare_for_update(overlap)
             db.session.merge(overlap)
             diffgram['updates'].append(overlap.pk)
         else:
@@ -329,6 +343,7 @@ def unsafe_insert_rate(rate: FreightRate):
                 print('updating the previous end date')
                 previous.end_date = add_day(rate.start_date, -1)
                 db.session.merge(previous)
+                prepare_for_update(previous)
                 diffgram['updates'].append(previous.pk)
 
             # find the rate that comes after to compute an end date
@@ -344,6 +359,7 @@ def unsafe_insert_rate(rate: FreightRate):
 
         # add the new rate
         db.session.add(rate)
+        prepare_for_insert(rate)
         diffgram['inserts'].append(rate.pk)
     except Exception as e:
         print("failed to insert", e)
@@ -391,6 +407,7 @@ def delete_rate(pk: int):
             # move the future rate back
             future_rate.start_date = start_date
             db.session.merge(future_rate)
+            prepare_for_update(future_rate)
             diffgram['updates'].append(future_rate.pk)
         else:
             # find the past rate
@@ -400,6 +417,7 @@ def delete_rate(pk: int):
                 # move the past rate forward
                 past_rate.end_date = rate.end_date
                 db.session.merge(past_rate)
+                prepare_for_update(past_rate)
                 diffgram['updates'].append(past_rate.pk)
     except Exception as e:
         print(e)

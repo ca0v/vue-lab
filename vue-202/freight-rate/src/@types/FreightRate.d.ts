@@ -6,6 +6,7 @@ export type FreightRate = {
   offload_rate: number
   port1_rate: number
   port2_rate: number
+  average?: number
 }
 
 export type DiffGram = {

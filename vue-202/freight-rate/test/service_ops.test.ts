@@ -314,8 +314,32 @@ describe("diffgram tests", () => {
   })
 })
 
+describe("avg test", () => {
+  it("insert rate with average 500", async () => {
+    const data = await services.insertRate({
+      pk: 0,
+      start_date: day(1),
+      end_date: 0,
+      offload_rate: 100,
+      port1_rate: 0,
+      port2_rate: 1000,
+    })
+    expect(data.inserts.length, "inserts").toBe(1)
+    expect(data.updates.length, "updates").toBe(0)
+    expect(data.deletes.length, "deletes").toBe(0)
+    expect(data.inserts[0], "inserts.0").toBe(4)
+
+    const day1 = await services.getRate(4)
+    expect(day1.start_date, "start_date").toBe(day(1))
+    expect(day1.port1_rate, "port1_rate").toBe(0)
+    expect(day1.port2_rate, "port2_rate").toBe(1000)
+    expect(day1.offload_rate, "offload_rate").toBe(100)
+    expect(day1.average, "avg_rate").toBe(600)
+  })
+})
+
 async function deleteAllRows() {
-  const rates = await services.more(0, 100)
+  const rates = await services.more(0, 10000)
 
   for (let i = 0; i < rates.length; i++) {
     const rate = rates[i]
