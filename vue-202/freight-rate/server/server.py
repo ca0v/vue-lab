@@ -42,7 +42,7 @@ MAX_DATE = "2100-12-31"
 
 @dataclass
 class FreightRate(db.Model):
-    __tablename__ = 'FreightRate'
+    __tablename__ = 'Freight_Rates'
 
     pk: int
     start_date: date
