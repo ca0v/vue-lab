@@ -4,15 +4,16 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "test": "vitest",
-    "serve:test": "python3 ./server/test.py",
-    "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "serve": "cd server && waitress-serve --port=3003 --call 'server:create_app'",
-    "serve:watch": "flask --app ./server/server.py --debug run",
     "check": "svelte-check --tsconfig ./tsconfig.json",
-    "kill": "lsof -t -i:3003 | xargs kill -9"
+    "dev": "vite",
+    "kill": "lsof -t -i:3003 | xargs kill -9",
+    "preview": "vite preview",
+    "serve:test": "python3 $PWD/server/test.py",
+    "serve:watch": "cd $PWD/server && python3 -m flask --app ./app.py --debug run",
+    "serve": "cd $PWD/server && python3 -m waitress --port=3003 --call 'app:create_app'",
+    "test": "vitest",
+    "z": "cd $PWD/server && python3 app.py"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.0",

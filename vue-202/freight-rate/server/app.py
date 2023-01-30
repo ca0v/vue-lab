@@ -1,6 +1,6 @@
 # use flask to server static files from the current directory
 # and serve the index.html file for all other requests
-from asyncio import Lock
+from fun import date_to_python, python_to_date, python_to_ticks, ticks_to_python
 import os
 import jsonpickle
 from dataclasses import dataclass
@@ -17,27 +17,57 @@ import configparser
 if not os.path.isfile("config.ini"):
     # if not, create it
     config = configparser.ConfigParser()
+    config["app"] = {}
+    config["app"]["PORT"] = "3003"
+    config["app"]["DEBUG"] = "1"
     config["db"] = {}
-    config["db"]["SQLALCHEMY_DATABASE_URI"] = "sqlite:///db.sqlite"
+    config["db"]["TEST_DATABASE_URI"] = "sqlite:///test-db.sqlite"
+    config["db"]["PRODUCTION_DATABASE_URI"] = "sqlite:///prod-db.sqlite"
     with open("config.ini", "w") as configfile:
         config.write(configfile)
+        print('config.ini created, using sqlite')
 
-
-from fun import date_to_python, python_to_date, python_to_ticks, ticks_to_python
 
 config = configparser.ConfigParser()
 config.read("config.ini")
 
+# print the config
+print("config.ini:")
+for section in config.sections():
+    print(section)
+    for key in config[section]:
+        print(f"\t{key} = {config[section][key]}")
+
 db_config = config["db"]
+app_config = config["app"]
+
+PORT = app_config["PORT"]
+DEBUG = app_config["DEBUG"] == "1"
 
 app = Flask(__name__, static_folder='./dist', static_url_path='')
-app.config["SQLALCHEMY_DATABASE_URI"] = db_config["SQLALCHEMY_DATABASE_URI"]
+
+if DEBUG:
+    app.config["SQLALCHEMY_DATABASE_URI"] = db_config["TEST_DATABASE_URI"]
+else:
+    app.config["SQLALCHEMY_DATABASE_URI"] = db_config["PRODUCTION_DATABASE_URI"]
 
 
+def verbose(
+    *values: object
+) -> None:
+    """print to the console"""
+    if DEBUG:
+        print(*values)
+
+
+verbose("creating app")
 api = Api(app)
+
+verbose("creating db")
 db = SQLAlchemy(app)
 
 MAX_DATE = "2100-12-31"
+verbose("MAX_DATE: ", MAX_DATE)
 
 
 @dataclass
@@ -78,115 +108,169 @@ class FreightRate(db.Model):
     date_modified = db.Column("Date_Modified", db.DateTime, nullable=True)
 
 
-# open CORS to http://localhost:5173/
-# this is the test app port
-CORS(app, supports_credentials=True)
+verbose('DEBUG: ', DEBUG)
+
+# a diffgram is a list of inserts, updates, and deletes
+# and is the response object for any requests that modify data
+# the concept here is that if the client wants to stay in sync
+# with the server, it can use the diffgram to update its local data
+# this is an oddity of this tool due to the existence of the end_date field
+# which causes updates to the non-primary row
+# Future work may consider dropping end_date and computing it
+# at which time, the diffgram can be removed.
+# It is a useful concept for data this is being changed frequently by multiple users
 
 
-@app.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin',
-                         'http://localhost:5173')
-    response.headers.add('Access-Control-Allow-Headers',
-                         'Content-Type,Authorization')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
-    return response
+def create_diffgram():
+    return {
+        'deletes': [],
+        'updates': [],
+        'inserts': []
+    }
 
 
-@app.route('/<path:path>')
-def static_proxy(path: str):
-    print('static_proxy')
-    return send_from_directory('.', path)
+def diffgram_as_response(diffgram):
+    return jsonpickle.encode(diffgram)
 
 
-# get the last n rates sorted by start_date descending
+def rate_as_response(rate: FreightRate):
+    """the web expects time in ticks"""
+    rate.start_date = python_to_ticks(rate.start_date)
+    rate.end_date = python_to_ticks(rate.end_date)
 
 
-@app.route('/aiq/api/rates/reset/<int:step_size>', methods=['GET'])
-def reset_rates(step_size: int):
-    # delete all rates
-    db.session.query(FreightRate).delete()
-    # insert a rate for each month from 2020-01-01 to 2023-01-01
-    start_date = date_to_python('2020-01-01')
-    cutoff_date = date_to_python('2023-12-31')
-    pennies = 0.01
+def request_as_rate(rateRequest):
+    """the web sends time in ticks"""
+    rate = FreightRate()
+    rate.start_date = ticks_to_python(rateRequest['start_date'])
+    rate.end_date = ticks_to_python(rateRequest['end_date'])
+    rate.offload_rate = rateRequest['offload_rate']
+    rate.port1_rate = rateRequest['port1_rate']
+    rate.port2_rate = rateRequest['port2_rate']
+    return rate
 
-    pk = 0
-    while start_date < cutoff_date:
-        pk += 1
-        # add a month to the start_date
-        rate = FreightRate(pk=pk, start_date=start_date, end_date=add_day(start_date, step_size-1),
-                           offload_rate=789+pennies, port1_rate=1100.99, port2_rate=1300.01)
-
-        prepare_for_insert(rate)
-
-        pennies += 0.01
-        db.session.add(rate)
-        start_date = add_day(start_date, step_size)
-
-    rate = FreightRate(pk=pk+1, start_date=start_date, end_date=date_to_python(MAX_DATE),
-                       offload_rate=1000, port1_rate=1100, port2_rate=1200
-                       )
-
-    rate.user_added = 'admin'
-    rate.date_added = datetime.now()
-    rate.average = rate.offload_rate + (rate.port1_rate + rate.port2_rate) / 2
-
-    db.session.add(rate)
-    db.session.commit()
-
-    # return the entire dataset
-    return get_last_n_rates(1000)
+# Ideally these audit fields would be managed by SQL Server
+# but for now we are tracking the user insert/update information
+# a delete causes an update on a secondary row
 
 
 def prepare_for_insert(rate: FreightRate):
+    """maintain audit fields"""
     rate.user_added = 'admin'
     rate.date_added = datetime.now()
     compute(rate)
 
 
 def prepare_for_update(rate: FreightRate):
+    """maintain audit fields"""
     rate.user_modified = 'admin'
     rate.date_modified = datetime.now()
     compute(rate)
 
 
 def compute(rate):
+    """maintain computed fields"""
     rate.average = rate.offload_rate + (rate.port1_rate + rate.port2_rate) / 2
+
+
+if DEBUG:
+    verbose("enabling CORS")
+    # open CORS to http://localhost:5173/
+    # this is the test app port
+    CORS(app, supports_credentials=True)
+
+    @app.after_request
+    def after_request(response):
+        response.headers.add('Access-Control-Allow-Origin',
+                             'http://localhost:5173')
+        response.headers.add('Access-Control-Allow-Headers',
+                             'Content-Type,Authorization')
+        response.headers.add(
+            'Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE')
+        return response
+
+
+@app.route('/<path:path>')
+def static_proxy(path: str):
+    """serve static files from the current directory"""
+    return send_from_directory('.', path)
+
+
+if DEBUG:
+    @app.route('/aiq/api/rates/reset/<int:step_size>', methods=['GET'])
+    def reset_rates(step_size: int):
+        """resets the rates table and repopulate with sample data"""
+        if DEBUG != True:
+            return "not allowed", 403
+
+        # delete all rates
+        db.session.query(FreightRate).delete()
+
+        # insert a rate for each month from 2020-01-01 to 2023-01-01
+        start_date = date_to_python('2020-01-01')
+        cutoff_date = date_to_python('2023-12-31')
+        pennies = 0.01
+
+        pk = 0
+        while start_date < cutoff_date:
+            pk += 1
+            # add a month to the start_date
+            rate = FreightRate(pk=pk, start_date=start_date, end_date=add_day(start_date, step_size-1),
+                               offload_rate=789+pennies, port1_rate=1100.99, port2_rate=1300.01)
+
+            prepare_for_insert(rate)
+
+            pennies += 0.01
+            db.session.add(rate)
+            start_date = add_day(start_date, step_size)
+
+        rate = FreightRate(pk=pk+1, start_date=start_date, end_date=date_to_python(MAX_DATE),
+                           offload_rate=1000, port1_rate=1100, port2_rate=1200
+                           )
+
+        rate.user_added = 'admin'
+        rate.date_added = datetime.now()
+        rate.average = rate.offload_rate + \
+            (rate.port1_rate + rate.port2_rate) / 2
+
+        db.session.add(rate)
+        db.session.commit()
+
+        # return the entire dataset
+        return get_last_n_rates(1000)
 
 
 @app.route('/aiq/api/rate/count', methods=['GET'])
 def get_rate_count():
-    print('get_rate_count')
+    """returns the number of rates in the database"""
     count = db.session.query(func.count(FreightRate.pk)).scalar()
     return jsonify(count)
 
 
 @app.route('/aiq/api/rate/<int:pk>', methods=['GET'])
 def get_rate(pk: int):
-    print('get_rate', pk)
+    """returns a single rate by primary key"""
     rate = FreightRate.query.filter_by(pk=pk).first()
-    prepare_rate_response(rate)
+    rate_as_response(rate)
     return jsonify(rate)
 
 
 @app.route('/aiq/api/rates/<int:n>', methods=['GET'])
 def get_last_n_rates(n: int):
-    print('get_last_n_rates', n)
+    """returns the last n rates in descending order by start_date"""
     rates = FreightRate.query.order_by(
         FreightRate.start_date.desc()).limit(n).all()
     # convert to ticks
     for rate in rates:
-        prepare_rate_response(rate)
+        rate_as_response(rate)
     return jsonify(rates)
 
 
 @app.route('/aiq/api/rates/<path:start_date>/<int:n>', methods=['GET'])
 def get_rates(start_date: str, n: int):
-    print('get_rates', start_date, n)
+    """returns the last n rates in descending order by start_date beginning with the provided start_date"""
 
     start_date = date_to_python(start_date)
-    print('get_rates', python_to_date(start_date), n)
 
     rates = FreightRate.query.order_by(FreightRate.start_date.desc()).filter(
         FreightRate.start_date <= start_date)
@@ -196,22 +280,16 @@ def get_rates(start_date: str, n: int):
 
     # convert to ticks
     for rate in rates:
-        prepare_rate_response(rate)
+        rate_as_response(rate)
 
     return jsonify(rates)
-
-# http put function to update rates
 
 
 @app.route("/aiq/api/rates/<int:pk>", methods=['PUT'])
 def update_rate(pk: int):
-    print('update_rate', pk)
+    """updates a rate"""
 
-    diffgram = {
-        'deletes': [],
-        'updates': [],
-        'inserts': []
-    }
+    diffgram = create_diffgram()
 
     db.session.begin()
     try:
@@ -223,31 +301,32 @@ def update_rate(pk: int):
         start_date = rate.start_date
 
         # read request as a FreightRate object
-        changes = as_rate(request.get_json())
+        changes = request_as_rate(request.get_json())
 
         # did the start_date change?
         new_start_date = changes.start_date
         if new_start_date != start_date:
-            print('start_date changed', python_to_date(
-                start_date), python_to_date(new_start_date))
+            verbose('start_date changed', python_to_date(
+                    start_date), python_to_date(new_start_date))
 
             # find the previous rate and adjust its end_date
             previous = FreightRate.query.order_by(FreightRate.start_date.desc()).filter(
                 FreightRate.start_date < start_date).first()
             if previous is not None:
-                print('previous rate found', python_to_date(
-                    previous.start_date), "diff", previous.start_date - start_date)
+                verbose('previous rate found', python_to_date(
+                        previous.start_date), "diff", previous.start_date - start_date)
                 previous.end_date = add_day(new_start_date, -1)
                 db.session.merge(previous)
                 diffgram['updates'].append(previous.pk)
+
             # find the next rate and adjust our end_date
             next = FreightRate.query.order_by(FreightRate.start_date).filter(
                 FreightRate.start_date > start_date).first()
             if next is not None:
-                print('next rate found', python_to_date(next.start_date))
+                verbose('next rate found', python_to_date(next.start_date))
                 rate.end_date = add_day(next.start_date, -1)
                 db.session.merge(next)
-            # update the rate data (will this work if the start_date changes?)
+
         # update the rate with the changes (this performs database changes!)
         rate.start_date = changes.start_date
         rate.offload_rate = changes.offload_rate
@@ -266,26 +345,16 @@ def update_rate(pk: int):
     else:
         db.session.commit()
 
-    return prepare_diffgram(diffgram)
-
-
-# http post to add a new rate
-
-# lock = Lock()
+    return diffgram_as_response(diffgram)
 
 
 @app.route("/aiq/api/rates", methods=['POST'])
 def insert_rate():
-    # how to create an access lock to prevent multiple clients from inserting at the same time
-    print('enter insert_rate')
+    """inserts a new rate"""
     # convert rateRequest to a FreightRate object
-    rate = as_rate(request.get_json())
-    rate.user_added = 'admin'
-    rate.date_added = datetime.now()
-    rate.average = rate.offload_rate + (rate.port1_rate + rate.port2_rate) / 2
-    result = unsafe_insert_rate(rate)
-    print('exit insert_rate')
-    return result
+    rate = request_as_rate(request.get_json())
+    prepare_for_insert(rate)
+    return unsafe_insert_rate(rate)
 
 
 def unsafe_insert_rate(rate: FreightRate):
@@ -293,7 +362,7 @@ def unsafe_insert_rate(rate: FreightRate):
     # make sure the row does not already exist
     existing = FreightRate.query.filter_by(start_date=rate.start_date).first()
     if existing is not None:
-        print('rate already exists', python_to_date(rate.start_date))
+        verbose('rate already exists', python_to_date(rate.start_date))
         # return 409
         return jsonify({'error': 'rate already exists'}), 409
 
@@ -305,15 +374,9 @@ def unsafe_insert_rate(rate: FreightRate):
     if max_rowid is None:
         max_rowid = 0
 
-    print('max_rowid', max_rowid)
-
     rate.pk = max_rowid + 1
 
-    diffgram = {
-        'deletes': [],
-        'updates': [],
-        'inserts': []
-    }
+    diffgram = create_diffgram()
 
     db.session.begin()
     try:
@@ -327,7 +390,8 @@ def unsafe_insert_rate(rate: FreightRate):
 
         # if there is an overlap
         if overlap is not None:
-            print('overlap found, moving its end date before the new start date, setting new end date to the existing end date')
+            verbose(
+                'overlap found, moving its end date before the new start date, setting new end date to the existing end date')
             # preserve end date of the existing rate
             rate.end_date = overlap.end_date
             overlap.end_date = add_day(rate.start_date, -1)
@@ -340,7 +404,7 @@ def unsafe_insert_rate(rate: FreightRate):
             previous = FreightRate.query.order_by(FreightRate.start_date.desc()).filter(
                 FreightRate.start_date < rate.start_date).first()
             if previous is not None:
-                print('updating the previous end date')
+                verbose('updating the previous end date')
                 previous.end_date = add_day(rate.start_date, -1)
                 db.session.merge(previous)
                 prepare_for_update(previous)
@@ -350,11 +414,11 @@ def unsafe_insert_rate(rate: FreightRate):
             next: FreightRate = FreightRate.query.order_by(FreightRate.start_date).filter(
                 FreightRate.start_date > rate.start_date).first()
             if next is not None:
-                print('using next start date to compute end date: ' +
-                      python_to_date(next.start_date))
+                verbose('using next start date to compute end date: ' +
+                        python_to_date(next.start_date))
                 rate.end_date = add_day(next.start_date, -1)
             else:
-                print('no end_date')
+                verbose('no end_date')
                 rate.end_date = date_to_python(MAX_DATE)
 
         # add the new rate
@@ -368,7 +432,7 @@ def unsafe_insert_rate(rate: FreightRate):
     else:
         db.session.commit()
 
-    return prepare_diffgram(diffgram)
+    return diffgram_as_response(diffgram)
 
 
 # http delete to remove a rate
@@ -376,13 +440,9 @@ def unsafe_insert_rate(rate: FreightRate):
 
 @ app.route("/aiq/api/rates/<int:pk>", methods=['DELETE'])
 def delete_rate(pk: int):
-    print('delete_rate', pk)
+    verbose('delete_rate', pk)
 
-    diffgram = {
-        'deletes': [],
-        'updates': [],
-        'inserts': []
-    }
+    diffgram = create_diffgram()
 
     # begin a transaction
     db.session.begin()
@@ -428,40 +488,20 @@ def delete_rate(pk: int):
         db.session.commit()
 
     # convert to ticks
-    return prepare_diffgram(diffgram)
+    return diffgram_as_response(diffgram)
 
 
-def prepare_diffgram(diffgram):
-    return jsonpickle.encode(diffgram)
-
-
-# add a day to a date
 def add_day(date: date, days: int = 1):
     return date + timedelta(days=days)
-
-
-def prepare_rate_response(rate: FreightRate):
-    rate.start_date = python_to_ticks(rate.start_date)
-    rate.end_date = python_to_ticks(rate.end_date)
-
-
-def as_rate(rateRequest):
-    rate = FreightRate()
-    rate.start_date = ticks_to_python(rateRequest['start_date'])
-    rate.end_date = ticks_to_python(rateRequest['end_date'])
-    rate.offload_rate = rateRequest['offload_rate']
-    rate.port1_rate = rateRequest['port1_rate']
-    rate.port2_rate = rateRequest['port2_rate']
-    return rate
 
 
 with app.app_context():
     db.create_all()
 
 ############################################
-# waitress-serve --port=3003 --call 'server:create_app'
+# or python3 -m waitress --port=3003 --call 'app:create_app'
 # or python3 server.py
-# or flask --app server.py --debug run
+# or python3 -m flask --app server.py --debug run
 ############################################
 
 
@@ -471,4 +511,4 @@ def create_app():
 
 if __name__ == '__main__':
     # start the server
-    create_app().run(debug=True, host='localhost', port=5000)
+    create_app().run(debug=True, host='localhost', port=PORT)

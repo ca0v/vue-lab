@@ -1,6 +1,5 @@
 import { Api } from "../src/data/freight-store"
 import { describe, it, expect, beforeAll, afterAll } from "vitest"
-import type { DiffGram } from "../src/@types/FreightRate"
 import {
   asDate,
   asLocaleDate,
@@ -15,7 +14,7 @@ import {
   today,
 } from "../src/lib/fun"
 
-const services = new Api("http://localhost:5000/aiq/api/")
+const services = new Api("http://localhost:3003/aiq/api/")
 
 // ticks as of 2020-01-01
 const START_DATE = Date.UTC(2020, 0, 1).valueOf()

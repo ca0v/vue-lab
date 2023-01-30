@@ -156,12 +156,27 @@ Deleting second row displays a blank end date in the dialog
 * 8:30pm-8:45pm - Add "edit" and continue mocking "delete" functionality to confirm assumptions
 * 8:45pm-9:00pm - mobile betterment
 
-
 ## References
+
+### How to Build
+
+TODO: Move to dedicated repo
+
+    > git clone @ca0v/vue-lab
+    > cd vue-lab/vue-202/freight-rates
+    > npm install
+    > npm run build
+    > npm run serve
+
+### Sample Connection Strings
+
+* postgresql://user-id:password;@ip:port/database-name
+* sqlite:///database-name.sqlite
 
 ### Pre-requisites for windows
 
 * Python
+* [python](https://www.python.org/downloads/)
 * [request-router ARR](https://www.iis.net/downloads/microsoft/application-request-routing)
 * [url-rewrite](https://www.iis.net/downloads/microsoft/url-rewrite)
 * [non-sucking service manager](https://nssm.cc/download)
